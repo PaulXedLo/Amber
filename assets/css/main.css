@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@keyframes neonPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24, 0 0 30px #fbbf24;
+  }
+  50% {
+    box-shadow: 0 0 20px #facc15, 0 0 40px #facc15, 0 0 60px #facc15;
+  }
+}
