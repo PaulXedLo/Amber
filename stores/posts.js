@@ -3,8 +3,31 @@ import { defineStore } from "pinia";
 export const usePostsStore = defineStore("posts", {
   state: () => ({
     userPosts: [],
+    allPosts: [],
   }),
   actions: {
+    async fetchAllPosts() {
+      const supabase = useNuxtApp().$supabase;
+      const { data: posts, error } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          user:users (
+            id,
+            username,
+            avatar_url
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error("Could not get posts");
+      }
+
+      this.allPosts = posts || [];
+    },
     async fetchPosts() {
       const supabase = useNuxtApp().$supabase;
       const {

@@ -1,9 +1,13 @@
 <script setup>
 const user = useUserStore();
-
+const posts = usePostsStore();
 const { data: randomUsers, pending } = useFetch("/api/random-users");
 
 definePageMeta({ layout: "default" });
+
+onMounted(async () => {
+  await posts.fetchAllPosts();
+});
 </script>
 
 <template>

@@ -146,6 +146,7 @@ function handleCancelPost() {
       <!-- Buttons -->
       <div class="flex gap-2 ml-auto">
         <button
+          v-if="postInformation.content"
           @click="handleCancelPost"
           class="cursor-pointer px-5 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-full transition shadow-md"
         >
