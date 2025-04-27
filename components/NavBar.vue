@@ -54,9 +54,8 @@ async function signOutUser() {
                 Settings
               </NuxtLink>
             </li>
-            <li>
+            <li @click="signOutUser">
               <a
-                @click="signOutUser"
                 class="block hover:bg-slate-700 hover:text-amber-300 transition rounded-md px-3 py-2 cursor-pointer"
               >
                 Logout

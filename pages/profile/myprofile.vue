@@ -3,16 +3,42 @@ import "animate.css";
 definePageMeta({
   layout: "myprofile",
 });
+const followersCount = ref(0);
+const followingCount = ref(0);
 const loadingPosts = ref(false);
 const posts = usePostsStore();
+const loadingProfile = ref(true);
 const user = useUserStore();
 const { contentImage } = storeToRefs(posts);
 const { profilePic: profilePicture, username, bio } = storeToRefs(user);
+const fetchFollowersAndFollowing = async () => {
+  const supabase = useNuxtApp().$supabase;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  const { count: followers } = await supabase
+    .from("followers")
+    .select("*", { count: "exact", head: true })
+    .eq("following_id", userId);
 
-onMounted(async () => {
+  const { count: following } = await supabase
+    .from("followers")
+    .select("*", { count: "exact", head: true })
+    .eq("follower_id", userId);
+
+  followersCount.value = followers || 0;
+  followingCount.value = following || 0;
+};
+onBeforeMount(async () => {
+  loadingProfile.value = true;
   if (!username.value || !profilePicture.value) {
     await user.fetchUserProfile();
   }
+  loadingProfile.value = false;
+});
+onMounted(async () => {
+  await fetchFollowersAndFollowing();
   if (!contentImage) {
     loadingPosts.value = true;
     await posts.fetchPosts();
@@ -23,6 +49,7 @@ onMounted(async () => {
 
 <template>
   <div
+    v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"
   >
     <!-- Profile header -->
@@ -64,15 +91,15 @@ onMounted(async () => {
       <div class="flex justify-center gap-10 mt-6">
         <div class="text-center">
           <h2 class="text-lg font-bold">Followers</h2>
-          <p class="text-slate-400">0</p>
+          <p class="text-slate-400">{{ followersCount }}</p>
         </div>
         <div class="text-center">
           <h2 class="text-lg font-bold">Following</h2>
-          <p class="text-slate-400">0</p>
+          <p class="text-slate-400">{{ followingCount }}</p>
         </div>
         <div class="text-center">
           <h2 class="text-lg font-bold">Posts</h2>
-          <p class="text-slate-400">0</p>
+          <p class="text-slate-400">{{ posts.userPosts.length }}</p>
         </div>
       </div>
     </div>
@@ -93,5 +120,8 @@ onMounted(async () => {
         />
       </div>
     </div>
+  </div>
+  <div v-else class="flex flex-row min-h-screen justify-center items-center">
+    <span class="loading loading-spinner loading-xl"></span>
   </div>
 </template>

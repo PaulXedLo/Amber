@@ -1,15 +1,31 @@
 <script setup>
 const user = useUserStore();
 const posts = usePostsStore();
-const { data: randomUsers, pending } = useFetch("/api/random-users");
-
+const route = useRoute();
 definePageMeta({ layout: "default" });
-
+const pending = ref(false);
 onMounted(async () => {
-  await posts.fetchAllPosts();
-});
-</script>
+  pending.value = true;
+  await posts.fetchPosts();
+  const checks = posts.allPosts.map((post) => {
+    if (post.user?.id) {
+      return user.checkIfFollowing(post.user.id);
+    }
+  });
+  await Promise.all(checks);
 
+  pending.value = false;
+});
+const handleFollowClick = async (targetUserId) => {
+  if (!targetUserId) return;
+
+  if (!user.followStatus[targetUserId]) {
+    await user.followUser(targetUserId);
+  } else {
+    await user.unfollowUser(targetUserId);
+  }
+};
+</script>
 <template>
   <div class="min-h-screen w-full px-4 pb-10">
     <!-- Page title -->
@@ -20,8 +36,9 @@ onMounted(async () => {
         Top posts for you
       </h1>
     </div>
-    <!--UPLOAD NEW POST-->
+
     <CreatePost />
+
     <template v-if="pending">
       <div class="flex justify-center my-10">
         <span class="loading loading-spinner loading-xl"></span>
@@ -31,61 +48,73 @@ onMounted(async () => {
     <template v-else>
       <div class="flex flex-col items-center gap-10 mt-8">
         <div
-          v-for="user in randomUsers"
-          :key="user.name"
+          v-for="post in posts.allPosts"
+          :key="post.id"
           class="w-full max-w-2xl rounded-2xl bg-slate-800/80 backdrop-blur-md border border-slate-700 shadow-lg hover:shadow-amber-500/20 transition duration-300 p-6"
         >
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full overflow-hidden">
-                <img
-                  :src="user.profilePicture"
+              <div
+                class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
+              >
+                <NuxtImg
+                  :src="post.user.profile_picture || '/default-avatar.png'"
                   alt="avatar"
-                  class="w-full h-full object-cover"
+                  @click="navigateTo(`/profile/${post.user.username}`)"
+                  class="w-full h-full object-cover cursor-pointer"
                 />
               </div>
               <div>
                 <h2 class="text-white font-bold text-md leading-tight">
-                  {{ user.name }}
+                  {{ post.user.full_name || "Unknown User" }}
                 </h2>
-                <p class="text-sm text-slate-400">{{ user.tag }}</p>
+                <p
+                  class="text-sm text-slate-400 cursor-pointer"
+                  @click="navigateTo(`/profile/${post.user.username}`)"
+                >
+                  @{{ post.user.username || "@unknown" }}
+                </p>
               </div>
             </div>
+
             <button
-              class="px-4 py-1.5 rounded-md bg-amber-500 hover:bg-amber-600 text-sm text-white font-semibold shadow-sm hover:shadow-md transition"
+              v-if="post.user.username !== user.username"
+              @click="handleFollowClick(post.user.id)"
+              class="px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
+              :class="
+                user.followStatus[post.user.id]
+                  ? 'bg-slate-700 hover:bg-slate-600'
+                  : 'bg-amber-500 hover:bg-amber-600'
+              "
             >
-              Follow
+              {{ user.followStatus[post.user.id] ? "Unfollow" : "Follow" }}
             </button>
           </div>
 
           <!-- Content -->
-          <p class="text-slate-300 mb-3">{{ user.description }}</p>
+          <p class="text-slate-300 mb-3">
+            {{ post.content_text || "No bio available" }}
+          </p>
+
           <img
-            :src="user.contentImage"
+            v-if="post.content_image"
+            :src="post.content_image"
+            alt="Post Image"
             class="rounded-lg w-full object-cover"
           />
 
           <!-- Likes -->
           <div class="flex items-center gap-2 mt-4">
             <button
-              class="btn btn-circle hover:shadow-[0_0_10px_#fbbf24] transition"
+              @click="posts.toggleLikePost(post.id)"
+              class="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2.5"
-                stroke="currentColor"
-                class="size-[1.2em]"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                />
-              </svg>
+              <span>
+                <template v-if="post.likes_count > 0">❤️</template>
+                <template v-else>🤍</template>
+              </span>
+              <span>{{ post.likes_count || 0 }}</span>
             </button>
-            <span class="text-sm text-slate-300">{{ user.likes }}</span>
           </div>
         </div>
       </div>

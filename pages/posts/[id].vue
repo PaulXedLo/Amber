@@ -1,8 +1,8 @@
 <script script>
 const route = useRoute();
 const user = useUserStore();
-const posts = usePostsStore();
 const postId = route.params.id;
+onMounted(async () => {});
 </script>
 
 <template>

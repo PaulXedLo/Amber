@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import prisma from "~/server/utils/prisma";
 
 export const usePostsStore = defineStore("posts", {
   state: () => ({
@@ -6,45 +7,92 @@ export const usePostsStore = defineStore("posts", {
     allPosts: [],
   }),
   actions: {
-    async fetchAllPosts() {
+    async toggleLikePost(postId) {
       const supabase = useNuxtApp().$supabase;
-      const { data: posts, error } = await supabase
-        .from("posts")
-        .select(
-          `
-          *,
-          user:users (
-            id,
-            username,
-            avatar_url
-          )
-        `
-        )
-        .order("created_at", { ascending: false });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
 
-      if (error) {
-        throw new Error("Could not get posts");
+      const userId = session.user.id;
+
+      const existingLike = await prisma.postLike.findFirst({
+        where: {
+          userId,
+          postId,
+        },
+      });
+
+      const post = this.allPosts.find((p) => p.id === postId);
+      if (!post) return;
+
+      if (existingLike) {
+        await prisma.postLike.delete({
+          where: {
+            id: existingLike.id,
+          },
+        });
+        post.likes_count = Math.max((post.likes_count || 1) - 1, 0);
+        post.liked_by_me = false;
+      } else {
+        await prisma.postLike.create({
+          data: {
+            userId,
+            postId,
+          },
+        });
+        post.likes_count = (post.likes_count || 0) + 1;
+        post.liked_by_me = true;
       }
-
-      this.allPosts = posts || [];
     },
+
     async fetchPosts() {
       const supabase = useNuxtApp().$supabase;
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) return;
-      const id = session?.user?.id;
-      const { data: posts, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("user_id", id)
-        .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Fetch posts error:", error.message);
-        return;
+
+      const userId = session.user.id;
+
+      // Fetch user's own posts
+      try {
+        const userPosts = await prisma.post.findMany({
+          where: {
+            userId,
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+        });
+
+        this.userPosts = userPosts || [];
+      } catch (error) {
+        console.error("Fetch user posts error:", error.message);
       }
-      this.userPosts = posts || [];
+
+      // Fetch all posts for everyone
+      try {
+        const allPosts = await prisma.post.findMany({
+          orderBy: {
+            created_at: "desc",
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                full_name: true,
+                profile_picture: true,
+              },
+            },
+          },
+        });
+
+        this.allPosts = allPosts || [];
+      } catch (error) {
+        console.error("Fetch all posts error:", error.message);
+      }
     },
 
     async addPost(values) {
@@ -54,7 +102,7 @@ export const usePostsStore = defineStore("posts", {
       } = await supabase.auth.getSession();
       if (!session) return;
 
-      const userId = session?.user?.id;
+      const userId = session.user.id;
       let uploadedImageUrl = null;
 
       if (values.contentImage) {
@@ -83,11 +131,13 @@ export const usePostsStore = defineStore("posts", {
       }
 
       try {
-        await supabase.from("posts").insert({
-          user_id: userId,
-          content_text: values.content,
-          content_image: uploadedImageUrl,
-          feeling: values.postFeeling,
+        await prisma.post.create({
+          data: {
+            userId,
+            content_text: values.content,
+            content_image: uploadedImageUrl,
+            feeling: values.postFeeling,
+          },
         });
       } catch (error) {
         console.error("Insert post error:", error.message);
