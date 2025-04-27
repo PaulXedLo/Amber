@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import prisma from "~/server/utils/prisma";
 
 export const useUserStore = defineStore("user", {
   state: () => ({
@@ -14,33 +13,31 @@ export const useUserStore = defineStore("user", {
     followStatus: {},
   }),
   actions: {
-    async fetchPublicProfile(username) {
-      const profile = await prisma.profile.findUnique({
-        where: { username },
-        include: {
-          posts: true,
-        },
-      });
-
-      if (!profile) {
+    async fetchPublicProfile(value) {
+      const supabase = useNuxtApp().$supabase;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*,post:posts(*)")
+        .eq("username", value)
+        .single();
+      if (error) {
         throw new Error("Could not load profile");
       }
-
-      return profile;
+      return data;
     },
-
     async fetchFollowersAndFollowingCount(userId) {
-      const followers = await prisma.follower.count({
-        where: { followingId: userId },
-      });
+      const supabase = useNuxtApp().$supabase;
+      const { count: followers } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", userId);
 
-      const following = await prisma.follower.count({
-        where: { followerId: userId },
-      });
-
-      return { followers, following };
+      const { count: following } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", userId);
+      return { followers: followers || 0, following: following || 0 };
     },
-
     async fetchUserProfile() {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -49,13 +46,14 @@ export const useUserStore = defineStore("user", {
       const id = session?.user?.id;
       if (!id) return;
       this.userId = id;
-
       const fallbackImage =
         "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
-      const profile = await prisma.profile.findUnique({
-        where: { id },
-      });
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", id)
+        .single();
 
       if (profile) {
         this.username = profile.username;
@@ -67,7 +65,6 @@ export const useUserStore = defineStore("user", {
         this.profilePic = fallbackImage;
       }
     },
-
     async signUpUser(values) {
       const supabase = useNuxtApp().$supabase;
       const { data: signupData, error: signupError } =
@@ -75,30 +72,28 @@ export const useUserStore = defineStore("user", {
           email: values.email,
           password: values.password,
         });
-
       if (signupError) {
         alert(signupError.message);
         return { success: false, signupError };
       }
-
       const user = signupData.user;
-
-      const profileData = await prisma.profile.create({
-        data: {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .insert({
           id: user.id,
           username: values.username,
           full_name: values.name,
           email: values.email,
           age: values.age,
-        },
-      });
-
+        });
+      if (profileError) {
+        alert(profileError.message);
+        return { success: false, error: profileError };
+      }
       this.isSignedIn = true;
       this.isNewUser = true;
-
       return { success: true, signupData, profileData };
     },
-
     async logInUser(values) {
       const supabase = useNuxtApp().$supabase;
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -113,7 +108,6 @@ export const useUserStore = defineStore("user", {
         return { success: true };
       }
     },
-
     async followUser(targetUserId) {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -122,16 +116,12 @@ export const useUserStore = defineStore("user", {
       const userId = session?.user?.id;
       if (!userId) return;
 
-      await prisma.follower.create({
-        data: {
-          followerId: userId,
-          followingId: targetUserId,
-        },
-      });
+      await supabase
+        .from("followers")
+        .insert({ follower_id: userId, following_id: targetUserId });
 
       this.followStatus[targetUserId] = true;
     },
-
     async unfollowUser(targetUserId) {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -140,16 +130,14 @@ export const useUserStore = defineStore("user", {
       const userId = session?.user?.id;
       if (!userId) return;
 
-      await prisma.follower.deleteMany({
-        where: {
-          followerId: userId,
-          followingId: targetUserId,
-        },
-      });
+      await supabase
+        .from("followers")
+        .delete()
+        .eq("follower_id", userId)
+        .eq("following_id", targetUserId);
 
       this.followStatus[targetUserId] = false;
     },
-
     async checkIfFollowing(targetUserId) {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -162,16 +150,15 @@ export const useUserStore = defineStore("user", {
         return;
       }
 
-      const existingFollow = await prisma.follower.findFirst({
-        where: {
-          followerId: userId,
-          followingId: targetUserId,
-        },
-      });
+      const { data } = await supabase
+        .from("followers")
+        .select("*")
+        .eq("follower_id", userId)
+        .eq("following_id", targetUserId)
+        .maybeSingle();
 
-      this.followStatus[targetUserId] = !!existingFollow;
+      this.followStatus[targetUserId] = !!data;
     },
-
     async checkAuth() {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -184,7 +171,6 @@ export const useUserStore = defineStore("user", {
         await this.fetchUserProfile();
       }
     },
-
     async signOut() {
       const supabase = useNuxtApp().$supabase;
       await supabase.auth.signOut();
@@ -195,7 +181,6 @@ export const useUserStore = defineStore("user", {
       this.hydrated = false;
       navigateTo("/auth");
     },
-
     async changeProfilePicture(file) {
       const supabase = useNuxtApp().$supabase;
       if (!file) throw new Error("No file selected.");
@@ -223,17 +208,13 @@ export const useUserStore = defineStore("user", {
         data: { session },
       } = await supabase.auth.getSession();
       const userId = session?.user?.id;
-
-      await prisma.profile.update({
-        where: { id: userId },
-        data: {
-          profile_picture: urlData.publicUrl,
-        },
-      });
+      await supabase
+        .from("profiles")
+        .update({ profile_picture: urlData.publicUrl })
+        .eq("id", userId);
 
       await this.fetchUserProfile();
     },
-
     async updateUsername(value) {
       if (!value) throw new Error("No value for updating username");
       const supabase = useNuxtApp().$supabase;
@@ -242,16 +223,16 @@ export const useUserStore = defineStore("user", {
       } = await supabase.auth.getSession();
       const id = session?.user?.id;
       try {
-        await prisma.profile.update({
-          where: { id },
-          data: { full_name: value },
-        });
+        await supabase
+          .from("profiles")
+          .update({ full_name: value })
+          .eq("id", id);
+
         await this.fetchUserProfile();
       } catch (error) {
         console.log(error);
       }
     },
-
     async updateBio(value) {
       if (!value) throw new Error("No value provided");
       const supabase = useNuxtApp().$supabase;
@@ -260,10 +241,7 @@ export const useUserStore = defineStore("user", {
       } = await supabase.auth.getSession();
       const id = session?.user?.id;
       try {
-        await prisma.profile.update({
-          where: { id },
-          data: { bio: value },
-        });
+        await supabase.from("profiles").update({ bio: value }).eq("id", id);
       } catch (error) {
         console.log(error);
       }

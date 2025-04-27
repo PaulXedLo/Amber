@@ -14,7 +14,6 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: [
     "@nuxt/eslint",
-    "@prisma/nuxt",
     "@nuxt/fonts",
     "@nuxt/icon",
     "@nuxt/image",

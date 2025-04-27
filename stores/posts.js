@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import prisma from "~/server/utils/prisma";
 
 export const usePostsStore = defineStore("posts", {
   state: () => ({
@@ -16,38 +15,32 @@ export const usePostsStore = defineStore("posts", {
 
       const userId = session.user.id;
 
-      const existingLike = await prisma.postLike.findFirst({
-        where: {
-          userId,
-          postId,
-        },
-      });
+      const { data: existingLike } = await supabase
+        .from("post_likes")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("post_id", postId)
+        .maybeSingle();
 
       const post = this.allPosts.find((p) => p.id === postId);
       if (!post) return;
 
       if (existingLike) {
-        await prisma.postLike.delete({
-          where: {
-            id: existingLike.id,
-          },
-        });
+        await supabase.from("post_likes").delete().eq("id", existingLike.id);
         post.likes_count = Math.max((post.likes_count || 1) - 1, 0);
         post.liked_by_me = false;
       } else {
-        await prisma.postLike.create({
-          data: {
-            userId,
-            postId,
-          },
+        await supabase.from("post_likes").insert({
+          user_id: userId,
+          post_id: postId,
         });
         post.likes_count = (post.likes_count || 0) + 1;
         post.liked_by_me = true;
       }
     },
-
     async fetchPosts() {
       const supabase = useNuxtApp().$supabase;
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -56,47 +49,44 @@ export const usePostsStore = defineStore("posts", {
       const userId = session.user.id;
 
       // Fetch user's own posts
-      try {
-        const userPosts = await prisma.post.findMany({
-          where: {
-            userId,
-          },
-          orderBy: {
-            created_at: "desc",
-          },
-        });
+      const { data: userPosts, error: userPostsError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
+      if (userPostsError) {
+        console.error("Fetch user posts error:", userPostsError.message);
+      } else {
         this.userPosts = userPosts || [];
-      } catch (error) {
-        console.error("Fetch user posts error:", error.message);
       }
 
       // Fetch all posts for everyone
-      try {
-        const allPosts = await prisma.post.findMany({
-          orderBy: {
-            created_at: "desc",
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                full_name: true,
-                profile_picture: true,
-              },
-            },
-          },
-        });
+      const { data: allPosts, error: allPostsError } = await supabase
+        .from("posts")
+        .select(
+          `
+          *,
+          user:profiles (
+            id,
+            username,
+            full_name,
+            profile_picture
+          )
+        `
+        )
+        .order("created_at", { ascending: false });
 
+      if (allPostsError) {
+        console.error("Fetch all posts error:", allPostsError.message);
+      } else {
         this.allPosts = allPosts || [];
-      } catch (error) {
-        console.error("Fetch all posts error:", error.message);
       }
     },
 
     async addPost(values) {
       const supabase = useNuxtApp().$supabase;
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -131,13 +121,11 @@ export const usePostsStore = defineStore("posts", {
       }
 
       try {
-        await prisma.post.create({
-          data: {
-            userId,
-            content_text: values.content,
-            content_image: uploadedImageUrl,
-            feeling: values.postFeeling,
-          },
+        await supabase.from("posts").insert({
+          user_id: userId,
+          content_text: values.content,
+          content_image: uploadedImageUrl,
+          feeling: values.postFeeling,
         });
       } catch (error) {
         console.error("Insert post error:", error.message);

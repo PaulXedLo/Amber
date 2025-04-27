@@ -26,15 +26,20 @@
     "@vee-validate/rules": "^4.15.0",
     "animate.css": "^4.1.1",
     "daisyui": "^5.0.28",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.43.1",
     "eslint": "^9.25.1",
     "nuxi": "^3.25.0",
     "nuxt": "^3.16.2",
+    "postgres": "^3.4.5",
     "tailwindcss": "^4.1.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
-    "@nuxtjs/google-fonts": "^3.2.0"
+    "@nuxtjs/google-fonts": "^3.2.0",
+    "drizzle-kit": "^0.31.0",
+    "tsx": "^4.19.3"
   }
 }
