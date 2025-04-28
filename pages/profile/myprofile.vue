@@ -9,7 +9,6 @@ const loadingPosts = ref(false);
 const posts = usePostsStore();
 const loadingProfile = ref(true);
 const user = useUserStore();
-const { contentImage } = storeToRefs(posts);
 const { profilePic: profilePicture, username, bio } = storeToRefs(user);
 const fetchFollowersAndFollowing = async () => {
   const supabase = useNuxtApp().$supabase;
@@ -39,11 +38,9 @@ onBeforeMount(async () => {
 });
 onMounted(async () => {
   await fetchFollowersAndFollowing();
-  if (!contentImage) {
     loadingPosts.value = true;
     await posts.fetchPosts();
     loadingPosts.value = false;
-  }
 });
 </script>
 
@@ -109,11 +106,11 @@ onMounted(async () => {
     <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-10" v-if="!loadingPosts">
       <div
         v-for="post in posts.userPosts"
-        :key="post.content_image"
+        :key="post.contentImage"
         class="w-full aspect-square overflow-hidden rounded-lg bg-slate-800 shadow-md hover:shadow-amber-500/20 transition"
       >
         <NuxtImg
-          :src="post.content_image"
+          :src="post.posts.contentImage"
           alt="Post image"
           class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"

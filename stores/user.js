@@ -13,17 +13,16 @@ export const useUserStore = defineStore("user", {
     followStatus: {},
   }),
   actions: {
-    async fetchPublicProfile(value) {
-      const supabase = useNuxtApp().$supabase;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*,post:posts(*)")
-        .eq("username", value)
-        .single();
-      if (error) {
-        throw new Error("Could not load profile");
+    async fetchPublicProfile(username) {
+      try {
+        const userProfile = await $fetch('/api/profile/get-publicprofile', {
+          query: { username }
+        });
+        return userProfile;
+      } catch (error) {
+        console.error('Could not load profile', error);
+        throw error;
       }
-      return data;
     },
     async fetchFollowersAndFollowingCount(userId) {
       const supabase = useNuxtApp().$supabase;
@@ -51,7 +50,6 @@ export const useUserStore = defineStore("user", {
 
       try {
         const  profileData  = await $fetch('/api/profile/get-ownprofile', {query: {id}})
-        console.log(profileData)
         if (profileData) {
           this.username = profileData.username;
           this.fullName = profileData.fullName;
