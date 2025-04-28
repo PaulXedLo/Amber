@@ -1,14 +1,21 @@
 <script setup>
 import { usePublicStore } from "~/stores/profile/public";
 const publicStore = usePublicStore();
-const user = useUserStore();
-const userProfile = ref({});
 const loadingProfile = ref(false);
-const followersCount = ref(0);
-const followingCount = ref(0);
 const route = useRoute();
+const user = useUserStore();
+let posts = ref({});
 const loadingFollow = ref(false);
-
+const {
+  username,
+  fullName,
+  bio,
+  userId,
+  followingCount,
+  followersCount,
+  profilePic: profilePicture,
+  postsCount,
+} = storeToRefs(publicStore);
 const handleFollowClick = async () => {
   if (!userProfile.value.profiles?.id) return;
   loadingFollow.value = true;
@@ -31,22 +38,12 @@ const handleFollowClick = async () => {
 onBeforeMount(async () => {
   try {
     loadingProfile.value = true;
-    const profileData = await publicStore.fetchPublicProfile(
+    const profileInfo = await publicStore.fetchPublicProfile(
       route.params.username
     );
-    if (profileData) {
-      userProfile.value = profileData;
-
-      // const { followers, following } =
-      //   await user.fetchFollowersAndFollowingCount(
-      //     userProfile.value.profiles.id
-      //   );
-      // followersCount.value = followers;
-      // followingCount.value = following;
-    }
-
+    posts.value = profileInfo.posts;
     if (route.params.username === user.username) {
-      return navigateTo("/profile/myprofile");
+      return navigateTo("/profile/me");
     }
   } catch (error) {
     console.error(error);
@@ -72,15 +69,15 @@ onBeforeMount(async () => {
             width="128"
             height="128"
             densities="x1"
-            :src="userProfile.profiles?.profilePicture || '/default-avatar.png'"
+            :src="profilePicture || '/default-avatar.png'"
             alt="Profile Picture"
             class="object-cover w-full h-full"
           />
         </div>
       </div>
       <div class="flex flex-col justify-center items-center">
-        <h1 class="text-2xl font-bold">{{ userProfile.profiles?.fullName }}</h1>
-        <h1 class="text-1xl">@{{ userProfile.profiles?.username }}</h1>
+        <h1 class="text-2xl font-bold">{{ fullName }}</h1>
+        <h1 class="text-1xl">@{{ username }}</h1>
       </div>
 
       <div class="flex gap-3 mt-2">
@@ -89,14 +86,12 @@ onBeforeMount(async () => {
           :disabled="loadingFollow"
           class="cursor-pointer px-4 py-2 rounded-full transition text-white font-semibold shadow hover:shadow-lg disabled:opacity-50"
           :class="
-            user.followStatus[userProfile.profiles?.id]
+            user.followStatus[userId]
               ? 'bg-red-500 hover:bg-red-600'
               : 'bg-amber-500 hover:bg-amber-600'
           "
         >
-          {{
-            user.followStatus[userProfile.profiles?.id] ? "Unfollow" : "Follow"
-          }}
+          {{ user.followStatus[userId] ? "Unfollow" : "Follow" }}
         </button>
         <button
           class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
@@ -106,7 +101,7 @@ onBeforeMount(async () => {
         </button>
       </div>
 
-      <h3 class="text-1xl">{{ userProfile.profiles?.bio }}</h3>
+      <h3 class="text-1xl">{{ bio }}</h3>
 
       <!-- Stats -->
       <div class="flex justify-center gap-10 mt-6">
@@ -120,7 +115,7 @@ onBeforeMount(async () => {
         </div>
         <div class="text-center">
           <h2 class="text-lg font-bold">Posts</h2>
-          <p class="text-slate-400">{{ userProfile.posts.length }}</p>
+          <p class="text-slate-400">{{ postsCount }}</p>
         </div>
       </div>
     </div>
@@ -128,7 +123,7 @@ onBeforeMount(async () => {
     <!-- Posts Grid -->
     <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-10">
       <div
-        v-for="post in userProfile.posts"
+        v-for="post in posts"
         :key="post.id"
         class="w-full aspect-square overflow-hidden rounded-lg bg-slate-800 shadow-md hover:shadow-amber-500/20 transition"
       >

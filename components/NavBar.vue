@@ -37,7 +37,7 @@ async function signOutUser() {
           >
             <li>
               <NuxtLink
-                :to="`/profile/${user.username}`"
+                :to="`/profile/me`"
                 class="flex justify-between items-center hover:bg-slate-700 hover:text-amber-300 transition rounded-md px-3 py-2"
               >
                 Profile

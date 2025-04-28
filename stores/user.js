@@ -9,23 +9,13 @@ export const useUserStore = defineStore("user", {
     isNewUser: false,
     profilePic: null,
     username: null,
+    followersCount: null,
+    followingCount: null,
+    postsCount: null,
     bio: null,
     followStatus: {},
   }),
   actions: {
-    async fetchFollowersAndFollowingCount(userId) {
-      const supabase = useNuxtApp().$supabase;
-      const { count: followers } = await supabase
-        .from("followers")
-        .select("*", { count: "exact", head: true })
-        .eq("following_id", userId);
-
-      const { count: following } = await supabase
-        .from("followers")
-        .select("*", { count: "exact", head: true })
-        .eq("follower_id", userId);
-      return { followers: followers || 0, following: following || 0 };
-    },
     async fetchUserProfile() {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -39,17 +29,20 @@ export const useUserStore = defineStore("user", {
         const profileData = await $fetch(`/api/profile/me`, {
           query: { userId },
         });
-        if (profileData) {
-          const profiles = profileData.profiles;
-          this.username = profiles.username;
-          this.fullName = profiles.fullName;
-          this.bio = profiles.bio;
-          this.profilePic = profiles.profilePicture || fallbackImage;
-        } else {
-          this.username = null;
-          this.profilePic = fallbackImage;
-        }
+        const { profiles, followersCount, followingCount, postsCount } =
+          profileData;
+        this.userId = profiles.id;
+        this.fullName = profiles.fullName;
+        this.profilePic = profiles.profilePicture || fallbackImage;
+        this.username = profiles.username;
+        this.bio = profiles.bio;
+        this.followingCount = followingCount;
+        this.followersCount = followersCount;
+        this.postsCount = postsCount;
+        return profileData;
       } catch (error) {
+        this.username = null;
+        this.profilePic = fallbackImage;
         console.log("cannot fetch user profile", error);
       }
     },
@@ -169,69 +162,64 @@ export const useUserStore = defineStore("user", {
       this.hydrated = false;
       navigateTo("/auth");
     },
-    async changeProfilePicture(file) {
+    async updateProfile(values) {
       const supabase = useNuxtApp().$supabase;
-      if (!file) throw new Error("No file selected.");
+      // UPDATE PROFILE PICTURE
+      if (values.profilePicture) {
+        const fileExt = values.profilePicture.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(filePath, values.profilePicture, {
+            cacheControl: "3600",
+            upsert: true,
+          });
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        throw new Error(uploadError.message);
+        if (uploadError) {
+          throw new Error(uploadError.message);
+        }
+        const { data: urlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(filePath);
+        values.profilePicture = urlData.publicUrl;
+        try {
+          await $fetch("/api/profile/update", {
+            body: values,
+            query: { userId: this.userId },
+            method: "PATCH",
+          });
+          await this.fetchUserProfile();
+        } catch (error) {
+          console.log("Could not upload profile picture", error);
+        }
       }
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      await supabase
-        .from("profiles")
-        .update({ profile_picture: urlData.publicUrl })
-        .eq("id", userId);
-
-      await this.fetchUserProfile();
-    },
-    async updateUsername(value) {
-      if (!value) throw new Error("No value for updating username");
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const id = session?.user?.id;
-      try {
-        await supabase
-          .from("profiles")
-          .update({ full_name: value })
-          .eq("id", id);
-
-        await this.fetchUserProfile();
-      } catch (error) {
-        console.log(error);
+      // UPDATE USER BIO
+      if (values.bio) {
+        try {
+          await $fetch("/api/profile/update", {
+            method: "PATCH",
+            query: { userId: this.userId },
+            body: values,
+          });
+        } catch (error) {
+          console.log("Could not update profile bio", error);
+          throw new Error("Failed to update bio");
+        }
       }
-    },
-    async updateBio(value) {
-      if (!value) throw new Error("No value provided");
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const id = session?.user?.id;
-      try {
-        await supabase.from("profiles").update({ bio: value }).eq("id", id);
-      } catch (error) {
-        console.log(error);
+      // UPDATE USER FULLNAME
+      if (values.fullName) {
+        try {
+          await $fetch("/api/profile/update", {
+            query: { userId: this.userId },
+            method: "PATCH",
+            body: values,
+          });
+        } catch (error) {
+          console.log("Could not update full name", error);
+          throw new Error("Failed to update name");
+        }
       }
     },
   },

@@ -9,41 +9,23 @@ const {
   bio,
 } = storeToRefs(user);
 
-// Profile picture upload
+// PROFILE PICTURE EDIT
+
 const selectedFile = ref(null);
 const isUploading = ref(false);
 const fileInput = ref(null);
 const usernameEdit = ref(null);
-function triggerFileInput() {
-  fileInput.value?.click();
-}
-const previewUrl = computed(() => {
-  return selectedFile.value
-    ? URL.createObjectURL(selectedFile.value)
-    : profilePicture.value;
-});
-
-// Username Edit
-
-let editingUsername = ref(false);
-const newUsernameValue = ref(fullName);
-
-// Bio edit
-let editingBio = ref(false);
-const bioValue = ref(bio);
-
 function handleNewPicture(event) {
   const file = event.target?.files?.[0];
   if (file) {
     selectedFile.value = file;
   }
 }
-
 async function handlePictureChange() {
   if (selectedFile.value) {
     try {
       isUploading.value = true;
-      await user.changeProfilePicture(selectedFile.value);
+      await user.updateProfile({ profilePicture: selectedFile.value });
       selectedFile.value = null;
       toast.success("Updated profile picture successfully", {
         timeout: 2000,
@@ -56,17 +38,43 @@ async function handlePictureChange() {
     }
   }
 }
+function triggerFileInput() {
+  fileInput.value?.click();
+}
+// PREVIEW PROFILE PICTURE
+const previewUrl = computed(() => {
+  return selectedFile.value
+    ? URL.createObjectURL(selectedFile.value)
+    : profilePicture.value;
+});
 
-function toggleEditingBio() {
-  editingBio.value = !editingBio.value;
+// USERNAME EDIT
+
+let editingUsername = ref(false);
+const newUsernameValue = ref(fullName);
+async function saveUsername() {
+  try {
+    await user.updateProfile({ fullName: newUsernameValue.value });
+    toast.success("Updated name successfully", {
+      timeout: 2000,
+      position: "top-center",
+    });
+    toggleEditingUsername();
+  } catch (error) {
+    alert(error);
+  }
 }
 function toggleEditingUsername() {
   editingUsername.value = !editingUsername.value;
 }
 
+// BIO EDIT
+
+let editingBio = ref(false);
+const bioValue = ref(bio);
 async function saveBio() {
   try {
-    await user.updateBio(bioValue.value);
+    await user.updateProfile({ bio: bioValue.value });
     toast.success("Updated bio successfully", {
       timeout: 2000,
       position: "top-center",
@@ -76,17 +84,8 @@ async function saveBio() {
     console.log(error);
   }
 }
-async function saveUsername() {
-  try {
-    await user.updateUsername(newUsernameValue.value);
-    toast.success("Updated name successfully", {
-      timeout: 2000,
-      position: "top-center",
-    });
-    toggleEditingUsername();
-  } catch (error) {
-    alert(error);
-  }
+function toggleEditingBio() {
+  editingBio.value = !editingBio.value;
 }
 </script>
 

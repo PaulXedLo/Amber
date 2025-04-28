@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const { userId } = query;
 
-    let userPosts = [];
+    let userPosts: any = [];
     if (userId) {
       userPosts = await db
         .select()
