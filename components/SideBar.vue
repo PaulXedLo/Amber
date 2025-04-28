@@ -1,3 +1,9 @@
+<script setup>
+const user = useUserStore();
+async function signOut() {
+  await user.signOut();
+}
+</script>
 <template>
   <!-- Sidebar container -->
   <aside
@@ -33,7 +39,7 @@
         </NuxtLink>
 
         <NuxtLink
-          to="/profile/myprofile"
+          to="/profile/me"
           class="flex items-center gap-3 hover:text-amber-400 transition"
         >
           <Icon name="mdi:account-circle-outline" size="20" /> Profile
@@ -59,13 +65,6 @@
     </div>
   </aside>
 </template>
-
-<script setup>
-const user = useUserStore();
-async function signOut() {
-  await user.signOut();
-}
-</script>
 
 <style scoped>
 ::-webkit-scrollbar {

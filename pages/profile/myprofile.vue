@@ -38,9 +38,9 @@ onBeforeMount(async () => {
 });
 onMounted(async () => {
   await fetchFollowersAndFollowing();
-    loadingPosts.value = true;
-    await posts.fetchPosts();
-    loadingPosts.value = false;
+  loadingPosts.value = true;
+  await posts.fetchPosts();
+  loadingPosts.value = false;
 });
 </script>
 
@@ -66,9 +66,9 @@ onMounted(async () => {
         </div>
       </div>
 
-      <h1 class="text-2xl font-bold">@{{ username }}</h1>
+      <h1 class="text-2xl font-bold">@{{ user.username }}</h1>
 
-      <h3 class="text-1xl">{{ bio }}</h3>
+      <h3 class="text-1xl">{{ user.bio }}</h3>
       <!-- Profile options -->
       <div class="flex gap-6 mt-2">
         <NuxtLink
@@ -96,7 +96,7 @@ onMounted(async () => {
         </div>
         <div class="text-center">
           <h2 class="text-lg font-bold">Posts</h2>
-          <p class="text-slate-400">{{ posts.userPosts.length }}</p>
+          <p class="text-slate-400">{{ posts.userPosts }}</p>
         </div>
       </div>
     </div>

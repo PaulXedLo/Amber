@@ -1,4 +1,6 @@
 <script setup>
+import { usePublicStore } from "~/stores/profile/public";
+const publicStore = usePublicStore();
 const user = useUserStore();
 const userProfile = ref({});
 const loadingProfile = ref(false);
@@ -29,18 +31,18 @@ const handleFollowClick = async () => {
 onBeforeMount(async () => {
   try {
     loadingProfile.value = true;
-
-    const profileData = await user.fetchPublicProfile(route.params.username);
-
+    const profileData = await publicStore.fetchPublicProfile(
+      route.params.username
+    );
     if (profileData) {
       userProfile.value = profileData;
 
-      const { followers, following } =
-        await user.fetchFollowersAndFollowingCount(
-          userProfile.value.profiles.id
-        );
-      followersCount.value = followers;
-      followingCount.value = following;
+      // const { followers, following } =
+      //   await user.fetchFollowersAndFollowingCount(
+      //     userProfile.value.profiles.id
+      //   );
+      // followersCount.value = followers;
+      // followingCount.value = following;
     }
 
     if (route.params.username === user.username) {
@@ -76,8 +78,10 @@ onBeforeMount(async () => {
           />
         </div>
       </div>
-
-      <h1 class="text-2xl font-bold">@{{ userProfile.profiles?.username }}</h1>
+      <div class="flex flex-col justify-center items-center">
+        <h1 class="text-2xl font-bold">{{ userProfile.profiles?.fullName }}</h1>
+        <h1 class="text-1xl">@{{ userProfile.profiles?.username }}</h1>
+      </div>
 
       <div class="flex gap-3 mt-2">
         <button

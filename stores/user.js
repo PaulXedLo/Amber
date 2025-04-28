@@ -13,17 +13,6 @@ export const useUserStore = defineStore("user", {
     followStatus: {},
   }),
   actions: {
-    async fetchPublicProfile(username) {
-      try {
-        const userProfile = await $fetch('/api/profile/get-publicprofile', {
-          query: { username }
-        });
-        return userProfile;
-      } catch (error) {
-        console.error('Could not load profile', error);
-        throw error;
-      }
-    },
     async fetchFollowersAndFollowingCount(userId) {
       const supabase = useNuxtApp().$supabase;
       const { count: followers } = await supabase
@@ -42,25 +31,26 @@ export const useUserStore = defineStore("user", {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      const id = session?.user?.id;
-      if (!id) return;
-      this.userId = id;
+      const userId = session?.user?.id;
       const fallbackImage =
         "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
       try {
-        const  profileData  = await $fetch('/api/profile/get-ownprofile', {query: {id}})
+        const profileData = await $fetch(`/api/profile/me`, {
+          query: { userId },
+        });
         if (profileData) {
-          this.username = profileData.username;
-          this.fullName = profileData.fullName;
-          this.bio = profileData.bio;
-          this.profilePic = profileData.profilePicture || fallbackImage;
+          const profiles = profileData.profiles;
+          this.username = profiles.username;
+          this.fullName = profiles.fullName;
+          this.bio = profiles.bio;
+          this.profilePic = profiles.profilePicture || fallbackImage;
         } else {
           this.username = null;
           this.profilePic = fallbackImage;
         }
       } catch (error) {
-        console.log("cannot fetch user profile", error)
+        console.log("cannot fetch user profile", error);
       }
     },
     async signUpUser(values) {

@@ -48,8 +48,9 @@ export const usePostsStore = defineStore("posts", {
 
       const userId = session.user.id;
 
-      const { userPosts, allPosts } = await $fetch("/api/posts/get-all", {
+      const { userPosts, allPosts } = await $fetch("/api/posts", {
         query: { userId },
+        method: "GET",
       });
       this.userPosts = userPosts;
       this.allPosts = allPosts;
@@ -90,7 +91,7 @@ export const usePostsStore = defineStore("posts", {
         uploadedImageUrl = publicUrlData.publicUrl;
       }
       try {
-        await $fetch("/api/posts/add-post", {
+        await $fetch("/api/posts", {
           method: "POST",
           body: {
             userId,
