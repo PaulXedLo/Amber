@@ -1,9 +1,47 @@
 <script setup>
+definePageMeta({ layout: "default" });
+// REFS
+const handleFollowClick = async (targetUserId) => {
+  if (!targetUserId) return;
+
+  if (!user.followStatus[targetUserId]) {
+    await user.followUser(targetUserId);
+  } else {
+    await user.unfollowUser(targetUserId);
+  }
+};
 const user = useUserStore();
 const posts = usePostsStore();
-const route = useRoute();
-definePageMeta({ layout: "default" });
+const showPostModal = ref(false);
+const activePost = ref(null);
 const pending = ref(false);
+// MODAL FUNCTIONS
+function openPost(post) {
+  activePost.value = post;
+  showPostModal.value = true;
+}
+function closeModal() {
+  showPostModal.value = false;
+}
+async function toggleLike(post) {
+  if (!post.likedByMe) {
+    post.posts.likesCount++;
+    post.likedByMe = true;
+    await $fetch("/api/posts/togglelike", {
+      method: "POST",
+      body: { userId: user.userId, postId: post.posts.id },
+    });
+  } else {
+    post.posts.likesCount = Math.max(post.posts.likesCount - 1, 0);
+    post.likedByMe = false;
+    await $fetch("/api/posts/togglelike", {
+      method: "DELETE",
+      body: { userId: user.userId, postId: post.posts.id },
+    });
+  }
+}
+
+// HOOKS
 onMounted(async () => {
   pending.value = true;
   await posts.fetchPosts();
@@ -16,20 +54,11 @@ onMounted(async () => {
 
   pending.value = false;
 });
-const handleFollowClick = async (targetUserId) => {
-  if (!targetUserId) return;
-
-  if (!user.followStatus[targetUserId]) {
-    await user.followUser(targetUserId);
-  } else {
-    await user.unfollowUser(targetUserId);
-  }
-};
 </script>
 <template>
   <div class="min-h-screen w-full px-4 pb-10">
-    <!-- Page title -->
-    <div class="text-center mt-12">
+    <!-- PAGE TITLE -->
+    <div class="text-center mt-12 animate__animated animate__bounce">
       <h1
         class="text-4xl sm:text-5xl font-extrabold text-amber-400 drop-shadow-lg tracking-wide"
       >
@@ -39,12 +68,10 @@ const handleFollowClick = async (targetUserId) => {
     <!-- CREATE NEW POST COMPONENT-->
     <CreatePost />
 
-    <template v-if="pending">
-      <div class="flex justify-center my-10">
-        <span class="loading loading-spinner loading-xl"></span>
-      </div>
-    </template>
+    <!--LOADING SPINNER FOR POSTS-->
+    <LoadingSpinner v-if="pending" />
 
+    <!--POSTS-->
     <template v-else>
       <div class="flex flex-col items-center gap-10 mt-8">
         <div
@@ -52,7 +79,11 @@ const handleFollowClick = async (targetUserId) => {
           :key="post.posts.id"
           class="w-full max-w-2xl rounded-2xl bg-slate-800/80 backdrop-blur-md border border-slate-700 shadow-lg hover:shadow-amber-500/20 transition duration-300 p-6"
         >
-          <div class="flex justify-between items-center mb-4">
+          <!--POST CONTENT-->
+          <div
+            class="flex justify-between items-center mb-4"
+            @click="openPost(post)"
+          >
             <div class="flex items-center gap-4">
               <div
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
@@ -105,18 +136,26 @@ const handleFollowClick = async (targetUserId) => {
           <!-- Likes -->
           <div class="flex items-center gap-2 mt-4">
             <button
-              @click="posts.toggleLikePost(post.posts.id)"
-              class="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition"
+              @click="toggleLike(post)"
+              class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-amber-400 transition"
             >
               <span>
-                <template v-if="post.posts.likesCount > 0">❤️</template>
-                <template v-else>🤍</template>
+                <template v-if="post.likedByMe"
+                  ><Icon name="noto:orange-heart" size="20"
+                /></template>
+                <template v-else
+                  ><Icon name="noto:white-heart" size="20"
+                /></template>
               </span>
-              <span>{{ post.posts.likesCount || 0 }}</span>
+              <span class="font-bold text-l">{{
+                post.posts.likesCount || 0
+              }}</span>
             </button>
           </div>
         </div>
       </div>
     </template>
+    <!--POST MODAL-->
+    <PostModal v-if="showPostModal" :post="activePost" @close="closeModal" />
   </div>
 </template>

@@ -6,38 +6,6 @@ export const usePostsStore = defineStore("posts", {
     allPosts: [],
   }),
   actions: {
-    async toggleLikePost(postId) {
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const userId = session.user.id;
-
-      const { data: existingLike } = await supabase
-        .from("post_likes")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("post_id", postId)
-        .maybeSingle();
-
-      const post = this.allPosts.find((p) => p.id === postId);
-      if (!post) return;
-
-      if (existingLike) {
-        await supabase.from("post_likes").delete().eq("id", existingLike.id);
-        post.likes_count = Math.max((post.likes_count || 1) - 1, 0);
-        post.liked_by_me = false;
-      } else {
-        await supabase.from("post_likes").insert({
-          user_id: userId,
-          post_id: postId,
-        });
-        post.likes_count = (post.likes_count || 0) + 1;
-        post.liked_by_me = true;
-      }
-    },
     async fetchPosts() {
       const supabase = useNuxtApp().$supabase;
 
