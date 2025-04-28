@@ -48,42 +48,12 @@ export const usePostsStore = defineStore("posts", {
 
       const userId = session.user.id;
 
-      // Fetch user's own posts
-      const { data: userPosts, error: userPostsError } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (userPostsError) {
-        console.error("Fetch user posts error:", userPostsError.message);
-      } else {
-        this.userPosts = userPosts || [];
-      }
-
-      // Fetch all posts for everyone
-      const { data: allPosts, error: allPostsError } = await supabase
-        .from("posts")
-        .select(
-          `
-          *,
-          user:profiles (
-            id,
-            username,
-            full_name,
-            profile_picture
-          )
-        `
-        )
-        .order("created_at", { ascending: false });
-
-      if (allPostsError) {
-        console.error("Fetch all posts error:", allPostsError.message);
-      } else {
-        this.allPosts = allPosts || [];
-      }
+      const { userPosts, allPosts } = await $fetch("/api/posts/get-all", {
+        query: { userId },
+      });
+      this.userPosts = userPosts;
+      this.allPosts = allPosts;
     },
-
     async addPost(values) {
       const supabase = useNuxtApp().$supabase;
 
@@ -119,16 +89,19 @@ export const usePostsStore = defineStore("posts", {
 
         uploadedImageUrl = publicUrlData.publicUrl;
       }
-
       try {
-        await supabase.from("posts").insert({
-          user_id: userId,
-          content_text: values.content,
-          content_image: uploadedImageUrl,
-          feeling: values.postFeeling,
+        await $fetch("/api/posts/add-post", {
+          method: "POST",
+          body: {
+            userId,
+            contentImage: uploadedImageUrl,
+            contentText: values.content,
+            feeling: values.postFeeling,
+          },
         });
+        await this.fetchPosts();
       } catch (error) {
-        console.error("Insert post error:", error.message);
+        console.log("Error! couldnt add post", error);
       }
     },
   },

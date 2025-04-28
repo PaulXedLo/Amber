@@ -49,20 +49,20 @@ export const useUserStore = defineStore("user", {
       const fallbackImage =
         "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (profile) {
-        this.username = profile.username;
-        this.fullName = profile.full_name;
-        this.bio = profile.bio;
-        this.profilePic = profile.profile_picture || fallbackImage;
-      } else {
-        this.username = null;
-        this.profilePic = fallbackImage;
+      try {
+        const  profileData  = await $fetch('/api/profile/get-ownprofile', {query: {id}})
+        console.log(profileData)
+        if (profileData) {
+          this.username = profileData.username;
+          this.fullName = profileData.fullName;
+          this.bio = profileData.bio;
+          this.profilePic = profileData.profilePicture || fallbackImage;
+        } else {
+          this.username = null;
+          this.profilePic = fallbackImage;
+        }
+      } catch (error) {
+        console.log("cannot fetch user profile", error)
       }
     },
     async signUpUser(values) {

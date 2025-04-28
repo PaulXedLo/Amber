@@ -34,6 +34,7 @@ async function handleAddNewPost() {
     try {
       isUploading.value = true;
       await posts.addPost(postInformation);
+      await posts.fetchPosts();
       toast.success("Successfully added a new post", {
         timeout: 2000,
         position: "top-center",

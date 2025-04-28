@@ -8,8 +8,8 @@ onMounted(async () => {
   pending.value = true;
   await posts.fetchPosts();
   const checks = posts.allPosts.map((post) => {
-    if (post.user?.id) {
-      return user.checkIfFollowing(post.user.id);
+    if (post.profiles?.id) {
+      return user.checkIfFollowing(post.profiles.id);
     }
   });
   await Promise.all(checks);
@@ -36,7 +36,7 @@ const handleFollowClick = async (targetUserId) => {
         Top posts for you
       </h1>
     </div>
-
+    <!-- CREATE NEW POST COMPONENT-->
     <CreatePost />
 
     <template v-if="pending">
@@ -49,7 +49,7 @@ const handleFollowClick = async (targetUserId) => {
       <div class="flex flex-col items-center gap-10 mt-8">
         <div
           v-for="post in posts.allPosts"
-          :key="post.id"
+          :key="post.posts.id"
           class="w-full max-w-2xl rounded-2xl bg-slate-800/80 backdrop-blur-md border border-slate-700 shadow-lg hover:shadow-amber-500/20 transition duration-300 p-6"
         >
           <div class="flex justify-between items-center mb-4">
@@ -58,47 +58,46 @@ const handleFollowClick = async (targetUserId) => {
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
               >
                 <NuxtImg
-                  :src="post.user.profile_picture || '/default-avatar.png'"
+                  :src="post.profiles.profilePicture || '/default-avatar.png'"
                   alt="avatar"
-                  @click="navigateTo(`/profile/${post.user.username}`)"
+                  @click="navigateTo(`/profile/${post.profiles.username}`)"
                   class="w-full h-full object-cover cursor-pointer"
                 />
               </div>
               <div>
                 <h2 class="text-white font-bold text-md leading-tight">
-                  {{ post.user.full_name || "Unknown User" }}
+                  {{ post.profiles.fullName || "Unknown User" }}
                 </h2>
                 <p
                   class="text-sm text-slate-400 cursor-pointer"
-                  @click="navigateTo(`/profile/${post.user.username}`)"
+                  @click="navigateTo(`/profile/${post.profiles.username}`)"
                 >
-                  @{{ post.user.username || "@unknown" }}
+                  @{{ post.profiles.username || "@unknown" }}
                 </p>
               </div>
             </div>
-
             <button
-              v-if="post.user.username !== user.username"
-              @click="handleFollowClick(post.user.id)"
+              v-if="post.profiles.username !== user.username"
+              @click="handleFollowClick(post.profiles.id)"
               class="px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
               :class="
-                user.followStatus[post.user.id]
+                user.followStatus[post.profiles.id]
                   ? 'bg-slate-700 hover:bg-slate-600'
                   : 'bg-amber-500 hover:bg-amber-600'
               "
             >
-              {{ user.followStatus[post.user.id] ? "Unfollow" : "Follow" }}
+              {{ user.followStatus[post.profiles.id] ? "Unfollow" : "Follow" }}
             </button>
           </div>
 
           <!-- Content -->
           <p class="text-slate-300 mb-3">
-            {{ post.content_text || "No bio available" }}
+            {{ post.posts.contentText || "No bio available" }}
           </p>
 
           <img
-            v-if="post.content_image"
-            :src="post.content_image"
+            v-if="post.posts.contentImage"
+            :src="post.posts.contentImage"
             alt="Post Image"
             class="rounded-lg w-full object-cover"
           />
@@ -106,14 +105,14 @@ const handleFollowClick = async (targetUserId) => {
           <!-- Likes -->
           <div class="flex items-center gap-2 mt-4">
             <button
-              @click="posts.toggleLikePost(post.id)"
+              @click="posts.toggleLikePost(post.posts.id)"
               class="flex items-center gap-1 text-slate-300 hover:text-amber-400 transition"
             >
               <span>
-                <template v-if="post.likes_count > 0">❤️</template>
+                <template v-if="post.posts.likesCount > 0">❤️</template>
                 <template v-else>🤍</template>
               </span>
-              <span>{{ post.likes_count || 0 }}</span>
+              <span>{{ post.posts.likesCount || 0 }}</span>
             </button>
           </div>
         </div>
