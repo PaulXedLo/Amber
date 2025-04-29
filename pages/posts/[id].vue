@@ -1,7 +1,5 @@
 <script setup>
 definePageMeta({ layout: "default" });
-
-import { useUserStore } from "~/stores/user";
 const route = useRoute();
 const user = useUserStore();
 const post = ref(null);
