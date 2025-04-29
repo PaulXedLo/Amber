@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-
 export const useUserStore = defineStore("user", {
   state: () => ({
     userId: null,
@@ -89,35 +88,26 @@ export const useUserStore = defineStore("user", {
         return { success: true };
       }
     },
-    async followUser(targetUserId) {
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      if (!userId) return;
-
-      await supabase
-        .from("followers")
-        .insert({ follower_id: userId, following_id: targetUserId });
-
-      this.followStatus[targetUserId] = true;
-    },
-    async unfollowUser(targetUserId) {
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      if (!userId) return;
-
-      await supabase
-        .from("followers")
-        .delete()
-        .eq("follower_id", userId)
-        .eq("following_id", targetUserId);
-
-      this.followStatus[targetUserId] = false;
+    async toggleFollowUser(targetUserId) {
+      if (!this.followStatus[targetUserId]) {
+        try {
+          await $fetch("/api/profile/follow", {
+            method: "POST",
+            body: { userId: this.userId, followingUserId: targetUserId },
+          });
+        } catch (error) {
+          console.error("Could not follow user", error);
+        }
+      } else {
+        try {
+          await $fetch("/api/profile/follow", {
+            method: "DELETE",
+            body: { userId: this.userId, followingUserId: targetUserId },
+          });
+        } catch (error) {
+          console.error("Could not unfollow user", error);
+        }
+      }
     },
     async checkIfFollowing(targetUserId) {
       const supabase = useNuxtApp().$supabase;
@@ -130,15 +120,15 @@ export const useUserStore = defineStore("user", {
         this.followStatus[targetUserId] = false;
         return;
       }
-
-      const { data } = await supabase
-        .from("followers")
-        .select("*")
-        .eq("follower_id", userId)
-        .eq("following_id", targetUserId)
-        .maybeSingle();
-
-      this.followStatus[targetUserId] = !!data;
+      try {
+        const { isFollowing } = await $fetch("/api/profile/isfollowing", {
+          query: { userId, targetUserId },
+        });
+        this.followStatus[targetUserId] = isFollowing;
+      } catch (error) {
+        console.error("Failed to check follow status", error);
+        this.followStatus[targetUserId] = false;
+      }
     },
     async checkAuth() {
       const supabase = useNuxtApp().$supabase;

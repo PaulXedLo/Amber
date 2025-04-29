@@ -1,15 +1,6 @@
 <script setup>
 definePageMeta({ layout: "default" });
 // REFS
-const handleFollowClick = async (targetUserId) => {
-  if (!targetUserId) return;
-
-  if (!user.followStatus[targetUserId]) {
-    await user.followUser(targetUserId);
-  } else {
-    await user.unfollowUser(targetUserId);
-  }
-};
 const user = useUserStore();
 const posts = usePostsStore();
 const showPostModal = ref(false);
@@ -23,6 +14,7 @@ function openPost(post) {
 function closeModal() {
   showPostModal.value = false;
 }
+// LIKE POSTS
 async function toggleLike(post) {
   if (!post.likedByMe) {
     post.posts.likesCount++;
@@ -39,6 +31,12 @@ async function toggleLike(post) {
       body: { userId: user.userId, postId: post.posts.id },
     });
   }
+}
+// FOLLOW / UNFOLLOW USER
+async function handleFollowClick(targetUserId) {
+  if (!targetUserId) return;
+  await user.toggleFollowUser(targetUserId);
+  user.followStatus[targetUserId] = !user.followStatus[targetUserId];
 }
 
 // HOOKS
@@ -97,7 +95,10 @@ onMounted(async () => {
               </div>
               <div>
                 <h2 class="text-white font-bold text-md leading-tight">
-                  {{ post.profiles.fullName || "Unknown User" }}
+                  {{ post.profiles.fullName || "Unknown User" }} -
+                  <span class="text-sm text-slate-400">{{
+                    post.posts.feeling
+                  }}</span>
                 </h2>
                 <p
                   class="text-sm text-slate-400 cursor-pointer"
@@ -128,6 +129,7 @@ onMounted(async () => {
 
           <img
             v-if="post.posts.contentImage"
+            @click="navigateTo(`/posts/${post.posts.id}`)"
             :src="post.posts.contentImage"
             alt="Post Image"
             class="rounded-lg w-full object-cover"

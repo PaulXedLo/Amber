@@ -1,9 +1,11 @@
 import { db } from "~/server/db";
 import { posts, profiles, followers } from "~/server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const { username } = event.context.params;
+  const query = getQuery(event);
+  const { userId } = query;
   if (event.method === "GET") {
     let userData = [];
     try {
@@ -17,8 +19,22 @@ export default defineEventHandler(async (event) => {
       const postsList = userData
         .filter((item) => item.posts !== null)
         .map((item) => item.posts);
-      const userId = profileInfo.id;
+      const profileId = profileInfo.id;
+      // CHECK IF CURRENT LOGGED IN USER IS FOLLOWING THE PROFILE
 
+      let isFollowing = false;
+      if (userId) {
+        const follow = await db
+          .select()
+          .from(followers)
+          .where(
+            and(
+              eq(followers.followerId, userId),
+              eq(followers.followingId, profileId)
+            )
+          );
+        isFollowing = follow.length > 0;
+      }
       //GET FOLLOWERS COUNT, FOLLOWING COUNT and POSTS COUNT IN PARRALEL
 
       const [followersCountResult, followingCountResult, postsCountResult] =
@@ -26,15 +42,15 @@ export default defineEventHandler(async (event) => {
           db
             .select({ count: sql`COUNT(*)` })
             .from(followers)
-            .where(eq(followers.followingId, userId)),
+            .where(eq(followers.followingId, profileId)),
           db
             .select({ count: sql`COUNT(*)` })
             .from(followers)
-            .where(eq(followers.followerId, userId)),
+            .where(eq(followers.followerId, profileId)),
           db
             .select({ count: sql`COUNT(*)` })
             .from(posts)
-            .where(eq(posts.userId, userId)),
+            .where(eq(posts.userId, profileId)),
         ]);
 
       // STORING COUNT VALUES
@@ -47,6 +63,7 @@ export default defineEventHandler(async (event) => {
         posts: postsList,
         followersCount,
         followingCount,
+        isFollowing,
         postsCount,
       };
     } catch (error) {

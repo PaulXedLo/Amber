@@ -1,5 +1,6 @@
 <script setup>
 import { usePublicStore } from "~/stores/profile/public";
+// REFS
 const publicStore = usePublicStore();
 const loadingProfile = ref(false);
 const route = useRoute();
@@ -11,37 +12,49 @@ const {
   fullName,
   bio,
   userId,
+  isFollowing,
   followingCount,
   followersCount,
   profilePic: profilePicture,
   postsCount,
 } = storeToRefs(publicStore);
-const handleFollowClick = async () => {
-  if (!userProfile.value.profiles?.id) return;
+
+// FOLLOW / UNFOLLOW USER
+
+async function handleFollowClick() {
+  if (loadingFollow.value) return;
   loadingFollow.value = true;
-
-  if (!user.followStatus[userProfile.value.profiles.id]) {
-    await user.followUser(userProfile.value.profiles.id);
-  } else {
-    await user.unfollowUser(userProfile.value.profiles.id);
+  try {
+    if (!isFollowing.value) {
+      await $fetch("/api/profile/follow", {
+        method: "POST",
+        body: { userId: user.userId, followingUserId: userId.value },
+      });
+      isFollowing.value = true;
+      followersCount.value++;
+    } else {
+      await $fetch("/api/profile/follow", {
+        method: "DELETE",
+        body: { userId: user.userId, followingUserId: userId.value },
+      });
+      isFollowing.value = false;
+      followersCount.value = Math.max(followersCount.value - 1, 0);
+    }
+  } catch (error) {
+    console.log("Could not toggle follow", error);
+    throw new Error("Failed to follow/unfollow");
+  } finally {
+    loadingFollow.value = false;
   }
+}
 
-  const { followers, following } = await user.fetchFollowersAndFollowingCount(
-    userProfile.value.profiles.id
-  );
-  followersCount.value = followers;
-  followingCount.value = following;
-
-  loadingFollow.value = false;
-};
-
+// HOOKS
 onBeforeMount(async () => {
   try {
     loadingProfile.value = true;
-    const profileInfo = await publicStore.fetchPublicProfile(
-      route.params.username
-    );
-    posts.value = profileInfo.posts;
+    const { profileInfo, posts: postsList } =
+      await publicStore.fetchPublicProfile(route.params.username);
+    posts.value = postsList;
     if (route.params.username === user.username) {
       return navigateTo("/profile/me");
     }
@@ -86,12 +99,12 @@ onBeforeMount(async () => {
           :disabled="loadingFollow"
           class="cursor-pointer px-4 py-2 rounded-full transition text-white font-semibold shadow hover:shadow-lg disabled:opacity-50"
           :class="
-            user.followStatus[userId]
+            isFollowing
               ? 'bg-red-500 hover:bg-red-600'
               : 'bg-amber-500 hover:bg-amber-600'
           "
         >
-          {{ user.followStatus[userId] ? "Unfollow" : "Follow" }}
+          {{ isFollowing ? "Unfollow" : "Follow" }}
         </button>
         <button
           class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
