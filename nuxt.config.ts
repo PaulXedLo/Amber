@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "@nuxt/fonts",
     "@nuxt/icon",
+    "vue-toastification/nuxt",
     "@nuxt/image",
     "@nuxt/scripts",
     "@nuxt/test-utils",

@@ -1,5 +1,7 @@
 <script setup>
-import { useToast } from "vue-toastification";
+import Toast from "vue-toastification";
+
+const { useToast } = Toast;
 import "animate.css";
 const toast = useToast();
 const emit = defineEmits(["switch-tab"]);
