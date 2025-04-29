@@ -17,6 +17,7 @@
     "@nuxt/image": "^1.10.0",
     "@nuxt/scripts": "^0.11.6",
     "@nuxt/test-utils": "^3.17.2",
+    "@nuxtjs/toast": "^3.3.1",
     "@pinia/nuxt": "^0.11.0",
     "@prisma/nuxt": "^0.3.0",
     "@supabase/supabase-js": "^2.49.4",
@@ -34,8 +35,7 @@
     "postgres": "^3.4.5",
     "tailwindcss": "^4.1.4",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "vue-toastification": "^2.0.0-rc.5"
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@nuxtjs/google-fonts": "^3.2.0",
