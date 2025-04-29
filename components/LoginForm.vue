@@ -1,6 +1,6 @@
 <script setup>
 import "animate.css";
-const toast = useToast();
+import { toast } from "sonner";
 const emit = defineEmits(["switch-tab"]);
 const user = useUserStore();
 const schema = {
@@ -44,7 +44,7 @@ onMounted(() => {
     @submit="loginUser"
   >
     <legend class="fieldset-legend text-white font-bold">Login</legend>
-
+    <Toaster richColors position="top-center" />
     <label class="label text-gray-200">Email</label>
     <VeeField
       name="email"

@@ -1,6 +1,6 @@
 <script setup>
 const user = useUserStore();
-const toast = useToast();
+import { toast } from "sonner";
 const {
   profilePic: profilePicture,
   fullName,
@@ -26,10 +26,7 @@ async function handlePictureChange() {
       isUploading.value = true;
       await user.updateProfile({ profilePicture: selectedFile.value });
       selectedFile.value = null;
-      toast.success("Updated profile picture successfully", {
-        timeout: 2000,
-        position: "top-center",
-      });
+      toast.success("Updated profile picture successfully");
     } catch (error) {
       console.error(error);
     } finally {
@@ -54,10 +51,7 @@ const newUsernameValue = ref(fullName);
 async function saveUsername() {
   try {
     await user.updateProfile({ fullName: newUsernameValue.value });
-    toast.success("Updated name successfully", {
-      timeout: 2000,
-      position: "top-center",
-    });
+    toast.success("Updated name successfully");
     toggleEditingUsername();
   } catch (error) {
     alert(error);
@@ -74,10 +68,7 @@ const bioValue = ref(bio);
 async function saveBio() {
   try {
     await user.updateProfile({ bio: bioValue.value });
-    toast.success("Updated bio successfully", {
-      timeout: 2000,
-      position: "top-center",
-    });
+    toast.success("Updated bio successfully");
     toggleEditingBio();
   } catch (error) {
     console.log(error);
@@ -92,6 +83,7 @@ function toggleEditingBio() {
   <div
     class="w-full max-w-4xl mx-auto px-6 flex flex-col gap-12 mt-10 animate__animated animate__fadeInUp animate__faster"
   >
+    <Toaster richColors position="top-center" />
     <!-- Profile Picture Section -->
     <div class="flex flex-col items-center gap-4">
       <div

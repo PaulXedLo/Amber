@@ -1,5 +1,5 @@
 <script setup>
-const toast = useToast();
+import { toast } from "sonner";
 const posts = usePostsStore();
 const user = useUserStore();
 const fileInput = ref(null);
@@ -34,25 +34,16 @@ async function handleAddNewPost() {
       isUploading.value = true;
       await posts.addPost(postInformation);
       await posts.fetchPosts();
-      toast.success("Successfully added a new post", {
-        timeout: 2000,
-        position: "top-center",
-      });
+      toast.success("Successfully added a new post");
       handleCancelPost();
     } catch (error) {
       console.log(error);
-      toast.warning("Could not add post. Try again.", {
-        timeout: 3500,
-        position: "top-center",
-      });
+      toast.error("Could not add post.");
     } finally {
       isUploading.value = false;
     }
   } else {
-    toast.warning("Please add post information", {
-      timeout: 3500,
-      position: "top-center",
-    });
+    toast.warning("Please add post information");
   }
 }
 function handleCancelPost() {
