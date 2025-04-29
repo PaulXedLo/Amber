@@ -1,7 +1,4 @@
 <script setup>
-import Toast from "vue-toastification";
-
-const { useToast } = Toast;
 const toast = useToast();
 const posts = usePostsStore();
 const user = useUserStore();

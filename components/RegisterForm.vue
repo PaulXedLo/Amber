@@ -1,7 +1,5 @@
 <script setup>
 import "animate.css";
-import Toast from "vue-toastification";
-const { useToast } = Toast;
 const toast = useToast();
 const password = ref("");
 const showPasswordRequirements = ref(false);
