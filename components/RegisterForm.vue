@@ -44,10 +44,7 @@ function switchTab() {
 async function registerUser(values) {
   const result = await user.signUpUser(values);
   if (result.success) {
-    toast.success("Account created successfully! 🎉", {
-      timeout: 3000,
-      position: "top-center",
-    });
+    toast.success("Account created successfully!");
     setTimeout(() => {
       switchTab();
     }, 2000);

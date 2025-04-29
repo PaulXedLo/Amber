@@ -27,17 +27,12 @@ function showRegister() {
 }
 onMounted(() => {
   setTimeout(() => {
-    toast.info("Please log in to the website!", {
-      timeout: 5000,
-      position: "top-center",
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    toast.error("Please log in to the website!");
   }, 10000);
 });
 </script>
 <template>
+  <Toaster richColors position="top-center" />
   <VeeForm
     :validationSchema="schema"
     class="backdrop-blur-md bg-slate-800/70 border border-slate-700 shadow-lg rounded-2xl px-8 py-6 w-[22rem] animate__animated neon-pulse"

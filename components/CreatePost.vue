@@ -43,7 +43,7 @@ async function handleAddNewPost() {
       isUploading.value = false;
     }
   } else {
-    toast.warning("Please add post information");
+    toast.error("Please add post information");
   }
 }
 function handleCancelPost() {
