@@ -3,17 +3,7 @@ definePageMeta({ layout: "default" });
 // REFS
 const user = useUserStore();
 const posts = usePostsStore();
-const showPostModal = ref(false);
-const activePost = ref(null);
 const pending = ref(false);
-// MODAL FUNCTIONS
-function openPost(post) {
-  activePost.value = post;
-  showPostModal.value = true;
-}
-function closeModal() {
-  showPostModal.value = false;
-}
 // LIKE POSTS
 async function toggleLike(post) {
   if (!post.likedByMe) {
@@ -58,7 +48,7 @@ onMounted(async () => {
     <!-- PAGE TITLE -->
     <div class="text-center mt-12 animate__animated animate__bounce">
       <h1
-        class="text-4xl sm:text-5xl font-extrabold text-amber-400 drop-shadow-lg tracking-wide"
+        class="text-4xl sm:text-5xl font-extrabold text-[--color-primary] drop-shadow-lg tracking-wide"
       >
         Top posts for you
       </h1>
@@ -75,22 +65,19 @@ onMounted(async () => {
         <div
           v-for="post in posts.allPosts"
           :key="post.posts.id"
-          class="w-full max-w-2xl rounded-2xl bg-slate-800/80 backdrop-blur-md border border-slate-700 shadow-lg hover:shadow-amber-500/20 transition duration-300 p-6"
+          class="w-full max-w-2xl rounded-2xl bg-[--color-glass] backdrop-blur-sm border border-white/10 shadow-md hover:shadow-[0_0_12px_rgba(251,191,36,0.3)] transition duration-300 p-6"
         >
           <!--POST CONTENT-->
-          <div
-            class="flex justify-between items-center mb-4"
-            @click="openPost(post)"
-          >
+          <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-4">
               <div
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
               >
                 <NuxtImg
-                  :src="post.profiles.profilePicture || '/default-avatar.png'"
+                  :src="post.profiles.profilePicture"
                   alt="avatar"
                   @click="navigateTo(`/profile/${post.profiles.username}`)"
-                  class="w-full h-full object-cover cursor-pointer"
+                  class="w-full hover:opacity-40 transition-all duration-400 h-full object-cover cursor-pointer"
                 />
               </div>
               <div>
@@ -157,7 +144,5 @@ onMounted(async () => {
         </div>
       </div>
     </template>
-    <!--POST MODAL-->
-    <PostModal v-if="showPostModal" :post="activePost" @close="closeModal" />
   </div>
 </template>

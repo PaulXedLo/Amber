@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
     "@nuxt/content",
     "@pinia/nuxt",
+    "nuxt-toast",
   ],
   vite: {
     plugins: [tailwindcss()],

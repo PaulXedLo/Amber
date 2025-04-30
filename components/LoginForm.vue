@@ -1,6 +1,6 @@
 <script setup>
 import "animate.css";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 const emit = defineEmits(["switch-tab"]);
 const user = useUserStore();
 const schema = {
@@ -12,10 +12,10 @@ async function loginUser(values) {
   const result = await user.logInUser(values);
 
   if (result) {
-    toast.success("Logged in successfully", {
-      timeout: 2000,
-      position: "top-center",
-    });
+    // toast.success("Logged in successfully", {
+    //   timeout: 2000,
+    //   position: "top-center",
+    // });
     setTimeout(() => {
       navigateTo("/home");
     }, 2000);
@@ -27,7 +27,7 @@ function showRegister() {
 }
 onMounted(() => {
   setTimeout(() => {
-    toast.error("Please log in to the website!");
+    // toast.error("Please log in to the website!");
   }, 10000);
 });
 </script>
@@ -39,7 +39,6 @@ onMounted(() => {
     @submit="loginUser"
   >
     <legend class="fieldset-legend text-white font-bold">Login</legend>
-    <Toaster richColors position="top-center" />
     <label class="label text-gray-200">Email</label>
     <VeeField
       name="email"

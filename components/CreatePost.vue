@@ -1,7 +1,7 @@
 <script setup>
-import { toast } from "sonner";
 const posts = usePostsStore();
 const user = useUserStore();
+const toast = useToast();
 const fileInput = ref(null);
 const isUploading = ref(null);
 const postInformation = reactive({
@@ -34,16 +34,28 @@ async function handleAddNewPost() {
       isUploading.value = true;
       await posts.addPost(postInformation);
       await posts.fetchPosts();
-      toast.success("Successfully added a new post");
+      toast.success({
+        message: "Added new post",
+        timeout: 3000,
+        position: "topRight",
+      });
       handleCancelPost();
     } catch (error) {
       console.log(error);
-      toast.error("Could not add post.");
+      toast.error({
+        message: "Could not add post",
+        timeout: 3000,
+        position: "topRight",
+      });
     } finally {
       isUploading.value = false;
     }
   } else {
-    toast.error("Please add post information");
+    toast.error({
+      message: "Please add details to your post",
+      timeout: 3000,
+      position: "topRight",
+    });
   }
 }
 function handleCancelPost() {
@@ -75,7 +87,7 @@ function handleCancelPost() {
           @click="navigateTo('/profile/myprofile')"
           alt="Profile"
           densities="x1"
-          class="w-full cursor-pointer hover:opacity-40 h-full object-cover"
+          class="w-full cursor-pointer hover:opacity-40 transition-all duration-400 h-full object-cover"
         />
       </div>
 

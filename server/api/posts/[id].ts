@@ -13,37 +13,27 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    //FETCH POST AND PROFILE
+    // FETCH POST AND PROFILE
     const postData = await db
       .select({
-        posts,
-        profiles,
+        post: posts,
+        profile: profiles,
       })
       .from(posts)
       .leftJoin(profiles, eq(posts.userId, profiles.id))
       .where(eq(posts.id, id))
       .limit(1);
 
-    if (postData.length === 0) {
+    const result = postData[0];
+
+    if (!result) {
       throw createError({
         statusCode: 404,
         message: "Post not found",
       });
     }
-    const postInfo = postData[0];
-    return {
-      post: {
-        id: postInfo.posts.id,
-        contentText: postInfo.posts.contentText,
-        contentImage: postInfo.posts.contentImage,
-        likesCount: postInfo.posts.likesCount,
-        createdAt: postInfo.posts.createdAt,
-        feeling: postInfo.posts.feeling,
-        username: postInfo.profiles?.username || "Unknown",
-        fullName: postInfo.profiles?.fullName || "Unknown User",
-        profilePicture: postInfo.profiles?.profilePicture || null,
-      },
-    };
+
+    return result;
   } catch (error) {
     console.error("Error fetching post:", error);
     throw createError({

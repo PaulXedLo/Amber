@@ -1,6 +1,5 @@
 <script setup>
 import "animate.css";
-import { toast } from "sonner";
 const password = ref("");
 const showPasswordRequirements = ref(false);
 const user = useUserStore();
@@ -42,13 +41,7 @@ function switchTab() {
 }
 
 async function registerUser(values) {
-  const result = await user.signUpUser(values);
-  if (result.success) {
-    toast.success("Account created successfully!");
-    setTimeout(() => {
-      switchTab();
-    }, 2000);
-  }
+  await user.signUpUser(values);
 }
 
 watch(allRequirementsMet, (met) => {
@@ -115,7 +108,6 @@ watch(allRequirementsMet, (met) => {
       name="password"
       class="flex font-bold mt-2 justify-center text-red-500"
     />
-    <Toaster richColors position="top-center" />
     <!-- Password Requirements Live -->
     <ul
       v-if="showPasswordRequirements"

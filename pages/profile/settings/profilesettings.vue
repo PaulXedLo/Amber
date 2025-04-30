@@ -1,6 +1,9 @@
 <script setup>
+definePageMeta({
+  layout: "default",
+});
+const toast = useToast();
 const user = useUserStore();
-import { toast } from "sonner";
 const {
   profilePic: profilePicture,
   fullName,
@@ -26,7 +29,11 @@ async function handlePictureChange() {
       isUploading.value = true;
       await user.updateProfile({ profilePicture: selectedFile.value });
       selectedFile.value = null;
-      toast.success("Updated profile picture successfully");
+      toast.success({
+        message: "You have successfully updated your profile picture!",
+        timeout: 3000,
+        position: "topRight",
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -51,7 +58,11 @@ const newUsernameValue = ref(fullName);
 async function saveUsername() {
   try {
     await user.updateProfile({ fullName: newUsernameValue.value });
-    toast.success("Updated name successfully");
+    toast.success({
+      message: "You have successfully updated your name",
+      timeout: 3000,
+      position: "topRight",
+    });
     toggleEditingUsername();
   } catch (error) {
     alert(error);
@@ -62,13 +73,16 @@ function toggleEditingUsername() {
 }
 
 // BIO EDIT
-
 let editingBio = ref(false);
 const bioValue = ref(bio);
 async function saveBio() {
   try {
     await user.updateProfile({ bio: bioValue.value });
-    toast.success("Updated bio successfully");
+    toast.success({
+      message: "You have successfully updated your bio!",
+      timeout: 3000,
+      position: "topRight",
+    });
     toggleEditingBio();
   } catch (error) {
     console.log(error);
@@ -81,9 +95,8 @@ function toggleEditingBio() {
 
 <template>
   <div
-    class="w-full max-w-4xl mx-auto px-6 flex flex-col gap-12 mt-10 animate__animated animate__fadeInUp animate__faster"
+    class="w-full overflow-y-hidden max-w-4xl mx-auto px-6 flex flex-col gap-12 mt-10 animate__animated animate__fadeInUp animate__faster"
   >
-    <Toaster richColors position="top-center" />
     <!-- Profile Picture Section -->
     <div class="flex flex-col items-center gap-4">
       <div
@@ -129,14 +142,14 @@ function toggleEditingBio() {
 
       <!-- Full Name and Username -->
       <div class="text-center mt-4">
-        <div class="flex flex-row gap-2 items-center">
+        <div class="flex flex-row gap-5 items-center">
           <h1 class="text-2xl font-extrabold" v-if="!editingUsername">
             {{ fullName }}
           </h1>
           <input
             type="text"
             v-model="newUsernameValue"
-            class="text-2xl font-bold"
+            class="text-center text-2xl font-bold outline-0"
             v-else
           />
           <div v-if="!editingUsername">

@@ -1,4 +1,8 @@
-<script setup></script>
+<script setup>
+definePageMeta({
+  layout: "myprofile",
+});
+</script>
 
 <template>
   <div class="min-h-screen flex flex-col items-center justify-start pt-16 px-4">

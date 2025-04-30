@@ -73,5 +73,18 @@ export const usePostsStore = defineStore("posts", {
         console.log("Error! couldnt add post", error);
       }
     },
+    async fetchComments(postId) {
+      if (!postId) return;
+      try {
+        const allComments = await $fetch("/api/posts/comment", {
+          method: "GET",
+          query: { postId },
+        });
+        return allComments;
+      } catch (error) {
+        console.log("Could not fetch comments", error);
+        throw new Error("Cannot get comments");
+      }
+    },
   },
 });

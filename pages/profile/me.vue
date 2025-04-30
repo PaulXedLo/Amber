@@ -7,7 +7,9 @@ definePageMeta({
 // USER PROFILE REFS
 
 const loadingPosts = ref(false);
+const showPostModal = ref(false);
 const posts = usePostsStore();
+const activePost = ref(null);
 const loadingProfile = ref(true);
 const user = useUserStore();
 const {
@@ -19,6 +21,16 @@ const {
   followingCount,
   postsCount,
 } = storeToRefs(user);
+
+// MODAL
+
+function openPost(post) {
+  activePost.value = post;
+  showPostModal.value = true;
+}
+function closeModal() {
+  showPostModal.value = false;
+}
 
 // HOOKS
 
@@ -35,6 +47,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <PostModal v-if="showPostModal" :post="activePost" @close="closeModal" />
   <div
     v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"
@@ -104,6 +117,7 @@ onMounted(async () => {
       >
         <NuxtImg
           :src="post.posts.contentImage"
+          @click="openPost(post)"
           alt="Post image"
           class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"

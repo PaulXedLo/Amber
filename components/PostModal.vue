@@ -2,13 +2,6 @@
 import "animate.css";
 const user = useUserStore();
 const props = defineProps({ post: Object });
-function goToProfile(profile) {
-  if (profile == user.username) {
-    navigateTo("/profile/me");
-  } else {
-    navigateTo(`/profile/${profile}`);
-  }
-}
 </script>
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
@@ -39,7 +32,7 @@ function goToProfile(profile) {
         <!--PROFILE INFO-->
         <div class="flex items-center gap-3">
           <NuxtImg
-            @click="goToProfile(post.profiles.username)"
+            @click="$emit('close')"
             :src="post.profiles.profilePicture"
             class="cursor-pointer w-10 h-10 rounded-full object-cover"
           />
@@ -51,7 +44,7 @@ function goToProfile(profile) {
               }}</span>
             </h2>
             <p
-              @click="goToProfile(post.profiles.username)"
+              @click="$emit('close')"
               class="cursor-pointer text-sm text-slate-400"
             >
               @{{ post.profiles.username }}
