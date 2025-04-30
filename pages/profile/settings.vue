@@ -17,7 +17,9 @@ const selectedTab = ref(tabs.profile);
     v-if="selectedTab"
   >
     <!-- Tabs -->
-    <ul class="flex flex-wrap justify-center gap-4">
+    <ul
+      class="flex flex-col md:flex-row items-center flex-wrap justify-center gap-9 text-[20px]"
+    >
       <li>
         <NuxtLink
           to="/profile/settings/profilesettings"

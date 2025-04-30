@@ -7,6 +7,7 @@ export const useUserStore = defineStore("user", {
     hydrated: false,
     isNewUser: false,
     profilePic: null,
+    isPrivate: false,
     username: null,
     followersCount: null,
     followingCount: null,
@@ -35,6 +36,7 @@ export const useUserStore = defineStore("user", {
         this.profilePic = profiles.profilePicture || fallbackImage;
         this.username = profiles.username;
         this.bio = profiles.bio;
+        this.isPrivate = profiles.isPrivate;
         this.followingCount = followingCount;
         this.followersCount = followersCount;
         this.postsCount = postsCount;
@@ -202,6 +204,7 @@ export const useUserStore = defineStore("user", {
             query: { userId: this.userId },
             body: values,
           });
+          await this.fetchUserProfile();
         } catch (error) {
           console.log("Could not update profile bio", error);
           throw new Error("Failed to update bio");
@@ -218,6 +221,20 @@ export const useUserStore = defineStore("user", {
         } catch (error) {
           console.log("Could not update full name", error);
           throw new Error("Failed to update name");
+        }
+      }
+      // UPDATE USER PRIVACY
+      if (values.hasOwnProperty("isPrivate")) {
+        try {
+          await $fetch("/api/profile/update", {
+            query: { userId: this.userId },
+            method: "PATCH",
+            body: values,
+          });
+          await this.fetchUserProfile();
+        } catch (error) {
+          console.log("Could not update profile privacy", error);
+          throw new Error("Failed to update privacy");
         }
       }
     },

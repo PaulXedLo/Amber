@@ -70,7 +70,7 @@ function handleCancelPost() {
 
 <template>
   <div
-    class="group w-full max-w-2xl mx-auto mt-8 bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl shadow-md hover:shadow-amber-500/20 transition p-6 flex flex-col gap-6"
+    class="group w-full max-w-2xl mx-auto mt-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md rounded-2xl shadow-md hover:shadow-amber-500/20 transition p-6 flex flex-col gap-6"
   >
     <div
       v-if="isUploading"

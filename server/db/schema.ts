@@ -1,3 +1,4 @@
+import { is } from "drizzle-orm";
 import {
   pgTable,
   uuid,
@@ -16,6 +17,7 @@ export const profiles = pgTable("profiles", {
   email: text("email"),
   bio: text("bio"),
   age: numeric("age"),
+  isPrivate: boolean("isPrivate").default(false),
   profilePicture: text("profile_picture"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
@@ -45,6 +47,7 @@ export const postLikes = pgTable("post_likes", {
 /* FOLLOWERS TABLE */
 export const followers = pgTable("followers", {
   id: uuid("id").primaryKey(),
+  status: text("status").default("pending"),
   followerId: uuid("follower_id").references(() => profiles.id),
   followingId: uuid("following_id").references(() => profiles.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

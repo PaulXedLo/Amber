@@ -61,11 +61,11 @@ onMounted(async () => {
 
     <!--POSTS-->
     <template v-else>
-      <div class="flex flex-col items-center gap-10 mt-8">
+      <div class="flex flex-col items-center mt-8 gap-3">
         <div
           v-for="post in posts.allPosts"
           :key="post.posts.id"
-          class="w-full max-w-2xl rounded-2xl bg-[--color-glass] backdrop-blur-sm border border-white/10 shadow-md hover:shadow-[0_0_12px_rgba(251,191,36,0.3)] transition duration-300 p-6"
+          class="w-full max-w-2xl rounded-2xl bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md shadow-md hover:shadow-[0_0_12px_rgba(251,191,36,0.3)] transition duration-300 p-6"
         >
           <!--POST CONTENT-->
           <div class="flex justify-between items-center mb-4">

@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
           ...(body.username && { username: body.username }),
           ...(body.fullName && { fullName: body.fullName }),
           ...(body.profilePicture && { profilePicture: body.profilePicture }),
+          ...(body.hasOwnProperty("isPrivate")
+            ? { isPrivate: body.isPrivate }
+            : {}),
         })
         .where(eq(profiles.id, userId));
     } catch (error) {

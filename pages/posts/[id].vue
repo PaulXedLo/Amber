@@ -1,51 +1,34 @@
 <script setup>
 definePageMeta({ layout: "default" });
 const toast = useToast();
+const { comments, fetchComments, addComment, loading } = useComments();
 const route = useRoute();
 // STORES
-const posts = usePostsStore();
 const user = useUserStore();
 const { userId } = storeToRefs(user);
-const loading = ref(true);
 const postInfo = ref(null);
 const userInfo = ref(null);
 let showComments = ref(false);
 let commentText = ref("");
-let comments = ref([]);
-// ADD NEW COMMENT
 
+// ADD NEW COMMENT
 async function handleAddNewComment() {
   if (!commentText.value) return;
   try {
-    await $fetch("/api/posts/comment", {
-      method: "POST",
-      body: {
-        userId: userId.value,
-        postId: postInfo.value.id,
-        commentText: commentText.value,
-      },
-    });
-    comments.value.push({
-      commentText: commentText.value,
-      commentCreatedAt: new Date().toISOString(),
-      username: user.username,
-      profilePicture: user.profilePic,
-    });
-    postInfo.commentsCount++;
+    await addComment(userId.value, route.params.id, commentText.value);
+    postInfo.value.commentsCount++;
     commentText.value = "";
     toast.success({
-      title: "Success",
-      message: "Added new comment",
+      message: "Comment added successfully",
+      position: "topRight",
       timeout: 3000,
-      position: "topCenter",
     });
   } catch (error) {
-    console.log("Error: Failed to post comment", error);
+    console.log("Error adding comment", error);
     toast.error({
-      title: "Error",
       message: "Could not add comment",
+      position: "topRight",
       timeout: 3000,
-      position: "topCenter",
     });
   }
 }
@@ -75,7 +58,7 @@ onBeforeMount(async () => {
 onMounted(async () => {
   // GET COMMENTS FOR POST
   try {
-    comments.value = await posts.fetchComments(route.params.id);
+    await fetchComments(route.params.id);
   } catch (error) {
     console.log(error);
     toast.error({
@@ -178,7 +161,7 @@ onMounted(async () => {
       </div>
 
       <!-- COMMENTS SECTION -->
-      <Comments v-if="showComments" :comments="comments" />
+      <Comments v-if="showComments" />
     </div>
   </div>
 </template>

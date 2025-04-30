@@ -1,13 +1,14 @@
 <script setup>
-const { comments } = defineProps({
-  comments: {
-    type: Array,
-    required: true,
-  },
+const route = useRoute();
+const { comments, fetchComments, loading } = useComments();
+onMounted(async () => {
+  await fetchComments(route.params.id);
 });
 </script>
 <template>
+  <LoadingSpinner v-if="loading" class="w-full h-96" />
   <div
+    v-else
     class="flex flex-col w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-3xl mt-4 gap-4"
   >
     <div
