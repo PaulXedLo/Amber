@@ -1,6 +1,6 @@
 <script setup>
 import "animate.css";
-// import { toast } from "sonner";
+const toast = useToast();
 const emit = defineEmits(["switch-tab"]);
 const user = useUserStore();
 const schema = {
@@ -12,10 +12,11 @@ async function loginUser(values) {
   const result = await user.logInUser(values);
 
   if (result) {
-    // toast.success("Logged in successfully", {
-    //   timeout: 2000,
-    //   position: "top-center",
-    // });
+    toast.success({
+      message: "Logged in successfully",
+      timeout: 2000,
+      position: "topCenter",
+    });
     setTimeout(() => {
       navigateTo("/home");
     }, 2000);
@@ -26,9 +27,13 @@ function showRegister() {
   emit("switch-tab");
 }
 onMounted(() => {
-  setTimeout(() => {
-    // toast.error("Please log in to the website!");
-  }, 10000);
+  if (!user.isSignedIn) {
+    toast.info({
+      message: "Please log in to the website!",
+      timeout: 5000,
+      position: "topCenter",
+    });
+  }
 });
 </script>
 <template>

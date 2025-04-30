@@ -56,12 +56,30 @@ const props = defineProps({ post: Object });
 
         <!--LIKES -->
 
-        <div class="flex items-center gap-2">
-          <button @click="" class="text-slate-300 hover:text-amber-400">
-            <span v-if="post.posts.likesCount > 0">❤️</span>
-            <span v-else>🤍</span>
-            <span>{{ post.posts.likesCount || 0 }}</span>
-          </button>
+        <div
+          class="flex flex-row justify-between items-center gap-2 text-center"
+        >
+          <div class="flex flex-row items-center gap-1">
+            <Icon
+              name="system-uicons:heart"
+              size="35"
+              class="mt-2 cursor-pointer"
+            />
+            <p class="mt-2 text-xl">{{ post.posts.likesCount }}</p>
+          </div>
+          <div>
+            <input
+              type="text"
+              placeholder="Add a new comment..."
+              class="border-b-amber-400 border-b h-10 mr-4 focus:outline-0"
+            />
+            <button
+              type="button"
+              class="cursor-pointer font-bold px-4 py-2 rounded-full bg-amber-500 text-white outline-0"
+            >
+              Add
+            </button>
+          </div>
         </div>
 
         <!--COMMENTS SECTION-->
@@ -69,7 +87,13 @@ const props = defineProps({ post: Object });
         <div
           class="flex flex-col gap-4 overflow-y-auto max-h-[300px] p-2 rounded-lg bg-slate-800/50"
         >
-          <div></div>
+          <div class="flex flex-row p-2 gap-5">
+            <NuxtImg :src="user.profilePic" class="w-8 h-8 rounded-full" />
+            <h3 class="text-[13px]">
+              Hye there guys my name is paul im from the bronx type shi listen
+              up
+            </h3>
+          </div>
         </div>
       </div>
     </div>

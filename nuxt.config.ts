@@ -1,6 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { componentNames } from "#components";
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
+  components: true,
   compatibilityDate: "2024-11-01",
   runtimeConfig: {
     supabaseUrl: process.env.SUPABASE_URL,
@@ -21,8 +23,16 @@ export default defineNuxtConfig({
     "@nuxt/test-utils",
     "@nuxt/content",
     "@pinia/nuxt",
+    "@vee-validate/nuxt",
     "nuxt-toast",
   ],
+  veeValidate: {
+    autoImports: true,
+    componentNames: {
+      Form: "VeeForm",
+      Field: "VeeField",
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

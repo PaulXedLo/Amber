@@ -1,0 +1,17 @@
+<template>
+  <div class="max-w-2xl mx-auto px-4 py-12 text-white">
+    <div class="flex flex-col items-center text-center">
+      <h2 class="text-3xl font-bold mb-6">Account Privacy</h2>
+      <p class="">Turn public account on or off</p>
+      <div class="mt-6">
+        <label class="inline-flex items-center cursor-pointer">
+          <input type="checkbox" value="" class="sr-only peer" />
+          <div
+            class="relative w-20 h-10 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-600 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1.5 after:start-[12px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-7 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500 dark:peer-checked:bg-amber-500"
+          ></div>
+        </label>
+      </div>
+      <p class="mt-3">Current Status:</p>
+    </div>
+  </div>
+</template>

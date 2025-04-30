@@ -41,11 +41,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   configure({
     generateMessage: (ctx) => {
       const messages = {
-        required: `The ${ctx.field} field is required.`,
+        required: `The ${ctx.field} is required.`,
         alphaSpaces: `Numbers in name are not allowed`,
         digits: `The age is not valid`,
         email: `The ${ctx.field} must be a valid email.`,
         min: `The ${ctx.field} is too short.`,
+        confirmed: `The passwords do not match`,
         max: `The ${ctx.field} is too long.`,
         passwords_mismatch: `The passwords do not match`,
         minAge: `You must be at least 16 years old.`,

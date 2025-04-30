@@ -88,6 +88,15 @@ export const useUserStore = defineStore("user", {
         return { success: true };
       }
     },
+    async updateUserPassword(values) {
+      const supabase = useNuxtApp().$supabase;
+      const { error } = await supabase.auth.updateUser({
+        password: `${values.password}`,
+      });
+      if (error) {
+        console.log("Could not update password", error);
+      }
+    },
     async toggleFollowUser(targetUserId) {
       if (!this.followStatus[targetUserId]) {
         try {

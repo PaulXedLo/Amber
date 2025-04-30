@@ -77,7 +77,7 @@ onBeforeMount(async () => {
           name="noto-v1:large-orange-diamond"
         />
       </h1>
-      <FormAuth />
+      <AuthFormAuth />
     </div>
   </div>
 </template>

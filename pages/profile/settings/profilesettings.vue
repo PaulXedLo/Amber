@@ -206,5 +206,8 @@ function toggleEditingBio() {
         placeholder="Tell us about yourself..."
       ></textarea>
     </div>
+    <p class="text-center mt-3 text-[12px] text-gray-400">
+      @AMBER PROJECT - 2025 Paul. All copyright rights reserved.
+    </p>
   </div>
 </template>

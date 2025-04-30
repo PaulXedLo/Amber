@@ -29,7 +29,10 @@ function switchTab() {
     class="animate__animated animate__fadeInUp animate__faster"
     :class="currentAnimation"
   >
-    <LoginForm v-if="authUserSelection == 'Login'" @switch-tab="switchTab" />
-    <RegisterForm v-else @switch-tab="switchTab" />
+    <AuthLoginForm
+      v-if="authUserSelection == 'Login'"
+      @switch-tab="switchTab"
+    />
+    <AuthRegisterForm v-else @switch-tab="switchTab" />
   </div>
 </template>
