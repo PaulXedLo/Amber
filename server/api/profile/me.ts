@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
       db
         .select()
         .from(profiles)
-        .leftJoin(posts, eq(profiles.id, posts.id))
+        .leftJoin(posts, eq(profiles.id, posts.userId))
         .where(eq(profiles.id, userId)),
 
       db
