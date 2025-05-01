@@ -229,7 +229,7 @@ export const useUserStore = defineStore("user", {
         console.error("Unexpected error during checkAuth. Full error:", error);
         alert(
           "There was a problem checking your session. Please try refreshing the page."
-        ); // Basic user feedback
+        );
         this.isSignedIn = false;
       } finally {
         this.hydrated = true;
