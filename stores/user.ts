@@ -50,9 +50,11 @@ export const useUserStore = defineStore("user", {
           this.username = profiles.username;
           this.bio = profiles.bio;
           this.isPrivate = profiles.isPrivate ?? false;
-          this.followingCount = followingCount ?? null;
-          this.followersCount = followersCount ?? null;
-          this.postsCount = postsCount ?? null;
+          this.followingCount =
+            typeof followingCount === "number" ? followingCount : null;
+          this.followersCount =
+            typeof followersCount === "number" ? followersCount : null;
+          this.postsCount = typeof postsCount === "number" ? postsCount : null;
         } else {
           console.error(
             "Received invalid profile data structure:",
@@ -63,7 +65,7 @@ export const useUserStore = defineStore("user", {
           this.profilePic = fallbackImage;
         }
       } catch (error) {
-        console.error("Cannot fetch user profile", error);
+        console.error("Cannot fetch user profile. Full error:", error);
         this.userId = null;
         this.username = null;
         this.profilePic = fallbackImage;
