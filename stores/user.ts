@@ -198,7 +198,7 @@ export const useUserStore = defineStore("user", {
           data: { session },
           error,
         } = await supabase.auth.getSession();
-
+        const userId = session?.user?.id;
         if (error) {
           console.error("Error checking auth session:", error.message);
           this.isSignedIn = false;
@@ -206,7 +206,7 @@ export const useUserStore = defineStore("user", {
           this.isSignedIn = !!session;
           if (session) {
             await this.fetchUserProfile();
-            if (!this.userId) {
+            if (!userId) {
               console.warn(
                 "checkAuth: fetchUserProfile failed after confirming session. Setting isSignedIn to false."
               );

@@ -12,33 +12,58 @@ export default defineEventHandler(async (event) => {
 
   try {
     // GET USER PROFILE, GET USER FOLLOWERS COUNT, FOLLOWING COUNT AND POSTS COUNT
-    const [
-      userDataResult,
+    let userDataResult,
       followersCountResult,
       followingCountResult,
-      postsCountResult,
-    ] = await Promise.all([
-      db
+      postsCountResult;
+
+    try {
+      userDataResult = await db
         .select()
         .from(profiles)
         .leftJoin(posts, eq(profiles.id, posts.userId))
-        .where(eq(profiles.id, userId)),
+        .where(eq(profiles.id, userId));
+    } catch (error) {
+      console.error("Failed to fetch user profile data:", error);
+      throw createError({
+        statusCode: 500,
+        message: "Failed to fetch user profile data",
+        cause: error,
+      });
+    }
 
-      db
+    try {
+      followersCountResult = await db
         .select({ count: sql`COUNT(*)` })
         .from(followers)
-        .where(eq(followers.followingId, userId)),
+        .where(eq(followers.followingId, userId));
+    } catch (error) {
+      console.error("Failed to fetch followers count:", error);
+      // Continue with execution, use default value for count
+      followersCountResult = [{ count: 0 }];
+    }
 
-      db
+    try {
+      followingCountResult = await db
         .select({ count: sql`COUNT(*)` })
         .from(followers)
-        .where(eq(followers.followerId, userId)),
+        .where(eq(followers.followerId, userId));
+    } catch (error) {
+      console.error("Failed to fetch following count:", error);
+      // Continue with execution, use default value for count
+      followingCountResult = [{ count: 0 }];
+    }
 
-      db
+    try {
+      postsCountResult = await db
         .select({ count: sql`COUNT(*)` })
         .from(posts)
-        .where(eq(posts.userId, userId)),
-    ]);
+        .where(eq(posts.userId, userId));
+    } catch (error) {
+      console.error("Failed to fetch posts count:", error);
+      // Continue with execution, use default value for count
+      postsCountResult = [{ count: 0 }];
+    }
 
     // USER NOT FOUND ERROR HANDLING
     if (
@@ -67,10 +92,10 @@ export default defineEventHandler(async (event) => {
       postsCount,
     };
   } catch (error) {
-    console.error("Could not get user information", error);
+    console.error("Error fetching user profile:", error);
     throw createError({
-      statusCode: 500,
-      message: "Unable to get user information",
+      statusCode: error.statusCode || 500,
+      message: error.message || "Unable to get user information",
     });
   }
 });
