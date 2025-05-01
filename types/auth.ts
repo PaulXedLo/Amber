@@ -7,17 +7,17 @@ export interface SignUpData {
 }
 
 export interface UserProfile {
-  userId: string | null;
-  fullName: string | null;
-  isSignedIn: boolean;
-  hydrated: boolean;
-  isNewUser: boolean;
-  profilePic: string | null;
-  isPrivate: boolean | null;
-  username: string | null;
+  userId: any;
+  fullName: any;
+  isSignedIn: any;
+  hydrated: any;
+  isNewUser: any;
+  profilePic: any;
+  isPrivate: any;
+  username: any;
   followersCount: any;
   followingCount: any;
   postsCount: any;
-  bio: string | null;
-  followStatus: Record<string, "followed" | "unfollowed" | "pending">;
+  bio: any;
+  followStatus: any;
 }
