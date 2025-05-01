@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
   modules: [
+    "@pinia/nuxt",
     "@nuxt/eslint",
     "@nuxt/fonts",
     "@nuxt/icon",
@@ -22,7 +23,6 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxt/test-utils",
     "@nuxt/content",
-    "@pinia/nuxt",
     "@vee-validate/nuxt",
     "nuxt-toast",
   ],

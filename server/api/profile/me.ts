@@ -37,7 +37,12 @@ export default defineEventHandler(async (event) => {
         .where(eq(posts.userId, userId)),
     ]);
 
+    // USER NOT FOUND ERRR HANDLING
+
     // STORING COUNT VALUES
+    if (!userData || userData.length === 0 || !userData[0]?.profiles) {
+      throw createError({ statusCode: 404, message: "User not found" });
+    }
     const profileInfo = userData[0].profiles;
     const postsList = userData
       .filter((item) => item.posts !== null)

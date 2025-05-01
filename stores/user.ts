@@ -37,11 +37,11 @@ export const useUserStore = defineStore("user", {
         "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
       try {
-        const profileData = await $fetch(`/api/profile/me`, {
+        const profileData: any = await $fetch(`/api/profile/me`, {
           query: { userId },
         });
 
-        if (profileData && profileData.profiles) {
+        if (profileData || profileData.profiles) {
           const { profiles, followersCount, followingCount, postsCount } =
             profileData;
           this.userId = profiles.id;
