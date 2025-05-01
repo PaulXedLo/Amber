@@ -39,7 +39,6 @@ export default defineEventHandler(async (event) => {
         .where(eq(followers.followingId, userId));
     } catch (error) {
       console.error("Failed to fetch followers count:", error);
-      // Continue with execution, use default value for count
       followersCountResult = [{ count: 0 }];
     }
 
@@ -50,7 +49,6 @@ export default defineEventHandler(async (event) => {
         .where(eq(followers.followerId, userId));
     } catch (error) {
       console.error("Failed to fetch following count:", error);
-      // Continue with execution, use default value for count
       followingCountResult = [{ count: 0 }];
     }
 
@@ -61,7 +59,6 @@ export default defineEventHandler(async (event) => {
         .where(eq(posts.userId, userId));
     } catch (error) {
       console.error("Failed to fetch posts count:", error);
-      // Continue with execution, use default value for count
       postsCountResult = [{ count: 0 }];
     }
 
@@ -94,8 +91,8 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     console.error("Error fetching user profile:", error);
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || "Unable to get user information",
+      statusCode: 500,
+      message: "Unable to get user information",
     });
   }
 });
