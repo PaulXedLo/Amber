@@ -6,80 +6,50 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const { userId } = query;
 
-  if (!userId) {
-    throw createError({ statusCode: 400, message: "Cannot get user ID" });
+  if (!userId || typeof userId !== "string") {
+    throw createError({
+      statusCode: 400,
+      message: "Invalid or missing user ID",
+    });
   }
 
   try {
-    // GET USER PROFILE, GET USER FOLLOWERS COUNT, FOLLOWING COUNT AND POSTS COUNT
-    let userDataResult,
-      followersCountResult,
-      followingCountResult,
-      postsCountResult;
+    // 1. Fetch user profile + post list
+    const userDataResult = await db
+      .select()
+      .from(profiles)
+      .leftJoin(posts, eq(profiles.id, posts.userId))
+      .where(eq(profiles.id, userId));
 
-    try {
-      userDataResult = await db
-        .select()
-        .from(profiles)
-        .leftJoin(posts, eq(profiles.id, posts.userId))
-        .where(eq(profiles.id, userId));
-    } catch (error) {
-      console.error("Failed to fetch user profile data:", error);
-      throw createError({
-        statusCode: 500,
-        message: "Failed to fetch user profile data",
-        cause: error,
-      });
-    }
-
-    try {
-      followersCountResult = await db
-        .select({ count: sql`COUNT(*)` })
-        .from(followers)
-        .where(eq(followers.followingId, userId));
-    } catch (error) {
-      console.error("Failed to fetch followers count:", error);
-      followersCountResult = [{ count: 0 }];
-    }
-
-    try {
-      followingCountResult = await db
-        .select({ count: sql`COUNT(*)` })
-        .from(followers)
-        .where(eq(followers.followerId, userId));
-    } catch (error) {
-      console.error("Failed to fetch following count:", error);
-      followingCountResult = [{ count: 0 }];
-    }
-
-    try {
-      postsCountResult = await db
-        .select({ count: sql`COUNT(*)` })
-        .from(posts)
-        .where(eq(posts.userId, userId));
-    } catch (error) {
-      console.error("Failed to fetch posts count:", error);
-      postsCountResult = [{ count: 0 }];
-    }
-
-    // USER NOT FOUND ERROR HANDLING
-    if (
-      !userDataResult ||
-      userDataResult.length === 0 ||
-      !userDataResult[0]?.profiles
-    ) {
+    if (!userDataResult || userDataResult.length === 0) {
       throw createError({ statusCode: 404, message: "User not found" });
     }
 
-    // STORING COUNT VALUES
-    const profileInfo = userDataResult[0].profiles;
+    const profileInfo = userDataResult[0]?.profiles;
+    if (!profileInfo) {
+      throw createError({ statusCode: 404, message: "User profile missing" });
+    }
+
     const postsList = userDataResult
       .filter((item) => item.posts !== null)
       .map((item) => item.posts);
 
-    const followersCount = followersCountResult[0]?.count || 0;
-    const followingCount = followingCountResult[0]?.count || 0;
-    const postsCount = postsCountResult[0]?.count || 0;
+    const [{ count: followersCount = 0 }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(followers)
+      .where(eq(followers.followingId, userId));
+
+    // 3. Following count
+    const [{ count: followingCount = 0 }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(followers)
+      .where(eq(followers.followerId, userId));
+
+    // 4. Posts count
+    const [{ count: postsCount = 0 }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(posts)
+      .where(eq(posts.userId, userId));
 
     return {
       profiles: profileInfo,
@@ -88,11 +58,13 @@ export default defineEventHandler(async (event) => {
       followingCount,
       postsCount,
     };
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
+  } catch (error: any) {
+    if (error.statusCode) throw error;
+
+    console.error("Unexpected error in /api/profile/me:", error);
     throw createError({
       statusCode: 500,
-      message: "Unable to get user information",
+      message: "Unable to load profile. Please try again later.",
     });
   }
 });
