@@ -1,52 +1,100 @@
+import { ref } from "vue";
+import { useUserStore } from "~/stores/user";
+
+interface Comment {
+  commentId?: string;
+  commentText: string;
+  commentCreatedAt?: string | Date;
+  userId: string;
+  username?: string;
+  profilePicture?: string;
+  postId: string;
+}
+
 export function useComments() {
-  let comments: any = ref([]);
+  const comments = ref<Comment[]>([]);
   const loading = ref(false);
-  async function fetchComments(postId: any) {
+  const user = useUserStore();
+
+  async function fetchComments(postId: string | number): Promise<Comment[]> {
     if (!postId) {
-      console.log("Could not get post Id");
+      console.warn("Cannot fetch comments: Post ID is missing.");
       comments.value = [];
-      return;
+      return [];
     }
     loading.value = true;
+    let fetchedComments: Comment[] = [];
     try {
-      const allComments = await $fetch("/api/posts/comment", {
+      fetchedComments = await $fetch("/api/posts/comment", {
         method: "GET",
         query: { postId },
       });
-      comments.value = allComments;
-      loading.value = false;
+
+      fetchedComments.sort(
+        (a, b) =>
+          new Date(b.commentCreatedAt!).getTime() -
+          new Date(a.commentCreatedAt!).getTime()
+      );
+
+      comments.value = fetchedComments;
+
+      return fetchedComments;
     } catch (error) {
-      console.log("Could not get comments", error);
-      throw new Error("Could not get comments for this post");
+      console.error("Could not fetch comments", error);
+      comments.value = [];
+      return [];
+    } finally {
+      loading.value = false;
     }
   }
-  async function addComment(userId: any, postId: any, commentText: any) {
-    if (!userId || !postId || !commentText) {
-      console.log("Could not get user Id, post Id or comment text");
-      throw new Error("Could not get user Id, post Id or comment text");
+
+  async function addComment(
+    userId: string,
+    postId: string | number,
+    commentText: string
+  ) {
+    if (!userId || !postId || !commentText.trim()) {
+      console.error(
+        "Cannot add comment: Missing userId, postId, or comment text."
+      );
+      throw new Error("Missing required information to add comment.");
     }
-    loading.value = true;
+
+    const optimisticComment: Comment = {
+      commentId: `temp-${Date.now()}`,
+      userId,
+      postId: String(postId),
+      commentText: commentText.trim(),
+      commentCreatedAt: new Date().toISOString(),
+      username: user.username || "You",
+      profilePicture: user.profilePic || "/placeholder-avatar.png",
+    };
+    comments.value.unshift(optimisticComment);
+
     try {
-      await $fetch("/api/posts/comment", {
+      const response = await $fetch("/api/posts/comment", {
         method: "POST",
         body: {
           userId,
-          postId,
-          commentText,
+          postId: String(postId),
+          commentText: commentText.trim(),
         },
       });
-      comments.value.push({
-        userId,
-        postId,
-        commentText,
-      });
-      comments.value = [...comments.value];
+
+      await fetchComments(postId);
+
       return true;
     } catch (error) {
-      console.log("Could not add comment", error);
-      throw new Error("Could not add comment to this post");
+      console.error("Could not add comment", error);
+
+      comments.value = comments.value.filter(
+        (c) => c.commentId !== optimisticComment.commentId
+      );
+
+      throw new Error("Could not add comment to this post.");
     }
   }
+
   return {
     comments,
     loading,

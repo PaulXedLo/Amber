@@ -19,8 +19,10 @@ const {
   postsCount,
 } = storeToRefs(publicStore);
 
-// FOLLOW / UNFOLLOW USER
+// MODAL
+const { openModal, activePost, closeModal, isOpen } = useModal();
 
+// FOLLOW / UNFOLLOW USER
 async function handleFollowClick() {
   if (loadingFollow.value) return;
   loadingFollow.value = true;
@@ -68,6 +70,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
+  <PostModal v-if="isOpen" :post="activePost" @close="closeModal" />
   <div
     v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"
@@ -142,6 +145,7 @@ onBeforeMount(async () => {
       >
         <NuxtImg
           :src="post.contentImage"
+          @click="openModal(post)"
           alt="Post image"
           class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"

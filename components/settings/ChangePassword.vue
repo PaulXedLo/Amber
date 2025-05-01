@@ -1,4 +1,5 @@
 <script setup>
+import "animate.css";
 const toast = useToast();
 const user = useUserStore();
 
@@ -25,7 +26,9 @@ const schema = {
 };
 </script>
 <template>
-  <div class="max-w-2xl mx-auto px-4 py-12 text-white">
+  <div
+    class="max-w-2xl mx-auto px-4 py-12 text-white animate__animated animate__fadeInUp animate__faster"
+  >
     <h2 class="text-3xl font-bold mb-6 text-center">Password & Security</h2>
     <VeeForm
       @submit="updateUserPassword"

@@ -1,4 +1,5 @@
 <script setup>
+import "animate.css";
 const user = useUserStore();
 const toast = useToast();
 let { isPrivate } = storeToRefs(user);
@@ -23,7 +24,9 @@ async function togglePrivacy() {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto px-4 py-12 text-white">
+  <div
+    class="max-w-2xl mx-auto px-4 py-12 text-white animate__animated animate__fadeIn animate__faster"
+  >
     <div class="flex flex-col items-center text-center">
       <h2 class="text-3xl font-bold mb-6">Account Privacy</h2>
       <p class="">Turn public account on or off</p>

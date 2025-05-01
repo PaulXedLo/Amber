@@ -2,6 +2,7 @@
 definePageMeta({ layout: "default" });
 // REFS
 const user = useUserStore();
+const { fetchComments, comments } = useComments();
 const { toggleLikePost } = useLikes();
 const { toggleFollowUser, checkIfFollowing } = useFollow();
 const posts = usePostsStore();
@@ -32,12 +33,34 @@ async function handleFollowClick(targetUserId, isPrivate) {
 onMounted(async () => {
   pending.value = true;
   await posts.fetchPosts();
-  const checks = posts.allPosts.map((post) => {
-    if (post.profiles?.id) {
-      return checkIfFollowing(post.profiles.id);
+  // CHECK IF USER IS FOLLOWING PROFILES
+  const followChecks = posts.allPosts
+    .filter((post) => post.profiles?.id)
+    .map((post) => checkIfFollowing(post.profiles.id));
+  // FETCH RANDOM COMMENT FOR EACH POST
+  const commentFetches = posts.allPosts.map(async (post) => {
+    try {
+      const postComments = await fetchComments(post.posts.id);
+      if (postComments && postComments.length > 0) {
+        const randomIndex = Math.floor(Math.random() * postComments.length);
+        post.displayComment = `"${postComments[randomIndex].commentText}"`;
+      } else {
+        post.displayComment = "Be the first one to comment";
+      }
+    } catch (error) {
+      console.error(
+        `Failed to fetch comments for post ${post.posts.id}:`,
+        error
+      );
+      post.displayComment = "Could not load comments.";
     }
   });
-  await Promise.all(checks);
+
+  try {
+    await Promise.all([...followChecks, ...commentFetches]);
+  } catch (error) {
+    console.error("Error during onMounted data fetching:", error);
+  }
 
   pending.value = false;
 });
@@ -132,25 +155,46 @@ onMounted(async () => {
             class="rounded-lg w-full object-cover"
           />
 
-          <!-- Likes -->
-          <div class="flex items-center gap-2 mt-4">
+          <!-- Likes and Comments -->
+          <div class="flex items-center gap-6 mt-4">
+            <!-- Like Button -->
             <button
               @click="toggleLike(post)"
               class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-amber-400 transition"
             >
               <span>
                 <template v-if="post.likedByMe"
-                  ><Icon name="noto:orange-heart" size="20"
+                  ><Icon name="noto:orange-heart" size="30"
                 /></template>
                 <template v-else
-                  ><Icon name="noto:white-heart" size="20"
+                  ><Icon name="noto:white-heart" size="30"
                 /></template>
               </span>
               <span class="font-bold text-l">{{
                 post.posts.likesCount || 0
               }}</span>
             </button>
+
+            <!-- Comment Button -->
+            <button
+              @click="navigateTo(`/posts/${post.posts.id}`)"
+              class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-blue-400 transition"
+            >
+              <span>
+                <Icon name="uil:comment" size="30" />
+              </span>
+              <span class="font-bold text-l">{{
+                post.posts.commentsCount || 0
+              }}</span>
+            </button>
           </div>
+
+          <p
+            v-if="post.displayComment"
+            class="text-slate-400 text-sm mt-3 italic"
+          >
+            {{ post.displayComment }}
+          </p>
         </div>
       </div>
     </template>

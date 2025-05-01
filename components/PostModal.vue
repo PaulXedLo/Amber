@@ -1,7 +1,78 @@
 <script setup>
 import "animate.css";
 const user = useUserStore();
+const { toggleLikePost } = useLikes();
+const { comments, loading, fetchComments, addComment } = useComments();
 const props = defineProps({ post: Object });
+const postId = computed(() => props.post?.posts?.id);
+let commentInput = ref("");
+
+const navigateToProfile = (username) => {
+  if (username === user.username) {
+    navigateTo("/profile/me");
+  } else {
+    navigateTo(`/profile/${username}`);
+  }
+};
+// LIKE POST FUNCTION
+async function handleLikePost(postToLike) {
+  if (!postToLike?.posts?.id) {
+    console.error("Post ID is missing.");
+    return;
+  }
+  if (!user.userId) {
+    console.error("User is not logged in.");
+    return;
+  }
+
+  const currentLikedStatus = postToLike.posts.likedByMe;
+
+  try {
+    // Call the composable function
+    await toggleLikePost(postToLike.posts.id, currentLikedStatus);
+
+    // Update local state optimistically or after confirmation
+    postToLike.posts.likedByMe = !currentLikedStatus;
+    postToLike.posts.likesCount += postToLike.posts.likedByMe ? 1 : -1;
+  } catch (error) {
+    console.error("Failed to toggle like:", error);
+  }
+}
+const handleKeyPress = (event) => {
+  if (event.key === "Enter") {
+    handleAddComment();
+  }
+  if (event.key === "Escape") {
+    commentInput.value = "";
+    $emit("close");
+  }
+  if (event.key === "Tab") {
+    event.preventDefault();
+    commentInput.value = "";
+  }
+};
+async function handleAddComment() {
+  if (commentInput.value == "" || !postId.value) {
+    console.error("Cannot add comment");
+    throw new Error("Comment input or postId is missing.");
+  }
+  if (!user.userId) {
+    console.error("User is not logged in.");
+    throw new Error("User is not logged in.");
+  }
+  const content = commentInput.value.trim();
+  await addComment(user.userId, postId.value, content);
+  commentInput.value = "";
+  await fetchComments(postId.value);
+}
+
+onMounted(async () => {
+  if (!postId.value) {
+    console.error("Post ID is missing.");
+    return;
+  }
+  await fetchComments(postId.value);
+});
 </script>
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
@@ -14,85 +85,134 @@ const props = defineProps({ post: Object });
         <NuxtImg
           :src="post.posts.contentImage"
           alt="Post Image"
+          densities="x1"
           class="object-cover w-full h-full"
         />
       </div>
 
       <!--RIGHT SIDE (POST INFO)-->
-      <div class="w-[400px] flex flex-col p-6 gap-4 relative">
+      <div class="w-[400px] flex flex-col p-6 gap-5 relative text-white">
         <button
           @click="$emit('close')"
-          class="absolute top-4 right-4 text-white text-1xl hover:text-amber-400"
+          class="absolute top-4 right-4 text-white text-2xl hover:text-amber-400 focus:outline-none"
         >
           <Icon
-            name="noto:orange-circle"
-            class="cursor-pointer hover:opacity-70"
+            name="emojione-v1:large-orange-diamond"
+            class="cursor-pointer hover:opacity-80"
           />
         </button>
         <!--PROFILE INFO-->
-        <div class="flex items-center gap-3">
-          <NuxtImg
+        <div class="flex items-center gap-3 pb-3 border-slate-700">
+          <NuxtLink
             @click="$emit('close')"
-            :src="post.profiles.profilePicture"
-            class="cursor-pointer w-10 h-10 rounded-full object-cover"
-          />
+            :to="`/profile/${post.profiles.username}`"
+          >
+            <NuxtImg
+              :src="post.profiles.profilePicture"
+              @click="navigateToProfile(post.profiles.username)"
+              alt="Profile Picture"
+              class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
+            />
+          </NuxtLink>
           <div>
-            <h2 class="text-white font-bold">
-              {{ post.profiles.fullName }} -
-              <span class="text-sm text-slate-400">{{
-                post.posts.feeling
-              }}</span>
-            </h2>
-            <p
+            <NuxtLink
               @click="$emit('close')"
-              class="cursor-pointer text-sm text-slate-400"
+              :to="`/profile/${post.profiles.username}`"
+              class="cursor-pointer"
             >
-              @{{ post.profiles.username }}
-            </p>
+              <h2 class="text-white font-semibold text-sm">
+                {{ post.profiles.fullName }}
+                <span class="text-xs text-slate-400 ml-1">{{
+                  post.posts.feeling ? `- ${post.posts.feeling}` : ""
+                }}</span>
+              </h2>
+              <p class="text-xs text-slate-400">
+                @{{ post.profiles.username }}
+              </p>
+            </NuxtLink>
           </div>
         </div>
         <!--Post description-->
-        <p class="text-slate-300">{{ post.posts.contentText }}</p>
+        <p class="text-sm text-slate-200 overflow-y-auto max-h-[100px] pr-2">
+          {{ post.posts.contentText }}
+        </p>
 
-        <!--LIKES -->
-
-        <div
-          class="flex flex-row justify-between items-center gap-2 text-center"
-        >
-          <div class="flex flex-row items-center gap-1">
-            <Icon
-              name="system-uicons:heart"
-              size="35"
-              class="mt-2 cursor-pointer"
-            />
-            <p class="mt-2 text-xl">{{ post.posts.likesCount }}</p>
-          </div>
-          <div>
+        <!--LIKES & COMMENT INPUT -->
+        <div class="pt-3 border-slate-700">
+          <div class="flex items-center gap-4">
+            <button
+              @click="handleLikePost(post)"
+              class="flex items-center gap-2 cursor-pointer text-white hover:text-amber-400 transition duration-200 focus:outline-none"
+              aria-label="Toggle like"
+            >
+              <Icon
+                v-if="post.posts.likedByMe"
+                name="noto:yellow-heart"
+                size="28"
+              />
+              <Icon v-else name="mdi:heart-outline" size="28" />
+              <span class="text-sm font-medium">{{
+                post.posts.likesCount
+              }}</span>
+            </button>
             <input
               type="text"
-              placeholder="Add a new comment..."
-              class="border-b-amber-400 border-b h-10 mr-4 focus:outline-0"
+              v-model="commentInput"
+              @keydown="handleKeyPress"
+              placeholder="Add a comment..."
+              class="flex-grow bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
             />
             <button
               type="button"
-              class="cursor-pointer font-bold px-4 py-2 rounded-full bg-amber-500 text-white outline-0"
+              @click="handleAddComment"
+              :disabled="!commentInput.trim()"
+              class="cursor-pointer font-semibold px-5 py-2 rounded-full bg-amber-500 text-white text-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add
+              Post
             </button>
           </div>
         </div>
 
         <!--COMMENTS SECTION-->
-
         <div
-          class="flex flex-col gap-4 overflow-y-auto max-h-[300px] p-2 rounded-lg bg-slate-800/50"
+          class="flex-grow overflow-y-auto max-h-[calc(110vh-450px)] p-1 rounded-lg bg-slate-800/50 mt-2 custom-scrollbar"
         >
-          <div class="flex flex-row p-2 gap-5">
-            <NuxtImg :src="user.profilePic" class="w-8 h-8 rounded-full" />
-            <h3 class="text-[13px]">
-              Hye there guys my name is paul im from the bronx type shi listen
-              up
-            </h3>
+          <!-- Loading state -->
+          <LoadingSpinner v-if="loading" />
+          <div
+            v-else-if="!comments || comments.length === 0"
+            class="text-center p-4 text-slate-500 flex flex-col items-center gap-4 mt-3 font-bold"
+          >
+            No comments yet.
+            <span
+              >Add a new comment if you<br />
+              want to be the first!</span
+            >
+          </div>
+          <div v-else>
+            <div
+              v-for="comment in comments"
+              :key="comment.id"
+              class="flex items-start p-2 gap-3 hover:bg-slate-700/50 rounded-md"
+            >
+              <NuxtImg
+                :src="comment.profilePicture || '/placeholder-avatar.png'"
+                class="w-8 h-8 rounded-full mt-1"
+              />
+              <div class="flex flex-col">
+                <p class="text-xs text-slate-400 mb-0.5">
+                  <span class="font-semibold text-white">{{
+                    comment.username
+                  }}</span>
+                  <span class="ml-2 text-slate-500"
+                    ><NuxtTime :datetime="comment.commentCreatedAt" relative
+                  /></span>
+                </p>
+                <h3 class="text-sm text-slate-200">
+                  {{ comment.commentText }}
+                </h3>
+              </div>
+            </div>
           </div>
         </div>
       </div>

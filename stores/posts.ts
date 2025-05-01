@@ -16,14 +16,14 @@ export const usePostsStore = defineStore("posts", {
 
       const userId = session.user.id;
 
-      const { userPosts, allPosts } = await $fetch("/api/posts", {
+      const { userPosts, allPosts }: any = await $fetch("/api/posts", {
         query: { userId },
         method: "GET",
       });
       this.userPosts = userPosts;
       this.allPosts = allPosts;
     },
-    async addPost(values) {
+    async addPost(values: any) {
       const supabase = useNuxtApp().$supabase;
 
       const {
@@ -73,7 +73,7 @@ export const usePostsStore = defineStore("posts", {
         console.log("Error! couldnt add post", error);
       }
     },
-    async fetchComments(postId) {
+    async fetchComments(postId: any) {
       if (!postId) return;
       try {
         const allComments = await $fetch("/api/posts/comment", {

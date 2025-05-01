@@ -1,3 +1,5 @@
+import { useUserStore } from "~/stores/user";
+
 const user = useUserStore();
 export function useLikes() {
   async function toggleLikePost(postId: string, likedByMe: boolean) {

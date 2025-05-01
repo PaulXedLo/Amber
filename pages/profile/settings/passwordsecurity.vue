@@ -5,7 +5,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="flex flex-col lg:flex-row">
+  <div class="flex flex-col lg:flex-row overflow-y-hidden">
     <SettingsChangePassword />
     <SettingsAccountPrivacy />
   </div>

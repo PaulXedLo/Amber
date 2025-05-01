@@ -1,26 +1,6 @@
 import { defineStore } from "pinia";
-interface SignUpData {
-  email: string;
-  password: string;
-  username: string;
-  name: string;
-  age: number;
-}
-interface UserProfile {
-  userId: string | null;
-  fullName: string | null;
-  isSignedIn: boolean;
-  hydrated: boolean;
-  isNewUser: boolean;
-  profilePic: string | null;
-  isPrivate: boolean | null;
-  username: string | null;
-  followersCount: Object | null;
-  followingCount: Object | null;
-  postsCount: Object | null;
-  bio: string | null;
-  followStatus: Record<string, boolean | string>;
-}
+import type { SignUpData, UserProfile } from "~/types/auth";
+
 export const useUserStore = defineStore("user", {
   state: (): UserProfile => ({
     userId: null,
@@ -44,6 +24,15 @@ export const useUserStore = defineStore("user", {
         data: { session },
       } = await supabase.auth.getSession();
       const userId = session?.user?.id;
+      if (!userId) {
+        console.warn("User ID not found in fetchUserProfile.");
+
+        this.userId = null;
+        this.username = null;
+        this.profilePic = null;
+        this.isSignedIn = false;
+        return;
+      }
       const fallbackImage =
         "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
@@ -51,171 +40,286 @@ export const useUserStore = defineStore("user", {
         const profileData = await $fetch(`/api/profile/me`, {
           query: { userId },
         });
-        const { profiles, followersCount, followingCount, postsCount } =
-          profileData;
-        this.userId = profiles.id;
-        this.fullName = profiles.fullName;
-        this.profilePic = profiles.profilePicture || fallbackImage;
-        this.username = profiles.username;
-        this.bio = profiles.bio;
-        this.isPrivate = profiles.isPrivate;
-        this.followingCount = followingCount;
-        this.followersCount = followersCount;
-        this.postsCount = postsCount;
-        return profileData;
+
+        if (profileData && profileData.profiles) {
+          const { profiles, followersCount, followingCount, postsCount } =
+            profileData;
+          this.userId = profiles.id;
+          this.fullName = profiles.fullName;
+          this.profilePic = profiles.profilePicture || fallbackImage;
+          this.username = profiles.username;
+          this.bio = profiles.bio;
+          this.isPrivate = profiles.isPrivate ?? false;
+          this.followingCount = followingCount ?? null;
+          this.followersCount = followersCount ?? null;
+          this.postsCount = postsCount ?? null;
+        } else {
+          console.error(
+            "Received invalid profile data structure:",
+            profileData
+          );
+          this.userId = null;
+          this.username = null;
+          this.profilePic = fallbackImage;
+        }
       } catch (error) {
+        console.error("Cannot fetch user profile", error);
+        this.userId = null;
         this.username = null;
         this.profilePic = fallbackImage;
-        console.log("cannot fetch user profile", error);
+        this.isSignedIn = false;
       }
     },
     async signUpUser(values: SignUpData) {
       const supabase = useNuxtApp().$supabase;
-      const { data: signupData, error: signupError } =
-        await supabase.auth.signUp({
-          email: values.email,
-          password: values.password,
-        });
-      if (signupError) {
-        alert(signupError.message);
-        return { success: false, signupError };
+
+      if (
+        !values.email ||
+        !values.password ||
+        !values.username ||
+        !values.name ||
+        !values.age
+      ) {
+        alert("Please fill in all required fields.");
+        return { success: false, error: new Error("Missing required fields") };
       }
-      const user = signupData.user;
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: user?.id || "",
-          username: values.username,
-          full_name: values.name,
-          email: values.email,
-          age: values.age,
-        });
-      if (profileError) {
-        alert(profileError.message);
-        return { success: false, error: profileError };
+      try {
+        const { data: signupData, error: signupError } =
+          await supabase.auth.signUp({
+            email: values.email,
+            password: values.password,
+          });
+        if (signupError) {
+          console.error("Signup Error:", signupError.message);
+          alert(signupError.message);
+          return { success: false, error: signupError };
+        }
+
+        const user = signupData.user;
+        if (!user) {
+          console.error("Signup succeeded but no user object returned.");
+          alert("Signup failed: No user data received.");
+          return {
+            success: false,
+            error: new Error("No user data received after signup"),
+          };
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            username: values.username,
+            full_name: values.name,
+            email: values.email,
+            age: values.age,
+          })
+          .select()
+          .single();
+
+        if (profileError) {
+          console.error("Profile Creation Error:", profileError.message);
+
+          alert(profileError.message);
+          return { success: false, error: profileError };
+        }
+
+        this.isSignedIn = true;
+        this.isNewUser = true;
+
+        await this.fetchUserProfile();
+        return { success: true, data: { signupData, profileData } };
+      } catch (error) {
+        console.error("Unexpected SignUp Error:", error);
+        alert("An unexpected error occurred during sign up.");
+        return { success: false, error };
       }
-      this.isSignedIn = true;
-      this.isNewUser = true;
-      return { success: true, signupData, profileData };
     },
     async logInUser(values: any) {
       const supabase = useNuxtApp().$supabase;
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-      if (error) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
+        });
+        if (error) {
+          console.error("Login Error:", error.message);
+
+          alert(error.message);
+          return { success: false, error };
+        }
+
+        if (data && data.session) {
+          this.isSignedIn = true;
+          this.isNewUser = false;
+          await this.fetchUserProfile();
+          return { success: true };
+        } else {
+          console.error("Login successful but no session data received.");
+          alert("Login failed: Could not retrieve session.");
+          return {
+            success: false,
+            error: new Error("No session data received"),
+          };
+        }
+      } catch (error) {
+        console.error("Unexpected Login Error:", error);
+        alert("An unexpected error occurred during login.");
         return { success: false, error };
-      } else {
-        this.isSignedIn = true;
-        await this.fetchUserProfile();
-        return { success: true };
       }
     },
     async updateUserPassword(values: any) {
       const supabase = useNuxtApp().$supabase;
-      const { error } = await supabase.auth.updateUser({
-        password: `${values.password}`,
-      });
-      if (error) {
-        console.log("Could not update password", error);
+      try {
+        const { error } = await supabase.auth.updateUser({
+          password: values.password,
+        });
+        if (error) {
+          console.error("Could not update password", error);
+          alert("Failed to update password: " + error.message);
+        } else {
+          alert("Password updated successfully.");
+        }
+      } catch (error) {
+        console.error("Unexpected error updating password:", error);
+        alert("An unexpected error occurred while updating the password.");
       }
     },
     async checkAuth() {
       const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      this.isSignedIn = !!session;
-      this.hydrated = true;
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (session) {
-        await this.fetchUserProfile();
+        if (error) {
+          console.error("Error checking auth session:", error.message);
+          this.isSignedIn = false;
+        } else {
+          this.isSignedIn = !!session;
+          if (session) {
+            await this.fetchUserProfile();
+          } else {
+            this.userId = null;
+            this.fullName = null;
+            this.profilePic = null;
+            this.username = null;
+            this.bio = null;
+            this.isPrivate = false;
+            this.followersCount = null;
+            this.followingCount = null;
+            this.postsCount = null;
+            this.followStatus = {};
+          }
+        }
+      } catch (error) {
+        console.error("Unexpected error during checkAuth:", error);
+        this.isSignedIn = false;
+      } finally {
+        this.hydrated = true;
       }
     },
     async signOut() {
       const supabase = useNuxtApp().$supabase;
-      await supabase.auth.signOut();
-      this.isSignedIn = false;
-      this.isNewUser = false;
-      this.profilePic = null;
-      this.username = null;
-      this.hydrated = false;
-      navigateTo("/auth");
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error("Error signing out:", error.message);
+        }
+      } catch (error) {
+        console.error("Unexpected error during sign out:", error);
+      } finally {
+        this.isSignedIn = false;
+        this.isNewUser = false;
+        this.profilePic = null;
+        this.username = null;
+        this.userId = null;
+        this.fullName = null;
+        this.bio = null;
+        this.isPrivate = false;
+        this.followersCount = null;
+        this.followingCount = null;
+        this.postsCount = null;
+        this.followStatus = {};
+        this.hydrated = true;
+
+        await navigateTo("/auth");
+      }
     },
-    async updateProfile(values: any) {
+    async updateProfile(
+      values: Partial<UserProfile & { profilePicture?: File }>
+    ) {
       const supabase = useNuxtApp().$supabase;
-      // UPDATE PROFILE PICTURE
-      if (values.profilePicture) {
-        const fileExt = values.profilePicture.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
+      if (!this.userId) {
+        console.error("Cannot update profile: User ID is missing.");
+        throw new Error("User not authenticated.");
+      }
+
+      let updatePayload: Partial<any> = {};
+      let pictureChanged = false;
+
+      if (values.profilePicture instanceof File) {
+        pictureChanged = true;
+        const file = values.profilePicture;
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${this.userId}-${Date.now()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, values.profilePicture, {
-            cacheControl: "3600",
-            upsert: true,
-          });
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: true,
+            });
 
-        if (uploadError) {
-          throw new Error(uploadError.message);
-        }
-        const { data: urlData } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(filePath);
-        values.profilePicture = urlData.publicUrl;
-        try {
-          await $fetch("/api/profile/update", {
-            body: values,
-            query: { userId: this.userId },
-            method: "PATCH",
-          });
-          await this.fetchUserProfile();
+          if (uploadError) {
+            console.error("Upload Error:", uploadError.message);
+            throw new Error("Failed to upload profile picture.");
+          }
+          const { data: urlData } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(filePath);
+
+          if (urlData && urlData.publicUrl) {
+            updatePayload.profilePicture = urlData.publicUrl;
+          } else {
+            console.error("Failed to get public URL for uploaded avatar.");
+
+            throw new Error("Failed to get public URL for profile picture.");
+          }
         } catch (error) {
-          console.log("Could not upload profile picture", error);
+          console.error("Error handling profile picture upload:", error);
+          throw error;
         }
       }
-      // UPDATE USER BIO
-      if (values.bio) {
-        try {
-          await $fetch("/api/profile/update", {
-            method: "PATCH",
-            query: { userId: this.userId },
-            body: values,
-          });
-          await this.fetchUserProfile();
-        } catch (error) {
-          console.log("Could not update profile bio", error);
-          throw new Error("Failed to update bio");
-        }
+
+      if (values.bio !== undefined) updatePayload.bio = values.bio;
+      if (values.fullName !== undefined)
+        updatePayload.fullName = values.fullName;
+
+      if (values.hasOwnProperty("isPrivate"))
+        updatePayload.isPrivate = values.isPrivate;
+
+      if (Object.keys(updatePayload).length === 0) {
+        console.log("No profile data provided for update.");
+
+        if (!pictureChanged) return;
       }
-      // UPDATE USER FULLNAME
-      if (values.fullName) {
-        try {
-          await $fetch("/api/profile/update", {
-            query: { userId: this.userId },
-            method: "PATCH",
-            body: values,
-          });
-        } catch (error) {
-          console.log("Could not update full name", error);
-          throw new Error("Failed to update name");
-        }
-      }
-      // UPDATE USER PRIVACY
-      if (values.hasOwnProperty("isPrivate")) {
-        try {
-          await $fetch("/api/profile/update", {
-            query: { userId: this.userId },
-            method: "PATCH",
-            body: values,
-          });
-          await this.fetchUserProfile();
-        } catch (error) {
-          console.log("Could not update profile privacy", error);
-          throw new Error("Failed to update privacy");
-        }
+
+      try {
+        await $fetch("/api/profile/update", {
+          method: "PATCH",
+          query: { userId: this.userId },
+          body: updatePayload,
+        });
+
+        await this.fetchUserProfile();
+      } catch (error) {
+        console.error("Could not update profile data in DB", error);
+
+        throw new Error("Failed to update profile.");
       }
     },
   },
