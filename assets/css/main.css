@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #fbbf24; /* Amber-400 */
-  --color-dark-900: #0f0c29; /* Deep Space */
-  --color-dark-800: #1e1e2f; /* Muted Midnight */
-  --color-dark-700: #2c2c3f; /* Soft Charcoal */
+  --color-primary: #fbbf24;
+  --color-dark-900: #0f0c29;
+  --color-dark-800: #1e1e2f;
+  --color-dark-700: #2c2c3f;
   --color-glass: rgba(255, 255, 255, 0.05);
-  --color-text: #f8fafc; /* Near White */
-  --color-scroll-thumb: #fbbf24; /* Scrollbar Accent */
+  --color-text: #f8fafc;
+  --color-scroll-thumb: #fbbf24;
 }
 
 @plugin "daisyui";

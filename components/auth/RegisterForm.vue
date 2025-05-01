@@ -3,6 +3,7 @@ import "animate.css";
 const password = ref("");
 const showPasswordRequirements = ref(false);
 const user = useUserStore();
+const toast = useToast();
 const passwordRequirements = reactive([
   {
     id: "minPassword",
@@ -40,7 +41,32 @@ function switchTab() {
 }
 
 async function registerUser(values) {
-  await user.signUpUser(values);
+  try {
+    const result = await user.signUpUser(values);
+    if (result.success) {
+      toast.success({
+        //
+        message: "Registration successful! Please check your email to verify.",
+        timeout: 5000,
+        position: "topCenter",
+      });
+      navigateTo("/home");
+    } else {
+      toast.error({
+        message:
+          result.error?.message || "Registration failed. Please try again.",
+        timeout: 5000,
+        position: "topCenter",
+      });
+    }
+  } catch (error) {
+    console.error("Caught registration error in component:", error);
+    toast.error({
+      message: "An unexpected error occurred during registration.",
+      timeout: 5000,
+      position: "topCenter",
+    });
+  }
 }
 
 watch(allRequirementsMet, (met) => {
