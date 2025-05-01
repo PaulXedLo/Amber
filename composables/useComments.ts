@@ -1,6 +1,3 @@
-import { ref } from "vue";
-import { useUserStore } from "~/stores/user";
-
 interface Comment {
   commentId?: string;
   commentText: string;

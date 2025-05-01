@@ -1,6 +1,3 @@
-import { ref } from "vue";
-import { useUserStore } from "~/stores/user";
-
 export function useFollow() {
   const loading = ref(false);
 
