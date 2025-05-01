@@ -8,6 +8,7 @@ export const usePublicStore = defineStore("public", {
     followingCount: null,
     followersCount: null,
     profilePic: null,
+    isPrivate: null,
     username: null,
     bio: null,
     isFollowing: null,
@@ -39,6 +40,7 @@ export const usePublicStore = defineStore("public", {
         this.profilePic = profiles.profilePicture || fallbackImage;
         this.username = profiles.username;
         this.bio = profiles.bio;
+        this.isPrivate = profiles.isPrivate;
         this.followersCount = followersCount;
         this.followingCount = followingCount;
         this.isFollowing = isFollowing;

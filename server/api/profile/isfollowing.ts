@@ -15,15 +15,23 @@ export default defineEventHandler(async (event) => {
   }
   try {
     const follow = await db
-      .select()
+      .select({ status: followers.status })
       .from(followers)
       .where(
         and(
-          eq(followers.followerId, userId),
-          eq(followers.followingId, targetUserId)
+          eq(followers.followerId, userId as string),
+          eq(followers.followingId, targetUserId as string)
         )
-      );
-    return { isFollowing: follow.length > 0 };
+      )
+      .limit(1);
+
+    if (follow.length > 0) {
+      return { isFollowing: true, status: "following" };
+    } else if (follow.length === 0) {
+      return { isFollowing: false, status: "unfollowed" };
+    } else {
+      return { isFollowing: false, status: "pending" };
+    }
   } catch (error) {
     console.log("Could not check if user follows", error);
     throw createError({

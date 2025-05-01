@@ -1,48 +1,94 @@
 import { db } from "~/server/db";
-import { posts, profiles, followers } from "~/server/db/schema";
+import { followers, followRequests } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
-  if (event.method === "POST") {
-    const body = await readBody(event);
-    const { userId, followingUserId } = body;
-    if (!userId && !followingUserId) {
-      throw createError({
-        statusCode: 400,
-        message: "Can not get user ID || follower user id",
-      });
-    }
-    try {
-      await db
-        .insert(followers)
-        .values({ followerId: userId, followingId: followingUserId });
-    } catch (error) {
-      throw createError({ statusCode: 500, message: "Can not follow user" });
-    }
+  const body = await readBody(event);
+  const { userId, followingUserId, isPrivate } = body;
+
+  if (!userId || !followingUserId) {
+    throw createError({
+      statusCode: 400,
+      message: "Missing userId or followingUserId",
+    });
   }
-  if (event.method === "DELETE") {
-    const body = await readBody(event);
-    const { userId, followingUserId } = body;
-    if (!userId && !followingUserId) {
-      throw createError({
-        statusCode: 400,
-        message: "Can not get user ID || follower user id",
-      });
-    }
+  // SEND/DELETE REQUEST TO A PRIVATE ACCOUNT
+  if (isPrivate) {
     try {
-      await db
-        .delete(followers)
-        .where(
-          and(
-            eq(followers.followerId, userId),
-            eq(followers.followingId, followingUserId)
+      if (event.method === "POST") {
+        await db
+          .insert(followRequests)
+          .values({
+            requesterId: userId,
+            targetId: followingUserId,
+          })
+          .onConflictDoNothing()
+          .execute();
+        return { status: "pending" };
+      }
+      // DELETE REQUEST TO A PRIVATE ACCOUNT
+      if (event.method === "DELETE") {
+        await db
+          .delete(followRequests)
+          .where(
+            and(
+              eq(followRequests.requesterId, userId),
+              eq(followRequests.targetId, followingUserId)
+            )
           )
-        );
+          .execute();
+        await db
+          .delete(followers)
+          .where(
+            and(
+              eq(followers.followerId, userId),
+              eq(followers.followingId, followingUserId)
+            )
+          )
+          .execute();
+        return { status: "unfollowed" };
+      }
     } catch (error) {
-      console.log("Could not unfollow user", error);
+      console.error("Follow API error:", error);
       throw createError({
         statusCode: 500,
-        message: "Could not unfollow user",
+        message: "Follow request failed",
+      });
+    }
+  }
+  //SEND/DELETE FOLLOW TO A PUBLIC ACCOUNT
+  else {
+    try {
+      if (event.method === "POST") {
+        await db
+          .insert(followers)
+          .values({
+            followerId: userId,
+            followingId: followingUserId,
+            status: "accepted",
+          })
+          .onConflictDoNothing()
+          .execute();
+        return { status: "followed" };
+      }
+
+      if (event.method === "DELETE") {
+        await db
+          .delete(followers)
+          .where(
+            and(
+              eq(followers.followerId, userId),
+              eq(followers.followingId, followingUserId)
+            )
+          )
+          .execute();
+        return { status: "unfollowed" };
+      }
+    } catch (error) {
+      console.error("Follow API error:", error);
+      throw createError({
+        statusCode: 500,
+        message: "Follow/unfollow failed",
       });
     }
   }

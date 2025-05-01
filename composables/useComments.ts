@@ -1,7 +1,6 @@
 export function useComments() {
   let comments: any = ref([]);
   const loading = ref(false);
-  const user = useUserStore();
   async function fetchComments(postId: any) {
     if (!postId) {
       console.log("Could not get post Id");

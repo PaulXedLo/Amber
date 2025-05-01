@@ -3,7 +3,6 @@ import "animate.css";
 const password = ref("");
 const showPasswordRequirements = ref(false);
 const user = useUserStore();
-
 const passwordRequirements = reactive([
   {
     id: "minPassword",

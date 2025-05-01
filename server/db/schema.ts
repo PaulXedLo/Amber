@@ -61,3 +61,14 @@ export const comments = pgTable("comments", {
   content: text("content"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
+
+/* FOLLOW REQUESTS TABLE */
+export const followRequests = pgTable("follow_requests", {
+  requesterId: uuid("requester_id")
+    .primaryKey()
+    .references(() => profiles.id),
+  targetId: uuid("target_id")
+    .primaryKey()
+    .references(() => profiles.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});

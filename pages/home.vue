@@ -2,31 +2,30 @@
 definePageMeta({ layout: "default" });
 // REFS
 const user = useUserStore();
+const { toggleLikePost } = useLikes();
+const { toggleFollowUser, checkIfFollowing } = useFollow();
 const posts = usePostsStore();
 const pending = ref(false);
 // LIKE POSTS
 async function toggleLike(post) {
-  if (!post.likedByMe) {
-    post.posts.likesCount++;
-    post.likedByMe = true;
-    await $fetch("/api/posts/togglelike", {
-      method: "POST",
-      body: { userId: user.userId, postId: post.posts.id },
-    });
-  } else {
-    post.posts.likesCount = Math.max(post.posts.likesCount - 1, 0);
-    post.likedByMe = false;
-    await $fetch("/api/posts/togglelike", {
-      method: "DELETE",
-      body: { userId: user.userId, postId: post.posts.id },
-    });
+  if (!post) return;
+  try {
+    await toggleLikePost(post.posts.id, post.likedByMe);
+    post.likedByMe = !post.likedByMe;
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    throw new Error("Failed to toggle like. Please try again.");
   }
+  post.posts.likesCount += post.likedByMe ? 1 : -1;
+}
+// FOLLOW STATUS
+function getFollowStatus(userId) {
+  return user.followStatus[userId] || "";
 }
 // FOLLOW / UNFOLLOW USER
-async function handleFollowClick(targetUserId) {
+async function handleFollowClick(targetUserId, isPrivate) {
   if (!targetUserId) return;
-  await user.toggleFollowUser(targetUserId);
-  user.followStatus[targetUserId] = !user.followStatus[targetUserId];
+  await toggleFollowUser(targetUserId, isPrivate);
 }
 
 // HOOKS
@@ -35,7 +34,7 @@ onMounted(async () => {
   await posts.fetchPosts();
   const checks = posts.allPosts.map((post) => {
     if (post.profiles?.id) {
-      return user.checkIfFollowing(post.profiles.id);
+      return checkIfFollowing(post.profiles.id);
     }
   });
   await Promise.all(checks);
@@ -97,15 +96,26 @@ onMounted(async () => {
             </div>
             <button
               v-if="post.profiles.username !== user.username"
-              @click="handleFollowClick(post.profiles.id)"
-              class="px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
-              :class="
-                user.followStatus[post.profiles.id]
-                  ? 'bg-slate-700 hover:bg-slate-600'
-                  : 'bg-amber-500 hover:bg-amber-600'
+              @click="
+                handleFollowClick(post.profiles.id, post.profiles.isPrivate)
               "
+              class="px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
+              :class="{
+                'bg-slate-700 hover:bg-slate-600':
+                  getFollowStatus(post.profiles.id) === 'followed',
+                'bg-slate-500 hover:bg-slate-400':
+                  getFollowStatus(post.profiles.id) === 'pending',
+                'bg-amber-500 hover:bg-amber-600':
+                  getFollowStatus(post.profiles.id) === 'unfollowed',
+              }"
             >
-              {{ user.followStatus[post.profiles.id] ? "Unfollow" : "Follow" }}
+              {{
+                getFollowStatus(post.profiles.id) === "followed"
+                  ? "Unfollow"
+                  : getFollowStatus(post.profiles.id) === "pending"
+                  ? "Pending"
+                  : "Follow"
+              }}
             </button>
           </div>
 

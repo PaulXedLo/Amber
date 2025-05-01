@@ -1,6 +1,28 @@
 import { defineStore } from "pinia";
+interface SignUpData {
+  email: string;
+  password: string;
+  username: string;
+  name: string;
+  age: number;
+}
+interface UserProfile {
+  userId: string | null;
+  fullName: string | null;
+  isSignedIn: boolean;
+  hydrated: boolean;
+  isNewUser: boolean;
+  profilePic: string | null;
+  isPrivate: boolean | null;
+  username: string | null;
+  followersCount: Object | null;
+  followingCount: Object | null;
+  postsCount: Object | null;
+  bio: string | null;
+  followStatus: Record<string, boolean | string>;
+}
 export const useUserStore = defineStore("user", {
-  state: () => ({
+  state: (): UserProfile => ({
     userId: null,
     fullName: null,
     isSignedIn: false,
@@ -47,7 +69,7 @@ export const useUserStore = defineStore("user", {
         console.log("cannot fetch user profile", error);
       }
     },
-    async signUpUser(values) {
+    async signUpUser(values: SignUpData) {
       const supabase = useNuxtApp().$supabase;
       const { data: signupData, error: signupError } =
         await supabase.auth.signUp({
@@ -62,7 +84,7 @@ export const useUserStore = defineStore("user", {
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .insert({
-          id: user.id,
+          id: user?.id || "",
           username: values.username,
           full_name: values.name,
           email: values.email,
@@ -76,7 +98,7 @@ export const useUserStore = defineStore("user", {
       this.isNewUser = true;
       return { success: true, signupData, profileData };
     },
-    async logInUser(values) {
+    async logInUser(values: any) {
       const supabase = useNuxtApp().$supabase;
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -90,55 +112,13 @@ export const useUserStore = defineStore("user", {
         return { success: true };
       }
     },
-    async updateUserPassword(values) {
+    async updateUserPassword(values: any) {
       const supabase = useNuxtApp().$supabase;
       const { error } = await supabase.auth.updateUser({
         password: `${values.password}`,
       });
       if (error) {
         console.log("Could not update password", error);
-      }
-    },
-    async toggleFollowUser(targetUserId) {
-      if (!this.followStatus[targetUserId]) {
-        try {
-          await $fetch("/api/profile/follow", {
-            method: "POST",
-            body: { userId: this.userId, followingUserId: targetUserId },
-          });
-        } catch (error) {
-          console.error("Could not follow user", error);
-        }
-      } else {
-        try {
-          await $fetch("/api/profile/follow", {
-            method: "DELETE",
-            body: { userId: this.userId, followingUserId: targetUserId },
-          });
-        } catch (error) {
-          console.error("Could not unfollow user", error);
-        }
-      }
-    },
-    async checkIfFollowing(targetUserId) {
-      const supabase = useNuxtApp().$supabase;
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      if (!userId) {
-        this.followStatus[targetUserId] = false;
-        return;
-      }
-      try {
-        const { isFollowing } = await $fetch("/api/profile/isfollowing", {
-          query: { userId, targetUserId },
-        });
-        this.followStatus[targetUserId] = isFollowing;
-      } catch (error) {
-        console.error("Failed to check follow status", error);
-        this.followStatus[targetUserId] = false;
       }
     },
     async checkAuth() {
@@ -163,7 +143,7 @@ export const useUserStore = defineStore("user", {
       this.hydrated = false;
       navigateTo("/auth");
     },
-    async updateProfile(values) {
+    async updateProfile(values: any) {
       const supabase = useNuxtApp().$supabase;
       // UPDATE PROFILE PICTURE
       if (values.profilePicture) {
