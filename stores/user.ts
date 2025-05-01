@@ -206,7 +206,6 @@ export const useUserStore = defineStore("user", {
           this.isSignedIn = !!session;
           if (session) {
             await this.fetchUserProfile();
-            // Important: Check if fetchUserProfile itself failed and reset isSignedIn if needed
             if (!this.userId) {
               console.warn(
                 "checkAuth: fetchUserProfile failed after confirming session. Setting isSignedIn to false."
