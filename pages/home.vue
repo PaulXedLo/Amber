@@ -191,8 +191,13 @@ onMounted(async () => {
 
           <p
             v-if="post.displayComment"
-            class="text-slate-400 text-sm mt-3 italic"
+            class="flex items-center gap-3 text-slate-400 text-sm mt-3 italic"
           >
+            <NuxtImg
+              :src="post.profiles.profilePicture"
+              alt="avatar"
+              class="w-8 h-8 rounded-full mr-2"
+            />
             {{ post.displayComment }}
           </p>
         </div>

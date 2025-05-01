@@ -73,87 +73,109 @@ onMounted(async () => {
 <template>
   <div
     v-if="postInfo && userInfo"
-    class="flex flex-col h-100vh w-full p-5 sm:p-10"
+    class="flex flex-col min-h-screen w-full text-white py-10 px-4 sm:px-6 lg:px-8"
   >
-    <div class="flex flex-col justify-center items-center h-full w-full gap-2">
+    <div
+      class="flex flex-col items-center bg-gray-900 p-10 rounded-2xl w-full max-w-3xl mx-auto gap-6"
+    >
       <!-- HEADER -->
-      <div
-        class="flex flex-row justify-between w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-3xl mb-5"
-      >
+      <div class="flex flex-row justify-between items-center w-full mb-6">
         <div class="flex flex-row gap-3 sm:gap-4 items-center">
           <NuxtImg
             @click="goToProfile(userInfo.username)"
             v-if="userInfo.profilePicture"
             :src="userInfo.profilePicture"
-            class="rounded-full w-10 h-10 cursor-pointer"
+            class="rounded-full w-10 h-10 sm:w-12 sm:h-12 cursor-pointer object-cover border-2 border-gray-700 hover:border-amber-500 transition"
           />
           <div class="flex flex-col">
-            <h3 class="font-bold text-sm sm:text-base text-white">
+            <h3
+              @click="goToProfile(userInfo.username)"
+              class="font-bold text-sm sm:text-base text-white cursor-pointer hover:text-amber-400 transition"
+            >
               {{ userInfo.fullName }}
             </h3>
-            <h3 class="text-xs sm:text-sm text-gray-400 cursor-pointer">
-              {{ userInfo.username }}
+            <h3
+              @click="goToProfile(userInfo.username)"
+              class="text-xs sm:text-sm text-gray-400 cursor-pointer hover:text-gray-300 transition"
+            >
+              @{{ userInfo.username }}
             </h3>
           </div>
         </div>
-        <div class="flex items-center">
+        <div
+          class="flex items-center text-gray-400 hover:text-white cursor-pointer"
+        >
           <Icon name="octicon:kebab-horizontal-16" size="24" />
         </div>
       </div>
 
       <!-- POST DESCRIPTION -->
-      <div class="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-3xl mb-2">
-        <h3 class="text-sm sm:text-base md:text-lg">
+      <div class="w-full mb-4">
+        <h3 class="text-sm sm:text-base md:text-lg text-gray-300">
           {{ postInfo.contentText }}
         </h3>
       </div>
 
       <!-- POST IMAGE -->
       <div
-        class="w-full shadow-md max-w-xs sm:max-w-md md:max-w-lg lg:max-w-3xl"
+        v-if="postInfo.contentImage"
+        class="w-full shadow-lg rounded-lg overflow-hidden bg-gray-800"
       >
         <NuxtImg
-          v-if="postInfo.contentImage"
-          class="rounded-md w-full"
+          class="w-full h-auto object-cover"
           :src="postInfo.contentImage"
+          alt="Post image"
         />
       </div>
 
+      <!-- ACTIONS & COMMENT INPUT -->
       <div
-        class="flex flex-col sm:flex-row justify-between w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-3xl mt-5 gap-4 sm:gap-0"
+        class="flex flex-col sm:flex-row justify-between items-center w-full mt-6 gap-6"
       >
-        <!-- Likes and Comments -->
+        <!-- Likes and Comments Icons -->
         <div class="flex flex-row items-center gap-5">
-          <div class="flex flex-row items-center gap-1">
-            <Icon name="system-uicons:heart" size="32" class="cursor-pointer" />
-            <h3 class="text-sm sm:text-base">{{ postInfo.likesCount }}</h3>
+          <div class="flex flex-row items-center gap-1 text-gray-400">
+            <Icon
+              name="system-uicons:heart"
+              size="32"
+              class="cursor-pointer hover:text-red-500 transition"
+            />
+            <h3 class="text-sm sm:text-base text-white">
+              {{ postInfo.likesCount }}
+            </h3>
           </div>
-          <div class="flex flex-row items-center gap-1">
+          <div class="flex flex-row items-center gap-1 text-gray-400">
             <Icon
               @click="showComments = !showComments"
               name="system-uicons:speech-typing"
               size="32"
-              class="cursor-pointer"
+              class="cursor-pointer hover:text-amber-400 transition"
             />
-            <h3 class="text-sm sm:text-base">{{ postInfo.commentsCount }}</h3>
+            <h3 class="text-sm sm:text-base text-white">
+              {{ postInfo.commentsCount }}
+            </h3>
           </div>
         </div>
 
         <!-- Comment Input -->
         <div
-          class="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto"
+          class="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto"
         >
-          <NuxtImg :src="user.profilePic" class="rounded-full w-10 h-10" />
+          <NuxtImg
+            :src="user.profilePic"
+            class="rounded-full w-10 h-10 hidden sm:block object-cover border border-gray-700"
+          />
           <input
             type="text"
             v-model="commentText"
-            class="w-full sm:min-w-[150px] h-10 border-b-2 focus:outline-0 p-3 active:border-b-2 hover:border-amber-200 bg-transparent text-white placeholder-gray-400"
-            placeholder="Add a new comment"
+            class="w-full sm:min-w-[200px] h-10 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 p-3 bg-gray-800 text-white placeholder-gray-500 rounded-md transition"
+            placeholder="Add a comment..."
           />
           <button
             type="button"
             @click="handleAddNewComment"
-            class="w-full sm:w-auto px-4 h-10 cursor-pointer hover:text-gray-200 active:translate-y-0.5 bg-amber-500 text-white font-semibold rounded-2xl hover:bg-amber-600 transition shadow hover:shadow-lg"
+            class="w-full sm:w-auto px-5 h-10 cursor-pointer hover:text-gray-100 active:translate-y-0.5 bg-amber-500 text-white font-semibold rounded-md hover:bg-amber-600 transition shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="!commentText.trim()"
           >
             Send
           </button>
@@ -161,7 +183,11 @@ onMounted(async () => {
       </div>
 
       <!-- COMMENTS SECTION -->
-      <Comments v-if="showComments" />
+      <Comments v-if="showComments" class="w-full mt-8" />
     </div>
+  </div>
+  <div v-else class="flex justify-center items-center min-h-screen bg-gray-900">
+    <!-- Optional: Add a loading spinner or message -->
+    <p class="text-white">Loading post...</p>
   </div>
 </template>

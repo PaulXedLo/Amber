@@ -50,11 +50,9 @@ export const useUserStore = defineStore("user", {
           this.username = profiles.username;
           this.bio = profiles.bio;
           this.isPrivate = profiles.isPrivate ?? false;
-          this.followingCount =
-            typeof followingCount === "number" ? followingCount : null;
-          this.followersCount =
-            typeof followersCount === "number" ? followersCount : null;
-          this.postsCount = typeof postsCount === "number" ? postsCount : null;
+          this.followingCount = followingCount;
+          this.followersCount = followersCount;
+          this.postsCount = postsCount;
         } else {
           console.error(
             "Received invalid profile data structure:",
@@ -65,7 +63,13 @@ export const useUserStore = defineStore("user", {
           this.profilePic = fallbackImage;
         }
       } catch (error) {
-        console.error("Cannot fetch user profile. Full error:", error);
+        console.error(
+          "Failed to fetch user profile from /api/profile/me.Full error:",
+          error
+        );
+        alert(
+          "Could not load your profile information. Please try again later."
+        );
         this.userId = null;
         this.username = null;
         this.profilePic = fallbackImage;
@@ -202,6 +206,13 @@ export const useUserStore = defineStore("user", {
           this.isSignedIn = !!session;
           if (session) {
             await this.fetchUserProfile();
+            // Important: Check if fetchUserProfile itself failed and reset isSignedIn if needed
+            if (!this.userId) {
+              console.warn(
+                "checkAuth: fetchUserProfile failed after confirming session. Setting isSignedIn to false."
+              );
+              this.isSignedIn = false;
+            }
           } else {
             this.userId = null;
             this.fullName = null;
@@ -216,7 +227,10 @@ export const useUserStore = defineStore("user", {
           }
         }
       } catch (error) {
-        console.error("Unexpected error during checkAuth:", error);
+        console.error("Unexpected error during checkAuth. Full error:", error);
+        alert(
+          "There was a problem checking your session. Please try refreshing the page."
+        ); // Basic user feedback
         this.isSignedIn = false;
       } finally {
         this.hydrated = true;

@@ -15,9 +15,9 @@ export interface UserProfile {
   profilePic: string | null;
   isPrivate: boolean | null;
   username: string | null;
-  followersCount: number | null;
-  followingCount: number | null;
-  postsCount: number | null;
+  followersCount: any;
+  followingCount: any;
+  postsCount: any;
   bio: string | null;
   followStatus: Record<string, "followed" | "unfollowed" | "pending">;
 }
