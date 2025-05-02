@@ -46,7 +46,6 @@ export const usePostsStore = defineStore("posts", {
             cacheControl: "3600",
             upsert: false,
           });
-
         if (uploadError) {
           console.error("Upload Error:", uploadError.message);
           throw uploadError;
