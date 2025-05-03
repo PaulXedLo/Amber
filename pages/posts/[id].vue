@@ -3,6 +3,7 @@ definePageMeta({ layout: "default" });
 const toast = useToast();
 const { comments, fetchComments, addComment, loading } = useComments();
 const route = useRoute();
+const { toggleLikePost } = useLikes();
 // STORES
 const user = useUserStore();
 const { userId } = storeToRefs(user);
@@ -10,6 +11,23 @@ const postInfo = ref(null);
 const userInfo = ref(null);
 let showComments = ref(false);
 let commentText = ref("");
+
+// LIKE POST
+async function likePost(postInfo) {
+  if (!postInfo) {
+    console.log("Post ID is missing.");
+    return;
+  } else {
+    try {
+      await toggleLikePost(postInfo.id, postInfo.likedByMe);
+      postInfo.likedByMe = !postInfo.likedByMe;
+      postInfo.likesCount += postInfo.likedByMe ? 1 : -1;
+    } catch (error) {
+      console.log("Failed to toggle like:", error);
+      throw new Error("Failed to toggle like");
+    }
+  }
+}
 
 // ADD NEW COMMENT
 async function handleAddNewComment() {
@@ -45,7 +63,9 @@ function goToProfile(value) {
 onBeforeMount(async () => {
   // GET POST AND PROFILE INFORMATION
   try {
-    const { post, profile } = await $fetch(`/api/posts/${route.params.id}`);
+    const { post, profile } = await $fetch(`/api/posts/${route.params.id}`, {
+      query: { userId: userId.value },
+    });
     postInfo.value = post;
     userInfo.value = profile;
   } catch (error) {
@@ -76,7 +96,7 @@ onMounted(async () => {
     class="flex flex-col min-h-screen w-full text-white py-12 px-4 sm:px-6 lg:px-8"
   >
     <div
-      class="flex flex-col items-center bg-gradient-to-b from-gray-900 to-gray-800/90 p-8 sm:p-10 rounded-2xl w-full max-w-3xl mx-auto gap-8 shadow-xl border border-gray-800"
+      class="flex flex-col items-center bg-slate-900/80 p-8 sm:p-10 rounded-2xl w-full max-w-3xl mx-auto gap-8 shadow-xl border border-gray-800"
     >
       <!-- HEADER -->
       <div class="flex flex-row justify-between items-center w-full">
@@ -136,22 +156,24 @@ onMounted(async () => {
       >
         <!-- Likes and Comments Icons -->
         <div class="flex flex-row items-center gap-8">
-          <div class="flex flex-row items-center gap-2 group">
-            <Icon
-              name="system-uicons:heart"
-              size="32"
-              class="cursor-pointer text-gray-400 group-hover:text-red-500 group-hover:scale-110 transition-all duration-300"
-            />
-            <h3
-              class="text-base font-medium text-white group-hover:text-red-400 transition-colors"
-            >
+          <div
+            class="flex flex-row items-center gap-2 group cursor-pointer"
+            @click="likePost(postInfo)"
+          >
+            <template v-if="postInfo.likedByMe"
+              ><Icon name="noto:orange-heart" size="30"
+            /></template>
+            <template v-else
+              ><Icon name="noto:white-heart" size="30"
+            /></template>
+            <h3 class="text-base font-medium text-white">
               {{ postInfo.likesCount }}
             </h3>
           </div>
           <div class="flex flex-row items-center gap-2 group">
             <Icon
               @click="showComments = !showComments"
-              name="system-uicons:speech-typing"
+              name="uil:comment"
               size="32"
               class="cursor-pointer text-gray-400 group-hover:text-amber-400 group-hover:scale-110 transition-all duration-300"
             />
