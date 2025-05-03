@@ -40,7 +40,18 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const { userId } = query;
 
-    let userPosts: any = [];
+    function normalizePosts(rawPosts: any[]) {
+      return rawPosts.map(({ posts: postData, likedByMe, ...rest }) => ({
+        ...rest,
+        profiles: rest.profiles,
+        posts: {
+          ...postData,
+          likedByMe: likedByMe === true,
+        },
+      }));
+    }
+
+    let userPosts: any[] = [];
     if (userId) {
       userPosts = await db
         .select({
@@ -72,6 +83,9 @@ export default defineEventHandler(async (event) => {
       )
       .orderBy(desc(posts.createdAt));
 
-    return { userPosts, allPosts };
+    return {
+      userPosts: normalizePosts(userPosts),
+      allPosts: normalizePosts(allPosts),
+    };
   }
 });

@@ -28,10 +28,7 @@ async function handleLikePost(postToLike) {
   const currentLikedStatus = postToLike.posts.likedByMe;
 
   try {
-    // Call the composable function
     await toggleLikePost(postToLike.posts.id, currentLikedStatus);
-
-    // Update local state optimistically or after confirmation
     postToLike.posts.likedByMe = !currentLikedStatus;
     postToLike.posts.likesCount += postToLike.posts.likedByMe ? 1 : -1;
   } catch (error) {
@@ -71,7 +68,7 @@ onMounted(async () => {
     console.error("Post ID is missing.");
     return;
   }
-  await fetchComments(postId.value);
+  await fetchComments(postId.value); // Fetch comments when the component is mounted
 });
 </script>
 <template>

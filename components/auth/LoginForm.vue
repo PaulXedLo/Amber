@@ -37,7 +37,6 @@ onMounted(() => {
 });
 </script>
 <template>
-  <Toaster richColors position="top-center" />
   <VeeForm
     :validationSchema="schema"
     class="backdrop-blur-md bg-slate-800/70 border border-slate-700 shadow-lg rounded-2xl px-8 py-6 w-[22rem] animate__animated neon-pulse"

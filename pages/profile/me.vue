@@ -20,8 +20,6 @@ const {
   postsCount,
 } = storeToRefs(user);
 
-// MODAL
-
 // HOOKS
 
 onBeforeMount(async () => {
@@ -37,7 +35,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PostModal v-if="isOpen" :post="activePost" @close="closeModal" />
+  <PostModal
+    v-if="isOpen"
+    :post="activePost"
+    @close="closeModal"
+    @likeUpdated="likeUpdated"
+  />
   <div
     v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"
@@ -107,7 +110,7 @@ onMounted(async () => {
       >
         <NuxtImg
           :src="post.posts.contentImage"
-          @click="openModal(post)"
+          @click="openModal(post.posts.id)"
           alt="Post image"
           class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"

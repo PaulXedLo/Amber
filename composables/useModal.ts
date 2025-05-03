@@ -1,18 +1,30 @@
 const isOpen = ref(false);
-const activePost = ref(null);
+const postId = ref(null);
+const posts = usePostsStore();
+
+const activePost = computed(() => {
+  return (
+    posts.userPosts.find((p) => p.posts.id === postId.value) ||
+    posts.allPosts.find((p) => p.posts.id === postId.value) ||
+    null
+  );
+});
+
 export function useModal() {
-  async function openModal(post: any) {
+  function openModalById(postIdValue: string) {
+    postId.value = postIdValue;
     isOpen.value = true;
-    activePost.value = post;
   }
-  async function closeModal() {
+
+  function closeModal() {
     isOpen.value = false;
-    activePost.value = null;
+    postId.value = null;
   }
+
   return {
     isOpen,
     activePost,
-    openModal,
+    openModal: openModalById,
     closeModal,
   };
 }

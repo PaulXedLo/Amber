@@ -39,7 +39,7 @@ export const posts = pgTable("posts", {
 /* POST_LIKES TABLE */
 export const postLikes = pgTable("post_likes", {
   id: uuid("id").primaryKey(),
-  userId: uuid("user_id"),
+  userId: uuid("user_id").references(() => profiles.id),
   postId: uuid("post_id").references(() => posts.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

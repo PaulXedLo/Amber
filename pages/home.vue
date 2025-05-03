@@ -11,13 +11,13 @@ const pending = ref(false);
 async function toggleLike(post) {
   if (!post) return;
   try {
-    await toggleLikePost(post.posts.id, post.likedByMe);
-    post.likedByMe = !post.likedByMe;
+    await toggleLikePost(post.posts.id, post.posts.likedByMe);
+    post.posts.likedByMe = !post.posts.likedByMe;
   } catch (error) {
     console.error("Error toggling like:", error);
     throw new Error("Failed to toggle like. Please try again.");
   }
-  post.posts.likesCount += post.likedByMe ? 1 : -1;
+  post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
 }
 // FOLLOW STATUS
 function getFollowStatus(userId) {
@@ -163,7 +163,7 @@ onMounted(async () => {
               class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-amber-400 transition"
             >
               <span>
-                <template v-if="post.likedByMe"
+                <template v-if="post.posts.likedByMe"
                   ><Icon name="noto:orange-heart" size="30"
                 /></template>
                 <template v-else
