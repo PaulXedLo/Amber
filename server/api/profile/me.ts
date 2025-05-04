@@ -3,6 +3,7 @@ import { posts, profiles, followers } from "~/server/db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  console.log("🔍 DATABASE_URL at runtime:", process.env.DATABASE_URL);
   const query = getQuery(event);
   const { userId } = query;
   console.log(userId);
