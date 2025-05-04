@@ -38,7 +38,7 @@ export const useUserStore = defineStore("user", {
 
       try {
         const profileData = await $fetch("/api/profile/me", {
-          query: { userId: userId },
+          query: { userId },
         });
 
         if (profileData || profileData.profiles) {
@@ -48,7 +48,7 @@ export const useUserStore = defineStore("user", {
           this.fullName = profiles.fullName;
           this.profilePic = profiles.profilePicture || fallbackImage;
           this.username = profiles.username;
-          this.bio = profiles.bio || "";
+          this.bio = profiles.bio || null;
           this.isPrivate = profiles.isPrivate ?? false;
           this.followingCount = followingCount;
           this.followersCount = followersCount;
