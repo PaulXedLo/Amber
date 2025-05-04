@@ -72,3 +72,8 @@ export const followRequests = pgTable("follow_requests", {
     .references(() => profiles.id),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
+
+export const reports = pgTable("reports", {
+  userId: uuid("user_id").references(() => profiles.id),
+  postId: uuid("post_id").references(() => posts.id),
+});

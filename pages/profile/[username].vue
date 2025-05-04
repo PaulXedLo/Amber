@@ -145,7 +145,7 @@ onBeforeMount(async () => {
       >
         <NuxtImg
           :src="post.contentImage"
-          @click="openModal(post)"
+          @click="openModal(post.id)"
           alt="Post image"
           class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"

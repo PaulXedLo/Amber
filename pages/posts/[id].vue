@@ -2,16 +2,18 @@
 definePageMeta({ layout: "default" });
 const toast = useToast();
 const { comments, fetchComments, addComment, loading } = useComments();
+const { sendReport } = useReport();
 const route = useRoute();
 const { toggleLikePost } = useLikes();
 // STORES
 const user = useUserStore();
 const { userId } = storeToRefs(user);
 const postInfo = ref(null);
+let showReport = ref(false);
+const postId = computed(() => postInfo.value?.id);
 const userInfo = ref(null);
 let showComments = ref(false);
 let commentText = ref("");
-
 // LIKE POST
 async function likePost(postInfo) {
   if (!postInfo) {
@@ -29,26 +31,41 @@ async function likePost(postInfo) {
   }
 }
 
-// ADD NEW COMMENT
-async function handleAddNewComment() {
-  if (!commentText.value) return;
-  try {
-    await addComment(userId.value, route.params.id, commentText.value);
-    postInfo.value.commentsCount++;
-    commentText.value = "";
-    toast.success({
-      message: "Comment added successfully",
-      position: "topRight",
-      timeout: 3000,
-    });
-  } catch (error) {
-    console.log("Error adding comment", error);
-    toast.error({
-      message: "Could not add comment",
-      position: "topRight",
-      timeout: 3000,
-    });
+// REPORT POST
+
+async function handleReportPost() {
+  if (!postId.value || !userId.value) {
+    console.log("Could not get user or post ID");
+    throw new Error("failed to get user/ post id");
   }
+  try {
+    await sendReport(userId.value, postId.value);
+    toast.success({
+      message: "Successfully reported the post",
+      position: "topCenter",
+      timeout: 3000,
+    });
+    showReport.value = !showReport.value;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Could not report post");
+  }
+}
+
+// ADD NEW COMMENT
+async function handleAddComment() {
+  if (commentText.value == "") {
+    console.error("Cannot add comment");
+    throw new Error("Comment input or postId is missing.");
+  }
+  if (!userId) {
+    console.error("User is not logged in.");
+    throw new Error("User is not logged in.");
+  }
+  const content = commentText.value.trim();
+  await addComment(userId.value, postId.value, content);
+  commentText.value = "";
+  await fetchComments(postId.value);
 }
 
 // VISIT PROFILE
@@ -125,7 +142,24 @@ onMounted(async () => {
         <div
           class="flex items-center text-gray-400 hover:text-white cursor-pointer transition-colors duration-300 p-2 hover:bg-gray-800 rounded-full"
         >
-          <Icon name="octicon:kebab-horizontal-16" size="24" />
+          <div class="relative">
+            <Icon
+              name="octicon:kebab-horizontal-16"
+              size="24"
+              @click="showReport = !showReport"
+            />
+            <div
+              v-if="showReport"
+              class="absolute right-0 z-50 bg-gray-800 border border-gray-700 rounded-lg shadow-lg w-40 text-sm"
+            >
+              <button
+                class="w-full hover:bg-gray-800 cursor-pointer px-4 py-2 text-left hover:text-white transition-colors duration-200"
+                @click="handleReportPost"
+              >
+                Report Post 🚩
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -202,7 +236,7 @@ onMounted(async () => {
             />
             <button
               type="button"
-              @click="handleAddNewComment"
+              @click="handleAddComment"
               class="px-6 h-11 cursor-pointer bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
               :disabled="!commentText.trim()"
             >
@@ -213,10 +247,47 @@ onMounted(async () => {
       </div>
 
       <!-- COMMENTS SECTION -->
-      <Comments
-        v-if="showComments"
-        class="w-full mt-4 border-t border-gray-800 pt-8"
-      />
+      <div
+        class="flex-grow w-full overflow-y-auto max-h-[calc(110vh-450px)] p-1 rounded-lg bg-slate-800/50 mt-2 custom-scrollbar"
+      >
+        <!-- Loading state -->
+        <LoadingSpinner v-if="loading" />
+        <div
+          v-else-if="!comments || comments.length === 0"
+          class="text-center p-4 text-slate-500 flex flex-col items-center gap-4 mt-3 font-bold"
+        >
+          No comments yet.
+          <span
+            >Add a new comment if you<br />
+            want to be the first!</span
+          >
+        </div>
+        <div v-else>
+          <div
+            v-for="comment in comments"
+            :key="comment.id"
+            class="flex items-start p-2 gap-3 hover:bg-slate-700/50 rounded-md"
+          >
+            <NuxtImg
+              :src="comment.profilePicture || '/placeholder-avatar.png'"
+              class="w-8 h-8 rounded-full mt-1"
+            />
+            <div class="flex flex-col">
+              <p class="text-xs text-slate-400 mb-0.5">
+                <span class="font-semibold text-white">{{
+                  comment.username
+                }}</span>
+                <span class="ml-2 text-slate-500"
+                  ><NuxtTime :datetime="comment.commentCreatedAt" relative
+                /></span>
+              </p>
+              <h3 class="text-sm text-slate-200">
+                {{ comment.commentText }}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <LoadingSpinner

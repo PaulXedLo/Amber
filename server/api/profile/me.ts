@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const { userId } = query;
 
-  if (!userId || typeof userId !== "string") {
+  if (!userId) {
     throw createError({
       statusCode: 400,
       message: "Invalid or missing user ID",

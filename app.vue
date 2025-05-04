@@ -1,7 +1,7 @@
 <script setup>
 const user = useUserStore(usePinia());
-onMounted(async () => {
-  await user.checkAuth();
+onMounted(() => {
+  user.checkAuth();
 });
 </script>
 <template>
