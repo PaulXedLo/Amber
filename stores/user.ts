@@ -38,7 +38,7 @@ export const useUserStore = defineStore("user", {
 
       try {
         const profileData = await $fetch("/api/profile/me", {
-          query: { userId },
+          query: { userId: userId },
         });
 
         if (profileData || profileData.profiles) {
