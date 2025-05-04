@@ -1,8 +1,9 @@
-import { db } from "~/server/db";
+import { getDb } from "~/server/db";
 import { followers, followRequests } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  const db = getDb();
   const body = await readBody(event);
   const { userId, followingUserId, isPrivate } = body;
 

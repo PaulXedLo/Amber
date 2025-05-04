@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   components: true,
   compatibilityDate: "2024-11-01",
   runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
     public: {

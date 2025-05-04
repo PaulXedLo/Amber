@@ -1,8 +1,9 @@
-import { db } from "~/server/db";
+import { getDb } from "~/server/db";
 import { posts, profiles, reports } from "~/server/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  const db = getDb();
   if (event.method === "POST") {
     const query = getQuery(event);
     const { userId, postId } = query;

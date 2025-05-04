@@ -1,8 +1,9 @@
-import { db } from "~/server/db";
+import { getDb } from "~/server/db";
 import { postLikes, posts } from "~/server/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
+  const db = getDb();
   if (event.method === "POST") {
     const body = await readBody(event);
     const { userId, postId } = body;

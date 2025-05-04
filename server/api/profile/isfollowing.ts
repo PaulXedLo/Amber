@@ -1,10 +1,11 @@
-import { db } from "~/server/db";
+import { getDb } from "~/server/db";
 import { followers } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
 
 // CHECK IF USER IS FOLLOWING PUBLIC PROFILES
 
 export default defineEventHandler(async (event) => {
+  const db = getDb();
   const query = getQuery(event);
   const { userId, targetUserId } = query;
   if (!userId || !targetUserId) {
