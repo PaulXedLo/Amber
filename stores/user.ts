@@ -187,7 +187,7 @@ export const useUserStore = defineStore("user", {
           alert("Password updated successfully.");
         }
       } catch (error) {
-        console.error("Unexpected error updating password:", error);
+        console.error("Unexpected error updating password", error);
         alert("An unexpected error occurred while updating the password.");
       }
     },
