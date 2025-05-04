@@ -36,7 +36,7 @@ onMounted(async () => {
   // CHECK IF USER IS FOLLOWING PROFILES
   const followChecks = posts.allPosts
     .filter((post) => post.profiles?.id)
-    .map((post) => checkIfFollowing(post.profiles.id));
+    .map((post) => getFollowStatus(post.profiles.id));
   // FETCH RANDOM COMMENT FOR EACH POST
   const commentFetches = posts.allPosts.map(async (post) => {
     try {

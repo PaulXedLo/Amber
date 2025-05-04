@@ -10,7 +10,7 @@ async function signOut() {
     class="sticky top-0 h-screen w-64 hidden md:flex flex-col justify-between px-6 py-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md"
   >
     <!-- Top: Logo and Navigation links -->
-    <div class="flex flex-col gap-6 overflow-y-auto text-center">
+    <div class="flex flex-col gap-1 overflow-y-auto text-center">
       <NuxtLink
         to="/home"
         class="text-4xl font-extrabold text-amber-400 tracking-wide hover:text-amber-300 transition"
@@ -18,7 +18,7 @@ async function signOut() {
         Amber
       </NuxtLink>
 
-      <nav class="flex flex-col gap-12 mt-10 text-slate-200">
+      <nav class="flex flex-col gap-6 mt-10 text-slate-200">
         <NuxtLink
           to="/profile/me"
           class="flex items-center gap-3 hover:text-amber-400 transition"
