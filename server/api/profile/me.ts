@@ -5,7 +5,7 @@ import { eq, sql } from "drizzle-orm";
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const { userId } = query;
-
+  console.log(userId);
   if (!userId) {
     throw createError({
       statusCode: 400,
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     if (!userDataResult || userDataResult.length === 0) {
       throw createError({ statusCode: 404, message: "User not found" });
     }
-
+    console.log("FULL RESULT:", userDataResult);
     const profileInfo = userDataResult[0]?.profiles;
     if (!profileInfo) {
       throw createError({ statusCode: 404, message: "User profile missing" });
