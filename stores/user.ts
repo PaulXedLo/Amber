@@ -41,7 +41,7 @@ export const useUserStore = defineStore("user", {
           query: { userId },
         });
 
-        if (profileData || profileData.profiles) {
+        if (profileData || profileData?.profiles) {
           const { profiles, followersCount, followingCount, postsCount } =
             profileData;
           this.userId = profiles.id;
@@ -204,7 +204,7 @@ export const useUserStore = defineStore("user", {
           this.isSignedIn = false;
         } else {
           this.isSignedIn = !!session;
-          this.fetchUserProfile();
+          await this.fetchUserProfile();
           if (session) {
             if (!userId) {
               console.warn(

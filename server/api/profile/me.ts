@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       .leftJoin(posts, eq(profiles.id, posts.userId))
       .where(eq(profiles.id, userId));
 
-    if (!userDataResult || userDataResult.length === 0) {
+    if (!userDataResult) {
       throw createError({ statusCode: 404, message: "User not found" });
     }
     console.log("FULL RESULT:", userDataResult);
