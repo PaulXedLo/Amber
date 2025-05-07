@@ -40,15 +40,6 @@ onBeforeMount(async () => {
     loading.value = false;
   }
 });
-// watch(
-//   () => user.isSignedIn,
-//   (signedIn) => {
-//     if (signedIn) {
-//       navigateTo("/home");
-//     }
-//   },
-//   { immediate: true }
-// );
 </script>
 
 <template>

@@ -1,13 +1,28 @@
 <script setup>
 import "animate.css";
+const toast = useToast();
 const user = useUserStore();
+
+// COMPOSABLES
+
 const { toggleLikePost } = useLikes();
-const { comments, loading, fetchComments, addComment } = useComments();
+const { sendReport } = useReport();
+const { comments, loading, fetchComments, deleteComment, addComment } =
+  useComments();
+
+// PROPS AND REFS
+
 const props = defineProps({ post: Object });
 const postId = computed(() => props.post?.posts?.id);
+const activeCommentId = ref(null);
+const showCommentOptions = ref(null);
+const { userId } = toRefs(user);
 let commentInput = ref("");
 const fallbackImage =
   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
+
+// GO TO PROFILE
+
 const navigateToProfile = (username) => {
   if (username === user.username) {
     navigateTo("/profile/me");
@@ -15,7 +30,9 @@ const navigateToProfile = (username) => {
     navigateTo(`/profile/${username}`);
   }
 };
+
 // LIKE POST FUNCTION
+
 async function handleLikePost(postToLike) {
   if (!postToLike?.posts?.id) {
     console.error("Post ID is missing.");
@@ -36,6 +53,7 @@ async function handleLikePost(postToLike) {
     console.error("Failed to toggle like:", error);
   }
 }
+
 const handleKeyPress = (event) => {
   if (event.key === "Enter") {
     handleAddComment();
@@ -49,6 +67,9 @@ const handleKeyPress = (event) => {
     commentInput.value = "";
   }
 };
+
+// HANDLE NEW COMMENT
+
 async function handleAddComment() {
   if (commentInput.value == "" || !postId.value) {
     console.error("Cannot add comment");
@@ -64,12 +85,63 @@ async function handleAddComment() {
   await fetchComments(postId.value);
 }
 
+// TOGGLE COMMENT OPTIONS
+
+function toggleCommentOptions(commentId) {
+  if (activeCommentId.value === commentId) {
+    activeCommentId.value = null;
+  } else {
+    activeCommentId.value = commentId;
+  }
+}
+
+// DELETE COMMENT
+
+async function handleDeleteComment(commentId) {
+  try {
+    await deleteComment(commentId, postId.value);
+    toast.success({
+      message: "Comment deleted successfully.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+    await fetchComments(postId.value);
+  } catch (error) {
+    toast.error({
+      message: "Failed to delete comment.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+  }
+}
+
+// HANDLE REPORT
+
+async function handleReport() {
+  try {
+    await sendReport(userId.value, postId.value);
+    toast.success({
+      message: "Reported successfully.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+  } catch (error) {
+    toast.error({
+      message: "Failed to report.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+  }
+}
+
+// HOOKS
+
 onMounted(async () => {
   if (!postId.value) {
     console.error("Post ID is missing.");
     return;
   }
-  await fetchComments(postId.value); // Fetch comments when the component is mounted
+  await fetchComments(postId.value);
 });
 </script>
 <template>
