@@ -1,6 +1,12 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
+  app: {
+    head: {
+      title: "Amber - Follow greatness",
+      link: [{ rel: "icon", type: "image/x-icon", href: "/img/favicon.ico" }],
+    },
+  },
   components: true,
   compatibilityDate: "2024-11-01",
   runtimeConfig: {
