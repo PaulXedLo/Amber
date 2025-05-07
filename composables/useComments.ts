@@ -11,8 +11,11 @@ interface Comment {
 export function useComments() {
   const comments = ref<Comment[]>([]);
   const loading = ref(false);
+  const activeCommentId: any = ref(null);
+  const showCommentOptions: any = ref(null);
   const user = useUserStore();
-
+  const toast = useToast();
+  // FETCH COMMENTS
   async function fetchComments(postId: string | number): Promise<Comment[]> {
     if (!postId) {
       console.warn("Cannot fetch comments: Post ID is missing.");
@@ -44,7 +47,7 @@ export function useComments() {
       loading.value = false;
     }
   }
-
+  // ADD COMMENT
   async function addComment(
     userId: string,
     postId: string | number,
@@ -56,7 +59,7 @@ export function useComments() {
       );
       throw new Error("Missing required information to add comment.");
     }
-
+    loading.value = true;
     const optimisticComment: Comment = {
       commentId: `temp-${Date.now()}`,
       userId,
@@ -79,11 +82,11 @@ export function useComments() {
       });
 
       await fetchComments(postId);
-
+      loading.value = false;
       return true;
     } catch (error) {
       console.error("Could not add comment", error);
-
+      loading.value = false;
       comments.value = comments.value.filter(
         (c) => c.commentId !== optimisticComment.commentId
       );
@@ -91,10 +94,38 @@ export function useComments() {
       throw new Error("Could not add comment to this post.");
     }
   }
-
+  // DELETE COMMENT
+  async function deleteComment(commentId: string, postId: string) {
+    if (!commentId || !postId) {
+      console.error("Cannot delete comment: Missing commentId.");
+      throw new Error("Missing commentId to delete comment.");
+    }
+    try {
+      await $fetch("/api/posts/comment", {
+        method: "DELETE",
+        query: { commentId, postId },
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Could not delete comment", error);
+      throw new Error("Could not delete comment.");
+    }
+  }
+  // SET ACTIVE COMMENT ID
+  function toggleCommentOptions(commentId: string) {
+    if (activeCommentId.value === commentId) {
+      activeCommentId.value = null;
+      showCommentOptions.value = null;
+    } else {
+      activeCommentId.value = commentId;
+      showCommentOptions.value = true;
+    }
+  }
   return {
     comments,
     loading,
+    toggleCommentOptions,
+    deleteComment,
     fetchComments,
     addComment,
   };

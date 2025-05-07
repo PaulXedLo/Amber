@@ -31,7 +31,7 @@ export const usePostsStore = defineStore("posts", {
       } = await supabase.auth.getSession();
       if (!session) return;
 
-      const userId = session.user.id;
+      const userId = session?.user?.id;
       let uploadedImageUrl = null;
 
       if (values.contentImage) {

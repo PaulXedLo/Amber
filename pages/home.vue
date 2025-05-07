@@ -7,6 +7,8 @@ const { toggleLikePost } = useLikes();
 const { toggleFollowUser, checkIfFollowing } = useFollow();
 const posts = usePostsStore();
 const pending = ref(false);
+const fallbackImage =
+  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 // LIKE POSTS
 async function toggleLike(post) {
   if (!post) return;
@@ -96,7 +98,7 @@ onMounted(async () => {
                 class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
               >
                 <NuxtImg
-                  :src="post.profiles.profilePicture"
+                  :src="post.profiles.profilePicture || fallbackImage"
                   alt="avatar"
                   @click="navigateTo(`/profile/${post.profiles.username}`)"
                   class="w-full hover:opacity-40 transition-all duration-400 h-full object-cover cursor-pointer"
@@ -194,7 +196,7 @@ onMounted(async () => {
             class="flex items-center gap-3 text-slate-400 text-sm mt-3 italic"
           >
             <NuxtImg
-              :src="post.profiles.profilePicture"
+              :src="post.profiles.profilePicture || fallbackImage"
               alt="avatar"
               class="w-8 h-8 rounded-full mr-2"
             />

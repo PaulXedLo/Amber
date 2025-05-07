@@ -6,7 +6,8 @@ const { comments, loading, fetchComments, addComment } = useComments();
 const props = defineProps({ post: Object });
 const postId = computed(() => props.post?.posts?.id);
 let commentInput = ref("");
-
+const fallbackImage =
+  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 const navigateToProfile = (username) => {
   if (username === user.username) {
     navigateTo("/profile/me");
@@ -105,7 +106,7 @@ onMounted(async () => {
             :to="`/profile/${post.profiles.username}`"
           >
             <NuxtImg
-              :src="post.profiles.profilePicture"
+              :src="post.profiles.profilePicture || fallbackImage"
               @click="navigateToProfile(post.profiles.username)"
               alt="Profile Picture"
               class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
@@ -193,21 +194,38 @@ onMounted(async () => {
               class="flex items-start p-2 gap-3 hover:bg-slate-700/50 rounded-md"
             >
               <NuxtImg
-                :src="comment.profilePicture || '/placeholder-avatar.png'"
+                :src="comment.profilePicture || fallbackImage"
                 class="w-8 h-8 rounded-full mt-1"
               />
-              <div class="flex flex-col">
-                <p class="text-xs text-slate-400 mb-0.5">
-                  <span class="font-semibold text-white">{{
-                    comment.username
-                  }}</span>
-                  <span class="ml-2 text-slate-500"
-                    ><NuxtTime :datetime="comment.commentCreatedAt" relative
-                  /></span>
-                </p>
-                <h3 class="text-sm text-slate-200">
-                  {{ comment.commentText }}
-                </h3>
+              <div class="flex flex-row justify-between w-full items-center">
+                <div class="flex flex-col">
+                  <p class="text-xs text-slate-400 mb-0.5">
+                    <span class="font-semibold text-white">{{
+                      comment.username
+                    }}</span>
+                    <span class="ml-2 text-slate-500"
+                      ><NuxtTime :datetime="comment.commentCreatedAt" relative
+                    /></span>
+                  </p>
+                  <h3 class="text-sm text-slate-200">
+                    {{ comment.commentText }}
+                  </h3>
+                </div>
+                <div class="relative mt-1.25 w-10">
+                  <Icon
+                    name="weui:more-filled"
+                    class="cursor-pointer"
+                    size="20"
+                    @click="toggleCommentOptions(comment.commentId)"
+                  />
+                  <!--COMMENT OPTIONS-->
+                  <CommentOptions
+                    @reportComment="handleReport"
+                    @deleteComment="handleDeleteComment(comment.commentId)"
+                    :showCommentOptions="activeCommentId === comment.commentId"
+                    :comment="comment"
+                  />
+                </div>
               </div>
             </div>
           </div>
