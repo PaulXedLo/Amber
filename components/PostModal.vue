@@ -15,7 +15,8 @@ const { comments, loading, fetchComments, deleteComment, addComment } =
 const props = defineProps({ post: Object });
 const postId = computed(() => props.post?.posts?.id);
 const activeCommentId = ref(null);
-const showCommentOptions = ref(null);
+const activePost = ref(null);
+const showPostOptions = ref(false);
 const { userId } = toRefs(user);
 let commentInput = ref("");
 const fallbackImage =
@@ -105,6 +106,7 @@ async function handleDeleteComment(commentId) {
       timeout: 3000,
       position: "topCenter",
     });
+    activeCommentId.value = null;
     await fetchComments(postId.value);
   } catch (error) {
     toast.error({
@@ -112,6 +114,7 @@ async function handleDeleteComment(commentId) {
       timeout: 3000,
       position: "topCenter",
     });
+    activeCommentId.value = null;
   }
 }
 
@@ -125,12 +128,14 @@ async function handleReport() {
       timeout: 3000,
       position: "topCenter",
     });
+    activeCommentId.value = null;
   } catch (error) {
     toast.error({
       message: "Failed to report.",
       timeout: 3000,
       position: "topCenter",
     });
+    activeCommentId.value = null;
   }
 }
 
@@ -162,15 +167,23 @@ onMounted(async () => {
 
       <!--RIGHT SIDE (POST INFO)-->
       <div class="w-[400px] flex flex-col p-6 gap-5 relative text-white">
-        <button
-          @click="$emit('close')"
-          class="absolute top-4 right-4 text-white text-2xl hover:text-amber-400 focus:outline-none"
-        >
+        <div class="flex flex-row">
           <Icon
-            name="emojione-v1:large-orange-diamond"
-            class="cursor-pointer hover:opacity-80"
+            name="weui:more-filled"
+            class="cursor-pointer absolute top-4 right-14"
+            size="25"
+            @click="togglePostOptions(post.posts.id)"
           />
-        </button>
+          <button
+            @click="$emit('close')"
+            class="absolute top-4 right-4 text-white text-2xl hover:text-amber-400 focus:outline-none"
+          >
+            <Icon
+              name="emojione-v1:large-orange-diamond"
+              class="cursor-pointer hover:opacity-80"
+            />
+          </button>
+        </div>
         <!--PROFILE INFO-->
         <div class="flex items-center gap-3 pb-3 border-slate-700">
           <NuxtLink
