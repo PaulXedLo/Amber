@@ -144,6 +144,21 @@ export const useUserStore = defineStore("user", {
     async logInUser(values: any) {
       const supabase = useNuxtApp().$supabase;
       try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        if (userId) {
+          this.userId = userId;
+        } else {
+          console.warn("User ID not found in logInUser.");
+          this.userId = null;
+        }
+      } catch (error) {
+        console.error("Error during login:", error);
+        alert("An unexpected error occurred during login.");
+      }
+      try {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
