@@ -80,7 +80,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="min-h-screen w-full px-4 pb-10">
+  <div class="min-h-screen max-w-screen px-4 pb-10">
     <!-- PAGE TITLE -->
     <div class="text-center mt-12 animate__animated animate__bounce">
       <h1
