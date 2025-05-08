@@ -1,10 +1,10 @@
 <template>
   <div
-    class="flex min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-amber-900"
+    class="flex min-h-screen min-w-screen bg-gradient-to-br from-purple-950 via-slate-900 to-amber-900"
   >
     <SideBar />
     <div class="flex-1 flex flex-col min-h-screen">
-      <main class="p-4 md:p-8 overflow-y-auto bg-[--color-glass]">
+      <main class="p-4 w-full md:p-8 overflow-y-auto bg-[--color-glass]">
         <slot />
       </main>
     </div>
