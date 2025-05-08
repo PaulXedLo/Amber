@@ -4,7 +4,7 @@
   >
     <SideBar />
     <div class="flex-1 flex flex-col min-h-screen">
-      <main class="p-4 w-full md:p-8 overflow-y-auto bg-[--color-glass]">
+      <main class="p-4 w-full md:p-8 overflow-y-auto">
         <slot />
       </main>
     </div>
