@@ -94,7 +94,7 @@ function handleCancelPost() {
       <!-- Post content -->
       <textarea
         :placeholder="'What is on your mind, ' + fullName + '?'"
-        class="flex-1 bg-transparent border border-slate-600 rounded-lg text-white p-4 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+        class="flex-1 bg-transparent placeholder:text-[13px] md:placeholder:text-[15px] lg:placeholder:text-lg border border-slate-600 rounded-lg text-white p-4 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
         rows="3"
         v-model="postInformation.content"
       />
@@ -110,13 +110,13 @@ function handleCancelPost() {
       />
     </div>
 
-    <div class="flex flex-col md:flex-row items-center gap-4">
+    <div class="flex flex-row md:flex-row items-center gap-4">
       <!-- Image Upload -->
       <label
         class="flex items-center gap-2 cursor-pointer text-amber-400 hover:text-amber-300 transition"
       >
         <Icon name="mdi:camera-outline" size="24" />
-        <span>Upload Image</span>
+        <span class="hidden md:block">Upload Image</span>
         <input
           ref="fileInput"
           type="file"
@@ -130,7 +130,7 @@ function handleCancelPost() {
       <div class="relative">
         <select
           v-model="postInformation.postFeeling"
-          class="cursor-pointer bg-slate-700 text-white rounded-md p-2 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 appearance-none"
+          class="cursor-pointer bg-slate-700 text-white text-[13px] rounded-md p-2 md:p-2 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 appearance-none"
         >
           <option disabled>Feeling...</option>
           <option>Happy 😊</option>
@@ -140,7 +140,7 @@ function handleCancelPost() {
           <option>Chill 😎</option>
         </select>
         <div
-          class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400"
+          class="pointer-events-none absolute inset-y-0 right-1 flex items-center text-slate-400"
         >
           <Icon name="mdi:chevron-down" size="20" />
         </div>
@@ -151,13 +151,13 @@ function handleCancelPost() {
         <button
           v-if="postInformation.content"
           @click="handleCancelPost"
-          class="cursor-pointer px-5 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-full transition shadow-md"
+          class="cursor-pointer px-5 py-2 text-[13px] bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-full transition shadow-md"
         >
           Cancel
         </button>
         <button
           @click="handleAddNewPost"
-          class="px-5 py-2 cursor-pointer bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-full transition shadow-md"
+          class="px-5 py-2 cursor-pointer text-[13px] bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-full transition shadow-md"
         >
           Post
         </button>

@@ -336,7 +336,7 @@ onMounted(async () => {
                   @click="toggleCommentOptions(comment.commentId)"
                 />
                 <!--COMMENT OPTIONS-->
-                <CommentOptions
+                <Options
                   @reportComment="handleReport"
                   @deleteComment="handleDeleteComment(comment.commentId)"
                   :showCommentOptions="activeCommentId === comment.commentId"

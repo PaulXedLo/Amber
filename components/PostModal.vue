@@ -89,13 +89,23 @@ async function handleAddComment() {
 // TOGGLE COMMENT OPTIONS
 
 function toggleCommentOptions(commentId) {
+  activePost.value = null;
   if (activeCommentId.value === commentId) {
     activeCommentId.value = null;
   } else {
     activeCommentId.value = commentId;
   }
 }
+// TOGGLE POST OPTIONS
 
+function togglePostOptions(postId) {
+  activeCommentId.value = null;
+  if (activePost.value === postId) {
+    activePost.value = null;
+  } else {
+    activePost.value = postId;
+  }
+}
 // DELETE COMMENT
 
 async function handleDeleteComment(commentId) {
@@ -115,6 +125,30 @@ async function handleDeleteComment(commentId) {
       position: "topCenter",
     });
     activeCommentId.value = null;
+  }
+}
+
+// DELETE POST
+
+async function handleDeletePost(postId) {
+  try {
+    await $fetch(`/api/posts`, {
+      method: "DELETE",
+      query: { postId: postId },
+    });
+    activePost.value = null;
+    $emit("close");
+    toast.success({
+      message: "Post deleted successfully.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+  } catch (error) {
+    toast.error({
+      message: "Failed to delete post.",
+      timeout: 3000,
+      position: "topCenter",
+    });
   }
 }
 
@@ -168,11 +202,18 @@ onMounted(async () => {
       <!--RIGHT SIDE (POST INFO)-->
       <div class="w-[400px] flex flex-col p-6 gap-5 relative text-white">
         <div class="flex flex-row">
+          <!--POST OPTIONS-->
           <Icon
             name="weui:more-filled"
             class="cursor-pointer absolute top-4 right-14"
             size="25"
             @click="togglePostOptions(post.posts.id)"
+          />
+          <Options
+            :showPostOptions="activePost === post.posts.id"
+            :profileId="props.post.profiles.id"
+            @reportPost="handleReport"
+            @deletePost="handleDeletePost(post.posts.id)"
           />
           <button
             @click="$emit('close')"
@@ -304,7 +345,7 @@ onMounted(async () => {
                     @click="toggleCommentOptions(comment.commentId)"
                   />
                   <!--COMMENT OPTIONS-->
-                  <CommentOptions
+                  <Options
                     @reportComment="handleReport"
                     @deleteComment="handleDeleteComment(comment.commentId)"
                     :showCommentOptions="activeCommentId === comment.commentId"

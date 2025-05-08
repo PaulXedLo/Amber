@@ -7,6 +7,7 @@ const { toggleLikePost } = useLikes();
 const { toggleFollowUser, checkIfFollowing } = useFollow();
 const posts = usePostsStore();
 const pending = ref(false);
+
 const fallbackImage =
   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 // LIKE POSTS
@@ -25,6 +26,17 @@ async function toggleLike(post) {
 function getFollowStatus(userId) {
   return user.followStatus[userId] || "";
 }
+const followStatus = (id) => {
+  let status = getFollowStatus(id);
+  if (status === "followed") {
+    return "Unfollow";
+  } else if (status === "pending") {
+    return "Pending";
+  } else if (status === "unfollowed") {
+    return "Follow";
+  }
+};
+
 // FOLLOW / UNFOLLOW USER
 async function handleFollowClick(targetUserId, isPrivate) {
   if (!targetUserId) return;
@@ -95,7 +107,7 @@ onMounted(async () => {
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-4">
               <div
-                class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
+                class="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-amber-400"
               >
                 <NuxtImg
                   :src="post.profiles.profilePicture || fallbackImage"
@@ -105,14 +117,16 @@ onMounted(async () => {
                 />
               </div>
               <div>
-                <h2 class="text-white font-bold text-md leading-tight">
+                <h2
+                  class="text-white text-sm font-bold md:text-md leading-tight"
+                >
                   {{ post.profiles.fullName || "Unknown User" }} -
-                  <span class="text-sm text-slate-400">{{
+                  <span class="text-xs md:text-sm text-slate-400">{{
                     post.posts.feeling
                   }}</span>
                 </h2>
                 <p
-                  class="text-sm text-slate-400 cursor-pointer"
+                  class="text-xs md:text-sm text-slate-400 cursor-pointer"
                   @click="navigateTo(`/profile/${post.profiles.username}`)"
                 >
                   @{{ post.profiles.username || "@unknown" }}
@@ -134,27 +148,23 @@ onMounted(async () => {
                   getFollowStatus(post.profiles.id) === 'unfollowed',
               }"
             >
-              {{
-                getFollowStatus(post.profiles.id) === "followed"
-                  ? "Unfollow"
-                  : getFollowStatus(post.profiles.id) === "pending"
-                  ? "Pending"
-                  : "Follow"
-              }}
+              {{ followStatus(post.profiles.id) }}
             </button>
           </div>
 
           <!-- Content -->
-          <p class="text-slate-300 mb-3">
+          <p class="text-slate-w-auto 300 text-sm md:text-lg mb-3">
             {{ post.posts.contentText || "No bio available" }}
           </p>
+
+          <!-- Images -->
 
           <img
             v-if="post.posts.contentImage"
             @click="navigateTo(`/posts/${post.posts.id}`)"
             :src="post.posts.contentImage"
             alt="Post Image"
-            class="rounded-lg w-full object-cover"
+            class="rounded-lg w-full h-80 object-contain"
           />
 
           <!-- Likes and Comments -->

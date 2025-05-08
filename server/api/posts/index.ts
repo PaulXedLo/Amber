@@ -4,6 +4,7 @@ import { desc, eq, sql, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const db = getDb();
+  // NEW POST
   if (event.method === "POST") {
     const body = await readBody(event);
 
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
       });
     }
   }
-
+  // GET POST(s)
   if (event.method === "GET") {
     const query = getQuery(event);
     const { userId } = query;
@@ -88,5 +89,27 @@ export default defineEventHandler(async (event) => {
       userPosts: normalizePosts(userPosts),
       allPosts: normalizePosts(allPosts),
     };
+  }
+  // DELETE POST
+  if (event.method === "DELETE") {
+    const query = getQuery(event);
+    const { postId } = query;
+    if (!postId) {
+      console.log("Could not get post ID");
+      throw createError({
+        statusCode: 400,
+        message: "Could not get post ID",
+      });
+    }
+    try {
+      await db.delete(posts).where(eq(posts.id, postId)).execute();
+      return { success: true };
+    } catch (error) {
+      console.log("Could not delete post", error);
+      throw createError({
+        statusCode: 500,
+        message: "Could not delete post",
+      });
+    }
   }
 });
