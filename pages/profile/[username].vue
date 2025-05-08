@@ -19,34 +19,18 @@ const {
   postsCount,
 } = storeToRefs(publicStore);
 
-// MODAL
+// Composables
 const { openModal, activePost, closeModal, isOpen } = useModal();
-
+const { toggleFollowUser } = useFollow();
 // FOLLOW / UNFOLLOW USER
 async function handleFollowClick() {
   if (loadingFollow.value) return;
   loadingFollow.value = true;
   try {
-    if (!isFollowing.value) {
-      await $fetch("/api/profile/follow", {
-        method: "POST",
-        body: { userId: user.userId, followingUserId: userId.value },
-      });
-      isFollowing.value = true;
-      followersCount.value++;
-    } else {
-      await $fetch("/api/profile/follow", {
-        method: "DELETE",
-        body: { userId: user.userId, followingUserId: userId.value },
-      });
-      isFollowing.value = false;
-      followersCount.value = Math.max(followersCount.value - 1, 0);
-    }
+    await toggleFollowUser(userId.value, false);
+    isFollowing.value = !isFollowing.value;
   } catch (error) {
-    console.log("Could not toggle follow", error);
-    throw new Error("Failed to follow/unfollow");
-  } finally {
-    loadingFollow.value = false;
+    console.error("Error toggling follow:", error);
   }
 }
 

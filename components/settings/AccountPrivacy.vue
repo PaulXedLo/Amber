@@ -46,7 +46,7 @@ async function togglePrivacy() {
       <p class="mt-3">
         Current Status:
         <strong class="underline">{{
-          user.isPrivate ? "Public" : "Private"
+          user.isPrivate ? "Private" : "Public"
         }}</strong>
       </p>
     </div>

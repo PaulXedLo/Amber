@@ -36,6 +36,7 @@ const followStatus = (id) => {
   } else if (status === "unfollowed") {
     return "Follow";
   }
+  return "Follow";
 };
 
 // FOLLOW / UNFOLLOW USER
@@ -51,7 +52,7 @@ onMounted(async () => {
   // CHECK IF USER IS FOLLOWING PROFILES
   const followChecks = posts.allPosts
     .filter((post) => post.profiles?.id)
-    .map((post) => getFollowStatus(post.profiles.id));
+    .map((post) => getFollowStatus(post.profiles?.id));
   // FETCH RANDOM COMMENT FOR EACH POST
   const commentFetches = posts.allPosts.map(async (post) => {
     try {
@@ -100,8 +101,8 @@ onMounted(async () => {
     <template v-else>
       <div class="flex flex-col items-center mt-8 gap-3">
         <motion.div
-          :initial="{ opacity: 0, y: 50 }"
-          :whileInView="{ opacity: 1, y: 0 }"
+          :initial="{ opacity: 0 }"
+          :whileInView="{ opacity: 1 }"
           :transition="{ duration: 0.5, ease: 'easeOut' }"
           :viewport="{ once: true, margin: '-100px' }"
           v-for="(post, index) in posts.allPosts"
@@ -140,7 +141,11 @@ onMounted(async () => {
               </div>
             </div>
             <button
-              v-if="post.profiles.username !== user.username"
+              v-if="
+                post.profiles?.id &&
+                user.userId &&
+                post.profiles.id !== user.userId
+              "
               @click="
                 handleFollowClick(post.profiles.id, post.profiles.isPrivate)
               "
