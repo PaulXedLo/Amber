@@ -1,5 +1,6 @@
 <script setup>
 import "animate.css";
+import { onMounted, onBeforeUnmount } from "vue";
 const toast = useToast();
 const user = useUserStore();
 
@@ -176,36 +177,115 @@ async function handleReport() {
 // HOOKS
 
 onMounted(async () => {
+  document.body.classList.add("overflow-hidden");
   if (!postId.value) {
     console.error("Post ID is missing.");
     return;
   }
   await fetchComments(postId.value);
 });
+
+onBeforeUnmount(() => {
+  document.body.classList.remove("overflow-hidden");
+});
 </script>
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+  <div
+    class="fixed inset-0 z-50 p-4 sm:p-6 md:p-10 flex items-center justify-center bg-black/70"
+  >
     <!--MODAL CONTENT-->
     <div
-      class="animate__animated animate__zoomIn animate__faster flex w-full max-w-6xl h-[90vh] rounded-2xl overflow-hidden bg-slate-900"
+      class="animate__animated animate__zoomIn animate__faster flex flex-col md:flex-row w-full h-full md:max-w-5xl md:h-[90vh] rounded-2xl overflow-hidden bg-slate-900"
     >
+      <div
+        class="block md:hidden p-4 bg-slate-900 border-b border-slate-800 relative flex flex-col gap-3"
+      >
+        <div class="flex justify-between items-start">
+          <!-- Profile Info -->
+          <div class="flex items-center gap-3">
+            <NuxtLink
+              @click="$emit('close')"
+              :to="`/profile/${post.profiles.username}`"
+            >
+              <NuxtImg
+                :src="post.profiles.profilePicture || fallbackImage"
+                alt="Profile Picture"
+                class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
+              />
+            </NuxtLink>
+            <div>
+              <NuxtLink
+                @click="$emit('close')"
+                :to="`/profile/${post.profiles.username}`"
+                class="cursor-pointer"
+              >
+                <h2 class="text-white font-semibold text-sm">
+                  {{ post.profiles.fullName }}
+                  <span class="text-xs text-slate-400 ml-1">{{
+                    post.posts.feeling ? `- ${post.posts.feeling}` : ""
+                  }}</span>
+                </h2>
+                <p class="text-xs text-slate-400">
+                  @{{ post.profiles.username }}
+                </p>
+              </NuxtLink>
+            </div>
+          </div>
+          <!-- Options & Close Button -->
+          <div class="flex items-center gap-2">
+            <Icon
+              name="weui:more-filled"
+              class="cursor-pointer text-white"
+              size="25"
+              @click="togglePostOptions(post.posts.id)"
+            />
+
+            <Options
+              :showPostOptions="activePost === post.posts.id"
+              :profileId="props.post.profiles.id"
+              @reportPost="handleReport"
+              @deletePost="handleDeletePost(post.posts.id)"
+            />
+            <button
+              @click="$emit('close')"
+              class="text-white text-2xl hover:text-amber-400 focus:outline-none"
+            >
+              <Icon
+                name="emojione-v1:large-orange-diamond"
+                class="cursor-pointer hover:opacity-80"
+              />
+            </button>
+          </div>
+        </div>
+        <!-- Post Description (Moved into Mobile Header) -->
+        <p
+          class="text-sm text-slate-200 overflow-y-auto max-h-[60px] pr-2 custom-scrollbar"
+        >
+          {{ post.posts.contentText }}
+        </p>
+      </div>
+
       <!--LEFT SIDE (IMAGE)-->
-      <div class="flex-1 bg-black flex items-center justify-center">
+      <div
+        class="w-full h-[40vh] md:h-auto md:flex-1 flex items-center justify-center"
+      >
         <NuxtImg
           :src="post.posts.contentImage"
           alt="Post Image"
           densities="x1"
-          class="object-cover w-full h-full"
+          class="object-contain md:object-contain p-0.5 md:p-0 w-full h-full"
         />
       </div>
 
       <!--RIGHT SIDE (POST INFO)-->
-      <div class="w-[400px] flex flex-col p-6 gap-5 relative text-white">
-        <div class="flex flex-row">
+      <div
+        class="w-full md:w-[400px] lg:w-[450px] flex flex-col p-4 md:p-6 gap-3 md:gap-4 relative text-white flex-1 md:flex-initial md:h-full"
+      >
+        <div class="hidden md:flex flex-row">
           <!--POST OPTIONS-->
           <Icon
             name="weui:more-filled"
-            class="cursor-pointer absolute top-4 right-14"
+            class="cursor-pointer absolute top-4 right-14 text-white"
             size="25"
             @click="togglePostOptions(post.posts.id)"
           />
@@ -225,15 +305,16 @@ onMounted(async () => {
             />
           </button>
         </div>
-        <!--PROFILE INFO-->
-        <div class="flex items-center gap-3 pb-3 border-slate-700">
+        <!-- Desktop: PROFILE INFO -->
+        <div
+          class="hidden md:flex items-center gap-3 pb-3 border-b md:border-slate-700"
+        >
           <NuxtLink
             @click="$emit('close')"
             :to="`/profile/${post.profiles.username}`"
           >
             <NuxtImg
               :src="post.profiles.profilePicture || fallbackImage"
-              @click="navigateToProfile(post.profiles.username)"
               alt="Profile Picture"
               class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
             />
@@ -256,13 +337,16 @@ onMounted(async () => {
             </NuxtLink>
           </div>
         </div>
-        <!--Post description-->
-        <p class="text-sm text-slate-200 overflow-y-auto max-h-[100px] pr-2">
+
+        <!--Post description (Desktop)-->
+        <p
+          class="hidden md:block text-sm text-slate-200 overflow-y-auto md:max-h-[100px] lg:max-h-[120px] pr-2 custom-scrollbar"
+        >
           {{ post.posts.contentText }}
         </p>
 
         <!--LIKES & COMMENT INPUT -->
-        <div class="pt-3 border-slate-700">
+        <div class="pt-2 md:pt-3 border-slate-700">
           <div class="flex items-center gap-4">
             <button
               @click="handleLikePost(post)"
@@ -299,7 +383,7 @@ onMounted(async () => {
 
         <!--COMMENTS SECTION-->
         <div
-          class="flex-grow overflow-y-auto max-h-[calc(110vh-450px)] p-1 rounded-lg bg-slate-800/50 mt-2 custom-scrollbar"
+          class="flex-grow overflow-y-auto p-1 rounded-lg bg-slate-800/50 mt-2 custom-scrollbar"
         >
           <!-- Loading state -->
           <LoadingSpinner v-if="loading" />

@@ -3,7 +3,7 @@
     class="flex min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-amber-900 text-white"
   >
     <SideBar />
-    <div class="flex-1 flex flex-col min-h-screen">
+    <div class="mt-10 flex-1 flex flex-col min-h-screen">
       <main class="p-4 md:p-8 overflow-y-hidden">
         <slot />
       </main>
