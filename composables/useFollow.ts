@@ -1,3 +1,6 @@
+interface FollowAPIResponse {
+  status: "pending" | "followed" | "unfollowed";
+}
 export function useFollow() {
   const loading = ref(false);
 
@@ -27,18 +30,28 @@ export function useFollow() {
           },
         });
 
-        user.followStatus[targetUserId] =
-          status === "unfollowed" ? "unfollowed" : "unfollowed";
+        if (status === "unfollowed") {
+          user.followStatus[targetUserId] = "unfollowed";
+        } else {
+          console.warn(
+            "Unexpected status after DELETE. Expected 'unfollowed', got:",
+            status
+          );
+          user.followStatus[targetUserId] = "unfollowed";
+        }
       } else {
-        const { status }: any = await $fetch("/api/profile/follow", {
-          method: "POST",
-          body: {
-            isPrivate,
-            userId: user.userId,
-            followingUserId: targetUserId,
-          },
-        });
-
+        const { status } = await $fetch<FollowAPIResponse>(
+          "/api/profile/follow",
+          {
+            method: "POST",
+            body: {
+              userId: user.userId,
+              followingUserId: targetUserId,
+              isPrivate,
+            },
+          }
+        );
+        console.log(status);
         if (status === "pending" || status === "followed") {
           user.followStatus[targetUserId] = status;
         } else {

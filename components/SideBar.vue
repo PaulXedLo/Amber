@@ -136,7 +136,7 @@ watch(showMobileMenu, (newValue) => {
       >
         <NuxtImg
           :src="user.profilePic"
-          @click="navigateTo('/profile/myprofile')"
+          @click="$router.push('/profile/me')"
           alt="Profile"
           class="w-full h-full object-cover cursor-pointer"
         />

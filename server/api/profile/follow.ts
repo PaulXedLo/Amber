@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     });
   }
   // SEND/DELETE REQUEST TO A PRIVATE ACCOUNT
-  if (isPrivate) {
+  if (isPrivate === true) {
     try {
       if (event.method === "POST") {
         await db
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
     }
   }
   //SEND/DELETE FOLLOW TO A PUBLIC ACCOUNT
-  else {
+  else if (isPrivate === false) {
     try {
       if (event.method === "POST") {
         await db
