@@ -23,6 +23,7 @@ export default defineNuxtConfig({
   modules: [
     "@pinia/nuxt",
     "@nuxt/eslint",
+    "motion-v/nuxt",
     "@nuxt/fonts",
     "@nuxt/icon",
     "@nuxt/image",

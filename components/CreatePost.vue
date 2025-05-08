@@ -1,4 +1,5 @@
 <script setup>
+import { motion } from "motion-v";
 const posts = usePostsStore();
 const user = useUserStore();
 const toast = useToast();

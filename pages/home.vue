@@ -1,6 +1,7 @@
 <script setup>
 definePageMeta({ layout: "default" });
 // REFS
+import { motion } from "motion-v";
 const user = useUserStore();
 const { fetchComments, comments } = useComments();
 const { toggleLikePost } = useLikes();
@@ -98,9 +99,14 @@ onMounted(async () => {
     <!--POSTS-->
     <template v-else>
       <div class="flex flex-col items-center mt-8 gap-3">
-        <div
-          v-for="post in posts.allPosts"
+        <motion.div
+          :initial="{ opacity: 0, y: 50 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5, ease: 'easeOut' }"
+          :viewport="{ once: true, margin: '-100px' }"
+          v-for="(post, index) in posts.allPosts"
           :key="post.posts.id"
+          :custom="index"
           class="w-full max-w-2xl rounded-2xl bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md shadow-md hover:shadow-[0_0_12px_rgba(251,191,36,0.3)] transition duration-300 p-6"
         >
           <!--POST CONTENT-->
@@ -212,7 +218,7 @@ onMounted(async () => {
             />
             {{ post.displayComment }}
           </p>
-        </div>
+        </motion.div>
       </div>
     </template>
   </div>

@@ -1,9 +1,11 @@
 <script setup>
 const user = useUserStore();
+import { motion } from "motion-v";
 const showSearchBar = ref(false);
 const searchQuery = ref("");
+const sidebarRef = ref(null);
 const searchInputRef = ref(null);
-
+const showMobileMenu = ref(false);
 async function signOut() {
   await user.signOut();
 }
@@ -25,23 +27,54 @@ function clearSearch() {
   searchInputRef.value?.focus();
 }
 function toggleMobileMenu() {
-  console.log("Toggle mobile menu");
+  showMobileMenu.value = !showMobileMenu.value;
+  if (showMobileMenu.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
 }
+function handleClickOutside(event) {
+  if (
+    sidebarRef.value &&
+    !sidebarRef.value.$el.contains(event.target) &&
+    showMobileMenu.value
+  ) {
+    const menuButton = document.querySelector('button[aria-label="Open menu"]');
+    if (menuButton && menuButton.contains(event.target)) {
+      return;
+    }
+    toggleMobileMenu();
+  }
+}
+
+watch(showMobileMenu, (newValue) => {
+  if (newValue) document.addEventListener("mousedown", handleClickOutside);
+  else document.removeEventListener("mousedown", handleClickOutside);
+});
 </script>
 <template>
+  <!-- Overlay for lower opacity of outer content when the mobile menu is open -->
+  <div
+    v-if="showMobileMenu"
+    class="fixed inset-0 bg-black/50 z-30 md:hidden"
+    @click="toggleMobileMenu"
+  ></div>
+
   <!-- Mobile Header -->
   <div
-    class="fixed min-w-screen top-0 z-50 h-16 px-4 flex items-center justify-between md:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-800"
+    class="border-b-0 md:border-b fixed min-w-screen top-0 z-50 h-16 px-4 flex items-center justify-between md:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-800"
   >
     <!-- Menu Icon -->
     <button
       @click="toggleMobileMenu"
-      class="p-1 mt-1 text-slate-200 hover:text-amber-400 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-500"
+      class="p-1 mt-1 text-slate-200 hover:text-amber-400 rounded-full focus:outline-none"
       aria-label="Open menu"
     >
-      <Icon name="mdi:menu" size="28" />
+      <motion.div :whileHover="{ scale: 1.1 }">
+        <Icon name="mdi:menu" size="28" />
+      </motion.div>
     </button>
-
     <!-- Search functionality & Profile -->
     <div class="flex items-center gap-2 flex-1 justify-end">
       <!-- Search Input  -->
@@ -112,22 +145,30 @@ function toggleMobileMenu() {
   </div>
 
   <!-- Desktop Sidebar -->
-  <aside
-    class="sticky top-0 h-screen w-64 hidden md:flex flex-col justify-between px-6 py-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md"
+  <motion.aside
+    ref="sidebarRef"
+    :initial="{ x: '-100%' }"
+    :animate="{ x: showMobileMenu ? '0%' : '-100%' }"
+    :transition="{ duration: 0.3, ease: 'easeInOut' }"
+    :class="[
+      'h-screen w-64 flex flex-col justify-between px-6 py-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md',
+      'fixed top-0 left-0 z-40',
+      'md:sticky md:!transform-none md:left-auto md:top-0 md:z-auto',
+    ]"
   >
     <!-- Top: Logo and Navigation links -->
     <div class="flex flex-col gap-1 overflow-y-auto text-center">
       <NuxtLink
         to="/home"
-        class="text-4xl font-extrabold text-amber-400 tracking-wide hover:text-amber-300 transition"
+        class="hidden md:block text-4xl font-extrabold text-amber-400 tracking-wide hover:text-amber-300 transition"
       >
         Amber
       </NuxtLink>
 
-      <nav class="flex flex-col gap-6 mt-10 text-slate-200">
+      <nav class="flex flex-col gap-6 mt-14 md:mt-10 text-slate-200">
         <NuxtLink
           to="/profile/me"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="hidden md:flex items-center gap-3 hover:text-amber-400 transition"
         >
           <NuxtImg
             :src="user.profilePic"
@@ -179,7 +220,7 @@ function toggleMobileMenu() {
         <Icon name="mdi:logout" size="40" /> Logout
       </button>
     </div>
-  </aside>
+  </motion.aside>
 </template>
 
 <style scoped>
