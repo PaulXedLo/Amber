@@ -3,7 +3,7 @@ import "animate.css";
 import { onMounted, onBeforeUnmount } from "vue";
 const toast = useToast();
 const user = useUserStore();
-
+const postsStore = usePostsStore();
 // COMPOSABLES
 
 const { toggleLikePost } = useLikes();
@@ -12,7 +12,7 @@ const { comments, loading, fetchComments, deleteComment, addComment } =
   useComments();
 
 // PROPS AND REFS
-
+const emit = defineEmits(["close", "postRemoved"]);
 const props = defineProps({ post: Object });
 const postId = computed(() => props.post?.posts?.id);
 const activeCommentId = ref(null);
@@ -131,19 +131,19 @@ async function handleDeleteComment(commentId) {
 
 // DELETE POST
 
-async function handleDeletePost(postId) {
+async function handleDeletePost() {
   try {
-    await $fetch(`/api/posts`, {
-      method: "DELETE",
-      query: { postId: postId },
-    });
-    activePost.value = null;
-    $emit("close");
-    toast.success({
-      message: "Post deleted successfully.",
-      timeout: 3000,
-      position: "topCenter",
-    });
+    const success = await postsStore.deletePost(postId.value);
+    if (success) {
+      activePost.value = null;
+      emit("close");
+      emit("postRemoved");
+      toast.success({
+        message: "Post deleted successfully.",
+        timeout: 3000,
+        position: "topCenter",
+      });
+    }
   } catch (error) {
     toast.error({
       message: "Failed to delete post.",
@@ -195,6 +195,7 @@ onBeforeUnmount(() => {
   >
     <!--MODAL CONTENT-->
     <div
+      v-if="post && post.profiles && post.posts"
       class="animate__animated animate__zoomIn animate__faster flex flex-col md:flex-row w-full h-full md:max-w-5xl md:h-[90vh] rounded-2xl overflow-hidden bg-slate-900"
     >
       <div
@@ -231,7 +232,7 @@ onBeforeUnmount(() => {
               </NuxtLink>
             </div>
           </div>
-          <!-- Options & Close Button -->
+          <!-- Post Options & Close Button -->
           <div class="flex items-center gap-2">
             <Icon
               name="weui:more-filled"
@@ -244,7 +245,7 @@ onBeforeUnmount(() => {
               :showPostOptions="activePost === post.posts.id"
               :profileId="props.post.profiles.id"
               @reportPost="handleReport"
-              @deletePost="handleDeletePost(post.posts.id)"
+              @deletePost="handleDeletePost"
             />
             <button
               @click="$emit('close')"

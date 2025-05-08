@@ -215,7 +215,7 @@ watch(showMobileMenu, (newValue) => {
     <div class="text-slate-400 mt-8">
       <button
         @click="signOut"
-        class="flex items-center gap-3 hover:text-red-400 transition"
+        class="hidden md:flex items-center gap-3 hover:text-red-400 transition"
       >
         <Icon name="mdi:logout" size="40" /> Logout
       </button>

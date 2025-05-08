@@ -72,6 +72,30 @@ export const usePostsStore = defineStore("posts", {
         console.log("Error! couldnt add post", error);
       }
     },
+    async deletePost(postId: any) {
+      const supabase = useNuxtApp().$supabase;
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const userId = session?.user?.id;
+      try {
+        const success = await $fetch("/api/posts", {
+          method: "DELETE",
+          body: { postId, userId },
+        });
+        if (!success) {
+          throw new Error("Failed to delete post");
+        } else {
+          await this.fetchPosts();
+          return success;
+        }
+      } catch (error) {
+        console.log("Error! couldnt delete post", error);
+      }
+    },
     async fetchComments(postId: any) {
       if (!postId) return;
       try {

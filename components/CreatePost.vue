@@ -156,12 +156,14 @@ function handleCancelPost() {
         >
           Cancel
         </button>
-        <button
+        <motion.button
+          :whileHover="{ scale: 1.05 }"
+          :whilePress="{ scale: 0.95 }"
           @click="handleAddNewPost"
           class="px-5 py-2 cursor-pointer text-[13px] bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-full transition shadow-md"
         >
           Post
-        </button>
+        </motion.button>
       </div>
     </div>
   </div>

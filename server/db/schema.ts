@@ -40,7 +40,7 @@ export const posts = pgTable("posts", {
 export const postLikes = pgTable("post_likes", {
   id: uuid("id").primaryKey(),
   userId: uuid("user_id").references(() => profiles.id),
-  postId: uuid("post_id").references(() => posts.id),
+  postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
@@ -56,7 +56,7 @@ export const followers = pgTable("followers", {
 /* COMMENTS TABLE */
 export const comments = pgTable("comments", {
   id: uuid("id").primaryKey(),
-  postId: uuid("post_id").references(() => posts.id),
+  postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
   userId: uuid("user_id").references(() => profiles.id),
   content: text("content"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -73,5 +73,5 @@ export const followRequests = pgTable("follow_requests", {
 
 export const reports = pgTable("reports", {
   userId: uuid("user_id").references(() => profiles.id),
-  postId: uuid("post_id").references(() => posts.id),
+  postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
 });

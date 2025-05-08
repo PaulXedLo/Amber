@@ -3,6 +3,7 @@ import "animate.css";
 definePageMeta({
   layout: "myprofile",
 });
+import { motion } from "motion-v";
 const { openModal, activePost, closeModal, isOpen } = useModal();
 // USER PROFILE REFS
 
@@ -19,6 +20,12 @@ const {
   followingCount,
   postsCount,
 } = storeToRefs(user);
+
+// UPDATE POSTS COUNT
+
+function updatePostsCount() {
+  postsCount.value = posts.userPosts.length;
+}
 
 // HOOKS
 
@@ -39,6 +46,7 @@ onMounted(async () => {
     v-if="isOpen"
     :post="activePost"
     @close="closeModal"
+    @postRemoved="updatePostsCount"
     @likeUpdated="likeUpdated"
   />
   <div
@@ -70,17 +78,24 @@ onMounted(async () => {
       <h3 class="text-1xl">{{ bio }}</h3>
       <!-- Profile options -->
       <div class="flex gap-6 mt-2">
-        <NuxtLink
-          to="/profile/settings/profilesettings"
-          class="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 transition text-white font-semibold shadow hover:shadow-lg"
+        <motion.button
+          :whileHover="{ scale: 1.05 }"
+          :whilePress="{ scale: 0.95 }"
         >
-          Edit Profile
-        </NuxtLink>
-        <button
-          class="px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
+          <NuxtLink
+            to="/profile/settings/profilesettings"
+            class="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 transition text-white font-semibold shadow hover:shadow-lg"
+          >
+            Edit Profile
+          </NuxtLink>
+        </motion.button>
+        <motion.button
+          :whileHover="{ scale: 1.05 }"
+          :whilePress="{ scale: 0.95 }"
+          class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
         >
           Share Profile
-        </button>
+        </motion.button>
       </div>
 
       <!-- Stats -->
@@ -101,7 +116,18 @@ onMounted(async () => {
     </div>
 
     <!-- Posts Grid -->
-
+    <div v-if="postsCount < 1" class="flex flex-col gap-4 items-center mt-10">
+      <h1 class="text-2xl font-bold">No posts yet</h1>
+      <p class="text-slate-400">Start sharing your moments!</p>
+      <motion.button
+        :whileHover="{ scale: 1.05 }"
+        :whilePress="{ scale: 0.95 }"
+        @click="$router.push('/uploadpost')"
+        class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
+      >
+        Add new post
+      </motion.button>
+    </div>
     <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-10" v-if="!loadingPosts">
       <div
         v-for="post in posts.userPosts"

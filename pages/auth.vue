@@ -61,7 +61,7 @@ onBeforeMount(async () => {
       <h1
         ref="amberTitle"
         :class="['text-white', 'animate__animated', titleAnimation]"
-        class="font-extrabold cursor-pointer drop-shadow-xl mb-6 text-5xl sm:text-7xl md:text-8xl transition-all"
+        class="font-extrabold cursor-pointer drop-shadow-xl mb-6 text-8xl sm:text-7xl transition-all"
       >
         <Icon size="32" name="noto-v1:large-orange-diamond" />Amber<Icon
           size="32"
