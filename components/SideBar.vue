@@ -1,11 +1,117 @@
 <script setup>
 const user = useUserStore();
+const showSearchBar = ref(false);
+const searchQuery = ref("");
+const searchInputRef = ref(null);
+
 async function signOut() {
   await user.signOut();
 }
+
+function openSearch() {
+  showSearchBar.value = true;
+  nextTick(() => {
+    searchInputRef.value?.focus();
+  });
+}
+
+function closeSearch() {
+  showSearchBar.value = false;
+  searchQuery.value = "";
+}
+
+function clearSearch() {
+  searchQuery.value = "";
+  searchInputRef.value?.focus();
+}
+function toggleMobileMenu() {
+  console.log("Toggle mobile menu");
+}
 </script>
 <template>
-  <!-- Sidebar container -->
+  <!-- Mobile Header -->
+  <div
+    class="fixed min-w-screen top-0 z-50 h-16 px-4 flex items-center justify-between md:hidden bg-slate-900/80 backdrop-blur-md border-b border-slate-800"
+  >
+    <!-- Menu Icon -->
+    <button
+      @click="toggleMobileMenu"
+      class="p-1 mt-1 text-slate-200 hover:text-amber-400 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-500"
+      aria-label="Open menu"
+    >
+      <Icon name="mdi:menu" size="28" />
+    </button>
+
+    <!-- Search functionality & Profile -->
+    <div class="flex items-center gap-2 flex-1 justify-end">
+      <!-- Search Input  -->
+      <div class="flex-1 flex justify-end min-w-0">
+        <transition
+          enter-active-class="transition-all duration-300 ease-in-out"
+          leave-active-class="transition-all duration-200 ease-in-out"
+          enter-from-class="opacity-0 max-w-0"
+          enter-to-class="opacity-100 max-w-full"
+          leave-from-class="opacity-100 max-w-full"
+          leave-to-class="opacity-0 max-w-0"
+        >
+          <div v-if="showSearchBar" class="w-full relative">
+            <input
+              type="text"
+              placeholder="Search Amber..."
+              ref="searchInputRef"
+              v-model="searchQuery"
+              @keydown.esc="closeSearch"
+              class="w-full h-10 pl-10 pr-12 py-2 rounded-full bg-slate-700/70 text-slate-100 border border-slate-600 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none placeholder-slate-400 text-sm"
+            />
+            <Icon
+              name="mdi:magnify"
+              size="20"
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-white rounded-full"
+              aria-label="Clear search"
+            >
+              <Icon name="mdi:close-circle" size="18" />
+            </button>
+            <button
+              @click="closeSearch"
+              class="absolute right-1.5 top-6 -translate-y-1/2 p-0.5 text-slate-400 hover:text-white rounded-full"
+              aria-label="Close search"
+            >
+              <Icon name="mdi:close" size="22" />
+            </button>
+          </div>
+        </transition>
+      </div>
+
+      <!-- Search Icon (toggle) -->
+      <button
+        v-if="!showSearchBar"
+        @click="openSearch"
+        class="p-1 text-slate-200 mt-1 hover:text-amber-400 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-500"
+        aria-label="Open search"
+      >
+        <Icon name="mdi:magnify" size="28" />
+      </button>
+
+      <!-- Profile Pic -->
+      <div
+        class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 shrink-0"
+      >
+        <NuxtImg
+          :src="user.profilePic"
+          @click="navigateTo('/profile/myprofile')"
+          alt="Profile"
+          class="w-full h-full object-cover cursor-pointer"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Sidebar -->
   <aside
     class="sticky top-0 h-screen w-64 hidden md:flex flex-col justify-between px-6 py-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md"
   >
