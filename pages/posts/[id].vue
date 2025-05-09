@@ -1,5 +1,6 @@
 <script setup>
 import "animate.css";
+import { motion } from "motion-v";
 definePageMeta({ layout: "default" });
 const toast = useToast();
 const route = useRoute();
@@ -14,6 +15,7 @@ const { toggleLikePost } = useLikes();
 const { userId } = storeToRefs(user);
 const postInfo = ref(null);
 let showReport = ref(false);
+const activePost = ref(null);
 let commentsCount = computed(() => comments.value.length);
 const postId = computed(() => postInfo.value?.id);
 const userInfo = ref(null);
@@ -23,6 +25,31 @@ let showComments = ref(false);
 let commentText = ref("");
 let showCommentOptions = ref(null);
 let activeCommentId = ref(null);
+
+// HANDLE DELETE POST
+
+async function handleDeletePost() {
+  try {
+    const success = await postsStore.deletePost(postId.value);
+    if (success) {
+      activePost.value = null;
+      emit("close");
+      emit("postRemoved");
+      toast.success({
+        message: "Post deleted successfully.",
+        timeout: 3000,
+        position: "topCenter",
+      });
+    }
+  } catch (error) {
+    toast.error({
+      message: "Failed to delete post.",
+      timeout: 3000,
+      position: "topCenter",
+    });
+  }
+}
+
 // LIKE POST
 async function likePost(postInfo) {
   try {
@@ -37,6 +64,16 @@ async function likePost(postInfo) {
     });
   }
 }
+// TOGGLE POST OPTIONS
+
+function togglePostOptions(postId) {
+  if (activePost.value === postId) {
+    activePost.value = null;
+  } else {
+    activePost.value = postId;
+  }
+}
+
 // REPORT
 async function handleReport() {
   try {
@@ -155,7 +192,22 @@ onMounted(async () => {
     v-if="postInfo && userInfo"
     class="flex flex-col min-h-screen w-full text-white py-12 px-4 sm:px-6 lg:px-8"
   >
-    <div
+    <motion.div
+      :initial="{ opacity: 0, scale: 0.4 }"
+      :whileInView="{
+        opacity: 1,
+        scale: 1,
+        boxShadow: [
+          '0px 0px 8px rgba(251,191,36,0.3)',
+          '0px 0px 16px rgba(251,191,36,0.6)',
+          '0px 0px 8px rgba(251,191,36,0.3)',
+        ],
+      }"
+      :transition="{
+        default: { duration: 0.5, ease: 'easeOut' },
+        boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+      }"
+      :viewport="{ margin: '-100px' }"
       class="flex flex-col items-center bg-slate-900/80 p-8 sm:p-10 rounded-2xl w-full max-w-3xl mx-auto gap-8 shadow-xl border border-gray-800"
     >
       <!-- HEADER -->
@@ -188,19 +240,14 @@ onMounted(async () => {
             <Icon
               name="octicon:kebab-horizontal-16"
               size="24"
-              @click="showReport = !showReport"
+              @click="togglePostOptions(postInfo.id)"
             />
-            <div
-              v-if="showReport"
-              class="animate__animated animate__slideInDown absolute right-0 z-50 bg-gray-800 border border-gray-700 rounded-lg shadow-lg w-40 text-sm"
-            >
-              <button
-                class="w-full hover:bg-gray-800 cursor-pointer px-4 py-2 text-left hover:text-white transition-colors duration-200"
-                @click="handleReport"
-              >
-                Report Post 🚩
-              </button>
-            </div>
+            <Options
+              :showPostOptions="activePost === postInfo.id"
+              :profileId="userInfo.id"
+              @reportPost="handleReport"
+              @deletePost="handleDeletePost"
+            />
           </div>
         </div>
       </div>
@@ -347,6 +394,6 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   </div>
 </template>

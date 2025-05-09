@@ -157,68 +157,107 @@ watch(showMobileMenu, (newValue) => {
     ]"
   >
     <!-- Top: Logo and Navigation links -->
-    <div class="flex flex-col gap-1 overflow-y-auto text-center">
+    <div class="flex flex-col gap-3 overflow-y-auto text-center">
       <NuxtLink
         to="/home"
-        class="hidden md:block text-4xl font-extrabold text-amber-400 tracking-wide hover:text-amber-300 transition"
+        class="hidden md:block text-3xl font-extrabold text-amber-600 tracking-wide hover:text-amber-300 transition"
       >
-        Amber
+        🔸 Amber 🔸
       </NuxtLink>
 
-      <nav class="flex flex-col gap-6 mt-14 md:mt-10 text-slate-200">
+      <nav
+        class="flex flex-col gap-4 md:ml-4 mt-14 md:mt-10 text-slate-200 overflow-y-hidden"
+      >
         <NuxtLink
           to="/profile/me"
-          class="hidden md:flex items-center gap-3 hover:text-amber-400 transition"
+          class="hidden p-2 md:flex items-center gap-3 hover:text-amber-400 transition"
         >
-          <NuxtImg
-            :src="user.profilePic"
-            class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400"
-          />
-          My Profile
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <NuxtImg
+              :src="user.profilePic"
+              class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400"
+            />
+            My Profile
+          </motion.div>
         </NuxtLink>
-
         <NuxtLink
           to="/home"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="flex items-center p-2 gap-3 hover:text-amber-400 transition"
         >
-          <Icon name="mdi:home-outline" size="35" /> Home
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <Icon name="mdi:home-outline" size="35" /> Home
+          </motion.div>
         </NuxtLink>
         <NuxtLink
           to="/profile/settings/profilesettings"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
         >
-          <Icon name="mdi:notifications" size="35" /> Notifications
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <Icon name="mdi:notifications" size="35" /> Notifications
+          </motion.div>
         </NuxtLink>
         <NuxtLink
           to="/uploadpost"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
         >
-          <Icon name="mdi:upload-outline" size="35" /> Upload post
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <Icon name="mdi:upload-outline" size="35" /> Upload post
+          </motion.div>
         </NuxtLink>
         <NuxtLink
           to="/explore"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
         >
-          <Icon name="mdi:compass-outline" size="35" /> Explore
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <Icon name="mdi:compass-outline" size="35" /> Explore
+          </motion.div>
         </NuxtLink>
 
         <NuxtLink
           to="/profile/settings/profilesettings"
-          class="flex items-center gap-3 hover:text-amber-400 transition"
+          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
         >
-          <Icon name="mdi:cog-outline" size="35" /> Settings
+          <motion.div
+            class="flex items-center gap-3"
+            :whileHover="{ scale: 1.1 }"
+            :whilePress="{ scale: 0.9 }"
+          >
+            <Icon name="mdi:cog-outline" size="35" /> Settings
+          </motion.div>
         </NuxtLink>
       </nav>
     </div>
 
     <!-- Bottom: Logout -->
-    <div class="text-slate-400 mt-8">
-      <button
+    <div class="text-slate-400 md:ml-4 mt-8">
+      <motion.button
+        :whileHover="{ scale: 1.1 }"
+        :whilePress="{ scale: 0.9 }"
         @click="signOut"
-        class="hidden md:flex items-center gap-3 hover:text-red-400 transition"
+        class="cursor-pointer p-2 hidden md:flex items-center gap-3 hover:text-red-400 transition"
       >
         <Icon name="mdi:logout" size="40" /> Logout
-      </button>
+      </motion.button>
     </div>
   </motion.aside>
 </template>

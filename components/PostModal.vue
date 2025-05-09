@@ -1,9 +1,9 @@
 <script setup>
 import "animate.css";
-import { onMounted, onBeforeUnmount } from "vue";
 const toast = useToast();
 const user = useUserStore();
 const postsStore = usePostsStore();
+
 // COMPOSABLES
 
 const { toggleLikePost } = useLikes();

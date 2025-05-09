@@ -99,16 +99,27 @@ onMounted(async () => {
 
     <!--POSTS-->
     <template v-else>
-      <div class="flex flex-col items-center mt-8 gap-3">
+      <div class="flex flex-col items-center mt-8 gap-10">
         <motion.div
-          :initial="{ opacity: 0 }"
-          :whileInView="{ opacity: 1 }"
-          :transition="{ duration: 0.5, ease: 'easeOut' }"
-          :viewport="{ once: true, margin: '-100px' }"
+          :initial="{ opacity: 0, scale: 0.4 }"
+          :whileInView="{
+            opacity: 1,
+            scale: 1,
+            boxShadow: [
+              '0px 0px 8px rgba(251,191,36,0.3)',
+              '0px 0px 16px rgba(251,191,36,0.6)',
+              '0px 0px 8px rgba(251,191,36,0.3)',
+            ],
+          }"
+          :transition="{
+            default: { duration: 0.5, ease: 'easeOut' },
+            boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+          }"
+          :viewport="{ margin: '-100px' }"
           v-for="(post, index) in posts.allPosts"
           :key="post.posts.id"
           :custom="index"
-          class="w-full max-w-2xl rounded-2xl bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md shadow-md hover:shadow-[0_0_12px_rgba(251,191,36,0.3)] transition duration-300 p-6"
+          class="w-full max-w-2xl rounded-2xl bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md p-6"
         >
           <!--POST CONTENT-->
           <div class="flex justify-between items-center mb-4">
@@ -170,7 +181,8 @@ onMounted(async () => {
 
           <!-- Images -->
 
-          <img
+          <motion.img
+            :whileHover="{ scale: 1.05 }"
             v-if="post.posts.contentImage"
             @click="navigateTo(`/posts/${post.posts.id}`)"
             :src="post.posts.contentImage"
@@ -185,14 +197,17 @@ onMounted(async () => {
               @click="toggleLike(post)"
               class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-amber-400 transition"
             >
-              <span>
+              <motion.span
+                :whileHover="{ scale: 1.05 }"
+                :whilePress="{ scale: 1.2 }"
+              >
                 <template v-if="post.posts.likedByMe"
                   ><Icon name="noto:orange-heart" size="30"
                 /></template>
                 <template v-else
                   ><Icon name="noto:white-heart" size="30"
                 /></template>
-              </span>
+              </motion.span>
               <span class="font-bold text-l">{{
                 post.posts.likesCount || 0
               }}</span>
@@ -203,9 +218,12 @@ onMounted(async () => {
               @click="navigateTo(`/posts/${post.posts.id}`)"
               class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-blue-400 transition"
             >
-              <span>
+              <motion.span
+                :whileHover="{ scale: 1.05 }"
+                :whilePress="{ scale: 1.2 }"
+              >
                 <Icon name="uil:comment" size="30" />
-              </span>
+              </motion.span>
               <span class="font-bold text-l">{{
                 post.posts.commentsCount || 0
               }}</span>

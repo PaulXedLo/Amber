@@ -1,12 +1,4 @@
 <script setup>
-import { ref, computed, onBeforeMount } from "vue";
-import { useRoute, navigateTo } from "#app";
-import { storeToRefs } from "pinia";
-import { usePublicStore } from "~/stores/profile/public";
-import { useUserStore } from "~/stores/user";
-import { useFollow } from "~/composables/useFollow";
-import { useModal } from "~/composables/useModal";
-
 // STORES
 const route = useRoute();
 const publicStore = usePublicStore();
