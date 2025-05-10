@@ -1,8 +1,8 @@
 <script setup>
 definePageMeta({ layout: "default" });
+const user = useUserStore();
 // REFS
 import { motion } from "motion-v";
-const user = useUserStore();
 const { fetchComments, comments } = useComments();
 const { toggleLikePost } = useLikes();
 const { toggleFollowUser, checkIfFollowing } = useFollow();
@@ -23,12 +23,9 @@ async function toggleLike(post) {
   }
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
 }
-// FOLLOW STATUS
-function getFollowStatus(userId) {
-  return user.followStatus[userId] || "";
-}
+
 const followStatus = (id) => {
-  let status = getFollowStatus(id);
+  let status = user.followStatus[id];
   if (status === "followed") {
     return "Unfollow";
   } else if (status === "pending") {
@@ -36,7 +33,7 @@ const followStatus = (id) => {
   } else if (status === "unfollowed") {
     return "Follow";
   }
-  return "Follow";
+  return status;
 };
 
 // FOLLOW / UNFOLLOW USER
@@ -52,7 +49,7 @@ onMounted(async () => {
   // CHECK IF USER IS FOLLOWING PROFILES
   const followChecks = posts.allPosts
     .filter((post) => post.profiles?.id)
-    .map((post) => getFollowStatus(post.profiles?.id));
+    .map((post) => checkIfFollowing(post.profiles?.id));
   // FETCH RANDOM COMMENT FOR EACH POST
   const commentFetches = posts.allPosts.map(async (post) => {
     try {
@@ -160,14 +157,14 @@ onMounted(async () => {
               @click="
                 handleFollowClick(post.profiles.id, post.profiles.isPrivate)
               "
-              class="px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
+              class="cursor-pointer px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
               :class="{
                 'bg-slate-700 hover:bg-slate-600':
-                  getFollowStatus(post.profiles.id) === 'followed',
+                  user.followStatus[post.profiles.id] === 'followed',
                 'bg-slate-500 hover:bg-slate-400':
-                  getFollowStatus(post.profiles.id) === 'pending',
+                  user.followStatus[post.profiles.id] === 'pending',
                 'bg-amber-500 hover:bg-amber-600':
-                  getFollowStatus(post.profiles.id) === 'unfollowed',
+                  user.followStatus[post.profiles.id] === 'unfollowed',
               }"
             >
               {{ followStatus(post.profiles.id) }}

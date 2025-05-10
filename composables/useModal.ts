@@ -1,6 +1,6 @@
-const isOpen = ref(false);
-const postId = ref(null);
 const posts = usePostsStore();
+let isOpen = ref(false);
+const postId = ref(null);
 
 const activePost = computed(() => {
   return (

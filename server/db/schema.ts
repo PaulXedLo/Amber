@@ -1,4 +1,5 @@
 import { is } from "drizzle-orm";
+import { primaryKey } from "drizzle-orm/gel-core";
 import {
   pgTable,
   uuid,
@@ -63,14 +64,22 @@ export const comments = pgTable("comments", {
 });
 
 /* FOLLOW REQUESTS TABLE */
-export const followRequests = pgTable("follow_requests", {
-  requesterId: uuid("requester_id")
-    .primaryKey()
-    .references(() => profiles.id),
-  targetId: uuid("target_id").references(() => profiles.id),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
-
+export const followRequests = pgTable(
+  "follow_requests",
+  {
+    requesterId: uuid("requester_id").references(() => profiles.id),
+    targetId: uuid("target_id").references(() => profiles.id),
+    status: text("status").default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => {
+    return {
+      followRequestPkey: primaryKey({
+        columns: [table.requesterId, table.targetId],
+      }),
+    };
+  }
+);
 export const reports = pgTable("reports", {
   userId: uuid("user_id").references(() => profiles.id),
   postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),

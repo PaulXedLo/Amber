@@ -67,7 +67,7 @@ export function useFollow() {
   }
   async function checkIfFollowing(targetUserId: string) {
     if (!user.userId || !targetUserId) {
-      if (targetUserId) user.followStatus[targetUserId] = "unfollowed";
+      console.log("Could not get userId or targetUserId");
       return;
     }
 
@@ -86,6 +86,7 @@ export function useFollow() {
         status === "unfollowed"
       ) {
         user.followStatus[targetUserId] = status;
+        return;
       } else {
         console.warn(
           "Invalid follow status received from isfollowing:",

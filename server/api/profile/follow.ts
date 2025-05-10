@@ -38,15 +38,6 @@ export default defineEventHandler(async (event) => {
             )
           )
           .execute();
-        await db
-          .delete(followers)
-          .where(
-            and(
-              eq(followers.followerId, userId),
-              eq(followers.followingId, followingUserId)
-            )
-          )
-          .execute();
         return { status: "unfollowed" };
       }
     } catch (error) {
@@ -66,10 +57,11 @@ export default defineEventHandler(async (event) => {
           .values({
             followerId: userId,
             followingId: followingUserId,
-            status: "accepted",
+            status: "followed",
           })
           .onConflictDoNothing()
           .execute();
+
         return { status: "followed" };
       }
 

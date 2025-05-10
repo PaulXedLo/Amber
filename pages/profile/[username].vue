@@ -1,71 +1,68 @@
 <script setup>
+import { usePublicStore } from "~/stores/profile/public";
 // STORES
 const route = useRoute();
+const toast = useToast();
+
 const publicStore = usePublicStore();
-const userStore = useUserStore();
+const user = useUserStore();
 
 // LOCAL REFS FOR COMPONENT STATE
+const fallbackImage =
+  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 const profile = ref(null);
 const posts = ref([]);
 const loadingProfile = ref(true);
-const loadingFollowAction = ref(false);
 
 // COMPOSABLES
-const { openModal, activePost, closeModal, isOpen } = useModal();
-const {
-  toggleFollowUser: execToggleFollow,
-  checkIfFollowing: execCheckIfFollowing,
-  loading: followComposableLoading,
-} = useFollow();
+const { openModal, activePost, closeModal } = useModal();
 
-// COMPUTED PROPERTIES FOR UI REACTIVITY
+const { toggleFollowUser, checkIfFollowing, loading } = useFollow();
+
 const isOwnProfile = computed(() => {
-  return profile.value && userStore.username === profile.value.username;
-});
-
-const currentFollowStatus = computed(() => {
-  if (
-    !profile.value ||
-    !profile.value.id ||
-    !userStore.userId ||
-    isOwnProfile.value
-  ) {
-    return "unfollowed";
-  }
-  return userStore.followStatus[profile.value.id] || "unfollowed";
-});
-
-const isCurrentlyFollowingOrPending = computed(() => {
   return (
-    currentFollowStatus.value === "followed" ||
-    currentFollowStatus.value === "pending"
+    profile.value?.username &&
+    user.username &&
+    profile.value.username === user.username
   );
 });
 
-const followButtonText = computed(() => {
-  if (isOwnProfile.value) return "Edit Profile";
-  if (currentFollowStatus.value === "pending") return "Pending";
-  if (currentFollowStatus.value === "followed") return "Unfollow";
+const getFollowButtonText = () => {
+  if (!profile.value?.id) return "Follow";
+  const status = user.followStatus[profile.value.id];
+  if (status === "followed") return "Unfollow";
+  if (status === "pending") return "Pending";
   return "Follow";
-});
+};
 
-// FOLLOW / UNFOLLOW USER ACTION
-async function handleFollowClick() {
-  if (
-    loadingFollowAction.value ||
-    !profile.value ||
-    !profile.value.id ||
-    isOwnProfile.value
-  )
+async function handleFollowClickOnProfile() {
+  if (!profile.value?.id || !user.userId) {
     return;
+  }
 
-  loadingFollowAction.value = true;
   try {
-    await execToggleFollow(profile.value.id, profile.value.isPrivate);
+    await toggleFollowUser(profile.value.id, profile.value.isPrivate);
+    if (user.followStatus[profile.value.id] === "followed") {
+      toast.success({
+        message: `Successfully followed ` + profile.value.fullName,
+        timeout: 3000,
+        position: "topRight",
+      });
+    } else if (user.followStatus[profile.value.id] === "pending") {
+      toast.info({
+        message: "Sent follow request",
+        timeout: 3000,
+        position: "topRight",
+      });
+    } else if (user.followStatus[profile.value.id] === "unfollowed") {
+      toast.success({
+        message: `Successfully unfollowed ` + profile.value.fullName,
+        timeout: 3000,
+        position: "topRight",
+      });
+    }
   } catch (error) {
     console.error("Error toggling follow in component:", error);
-  } finally {
-    loadingFollowAction.value = false;
   }
 }
 
@@ -73,9 +70,8 @@ async function handleFollowClick() {
 onBeforeMount(async () => {
   loadingProfile.value = true;
   const routeUsername = route.params.username;
-
-  if (userStore.username === routeUsername) {
-    navigateTo("/profile/me");
+  if (user.username === routeUsername) {
+    navigateTo("/profile/me", { replace: true });
     return;
   }
 
@@ -84,33 +80,83 @@ onBeforeMount(async () => {
 
     if (!fetchedData || !fetchedData.profiles) {
       console.error("Profile not found for username:", routeUsername);
-      navigateTo("/home");
+      profile.value = null;
+      posts.value = [];
+      loadingProfile.value = false;
       return;
     }
     profile.value = fetchedData.profiles;
     posts.value = fetchedData.posts || [];
 
-    if (userStore.userId && profile.value && profile.value.id) {
-      await execCheckIfFollowing(profile.value.id);
+    if (user.userId && profile.value?.id) {
+      await checkIfFollowing(profile.value.id);
     }
   } catch (error) {
     console.error("Error loading profile:", error);
-
-    navigateTo("/home");
+    profile.value = null;
+    posts.value = [];
   } finally {
     loadingProfile.value = false;
   }
 });
+
+// WATCHER for route changes
+watch(
+  () => route.params.username,
+  async (newUsername, oldUsername) => {
+    if (
+      newUsername &&
+      newUsername !== oldUsername &&
+      typeof newUsername === "string"
+    ) {
+      profile.value = null;
+      posts.value = [];
+      loadingProfile.value = true;
+
+      const routeUsername = newUsername;
+      if (user.username === routeUsername) {
+        navigateTo("/profile/me", { replace: true });
+        return;
+      }
+      try {
+        const fetchedData = await publicStore.fetchPublicProfile(routeUsername);
+        if (!fetchedData || !fetchedData.profiles) {
+          profile.value = null;
+          posts.value = [];
+        } else {
+          profile.value = fetchedData.profiles;
+          posts.value = fetchedData.posts || [];
+          if (user.userId && profile.value?.id) {
+            const stillNotOwnProfile = !(
+              user.username && profile.value.username === user.username
+            );
+            if (stillNotOwnProfile) {
+              await checkIfFollowing(profile.value.id);
+            } else {
+              navigateTo("/profile/me", { replace: true });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading profile on watch:", error);
+        profile.value = null;
+        posts.value = [];
+      } finally {
+        loadingProfile.value = false;
+      }
+    }
+  }
+);
 </script>
 
 <template>
-  <PostModal v-if="isOpen" :post="activePost" @close="closeModal" />
+  <PostModal :post="activePost" @close="closeModal" />
 
   <div
     v-if="loadingProfile"
     class="flex flex-row min-h-screen justify-center items-center"
   >
-    <span class="loading loading-spinner loading-xl"></span>
+    <LoadingSpinner />
   </div>
 
   <div
@@ -126,7 +172,7 @@ onBeforeMount(async () => {
             width="128"
             height="128"
             densities="x1"
-            :src="profile.profilePicture || '/default-avatar.png'"
+            :src="profile.profilePicture || fallbackImage"
             alt="Profile Picture"
             class="object-cover w-full h-full"
             format="webp"
@@ -141,27 +187,36 @@ onBeforeMount(async () => {
 
       <div class="flex gap-3 mt-2">
         <button
-          v-if="!isOwnProfile"
-          @click="handleFollowClick"
-          :disabled="loadingFollowAction || followComposableLoading"
+          v-if="profile.id && user.userId"
+          @click="handleFollowClickOnProfile"
+          :disabled="loading"
           class="cursor-pointer px-4 py-2 rounded-full transition text-white font-semibold shadow hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          :class="
-            isCurrentlyFollowingOrPending
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-amber-500 hover:bg-amber-600'
-          "
+          :class="{
+            'bg-slate-700 hover:bg-slate-600':
+              user.followStatus[profile.id] === 'followed',
+            'bg-slate-500 hover:bg-slate-400':
+              user.followStatus[profile.id] === 'pending',
+            'bg-amber-500 hover:bg-amber-600':
+              user.followStatus[profile.id] === 'unfollowed' ||
+              !user.followStatus[profile.id],
+          }"
         >
-          {{ followButtonText }}
+          {{ getFollowButtonText() }}
         </button>
         <button
           v-if="isOwnProfile"
           @click="navigateTo('/settings/profile')"
-          class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
+          class="cursor-pointer px-4 py-2 rounded-full bg-blue-500 hover:bg-blue-600 transition text-white font-semibold shadow hover:shadow-lg"
         >
           Edit Profile
         </button>
         <button
-          v-if="!isOwnProfile"
+          v-if="
+            profile.id &&
+            user.userId &&
+            !isOwnProfile &&
+            user.followStatus[profile.id] === 'followed'
+          "
           class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
         >
           Message
@@ -194,13 +249,13 @@ onBeforeMount(async () => {
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mt-10"
     >
       <div
-        v-for="post in posts"
-        :key="post.id"
+        v-for="postItem in posts"
+        :key="postItem.id"
         class="w-full aspect-square overflow-hidden rounded-lg bg-slate-800 shadow-md hover:shadow-amber-500/20 transition"
       >
         <NuxtImg
-          :src="post.contentImage"
-          @click="openModal(post.id)"
+          :src="postItem.contentImage || fallbackImage"
+          @click="openModal(postItem.id)"
           alt="Post image"
           class="w-full h-full object-cover cursor-pointer transform hover:scale-105 transition duration-300 hover:opacity-80"
           densities="x1"
@@ -216,7 +271,7 @@ onBeforeMount(async () => {
     >
       <p
         v-if="
-          profile.isPrivate && !isCurrentlyFollowingOrPending && !isOwnProfile
+          profile.isPrivate && !(user.followStatus[profile.id] === 'followed')
         "
       >
         This account is private. Follow to see their posts.
@@ -224,16 +279,6 @@ onBeforeMount(async () => {
       <p v-else>No posts yet.</p>
     </div>
   </div>
-  <div v-else-if="!loadingProfile && !profile" class="text-center mt-20">
-    <h2 class="text-2xl font-semibold">Profile not found</h2>
-    <p class="text-slate-400">
-      The user @{{ route.params.username }} does not exist or there was an issue
-      loading their profile.
-    </p>
-    <NuxtLink
-      to="/home"
-      class="mt-4 inline-block px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600"
-      >Go Home</NuxtLink
-    >
-  </div>
+  <!-- USER DOES NOT EXIST PAGE-->
+  <ProfileNotFound v-else-if="!loadingProfile && !profile" />
 </template>

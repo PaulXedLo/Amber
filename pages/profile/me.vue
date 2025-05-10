@@ -6,7 +6,8 @@ definePageMeta({
 import { motion } from "motion-v";
 const { openModal, activePost, closeModal, isOpen } = useModal();
 // USER PROFILE REFS
-
+const fallbackImage =
+  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 const loadingPosts = ref(false);
 const posts = usePostsStore();
 const loadingProfile = ref(true);
@@ -43,7 +44,6 @@ onMounted(async () => {
 
 <template>
   <PostModal
-    v-if="isOpen"
     :post="activePost"
     @close="closeModal"
     @postRemoved="updatePostsCount"
@@ -63,7 +63,7 @@ onMounted(async () => {
             width="128"
             height="128"
             densities="x1"
-            :src="profilePicture"
+            :src="profilePicture || fallbackImage"
             alt="Profile Picture"
             class="object-cover w-full h-full"
           />
