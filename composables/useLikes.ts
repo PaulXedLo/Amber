@@ -1,6 +1,7 @@
 export function useLikes() {
   const user = useUserStore();
   async function toggleLikePost(postId: string, likedByMe: boolean) {
+    if (!postId) return;
     if (!likedByMe) {
       try {
         await $fetch("/api/posts/togglelike", {

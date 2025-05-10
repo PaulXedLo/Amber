@@ -14,6 +14,7 @@ export function useComments() {
   const activeCommentId: any = ref(null);
   const showCommentOptions: any = ref(null);
   const user = useUserStore();
+  const posts = usePostsStore();
   const toast = useToast();
   // FETCH COMMENTS
   async function fetchComments(postId: string | number): Promise<Comment[]> {
@@ -121,9 +122,30 @@ export function useComments() {
       showCommentOptions.value = true;
     }
   }
+  // GET RANDOM COMMENT HOME PAGE
+  async function getRandomComment() {
+    posts.allPosts.map(async (post: any) => {
+      try {
+        const postComments = await fetchComments(post.posts.id);
+        if (postComments && postComments.length > 0) {
+          const randomIndex = Math.floor(Math.random() * postComments.length);
+          post.displayComment = `"${postComments[randomIndex].commentText}"`;
+        } else {
+          post.displayComment = "Be the first one to comment";
+        }
+      } catch (err) {
+        console.error(
+          `Failed to fetch comments for post ${post.posts.id}:`,
+          err
+        );
+        post.displayComment = "Could not load comments.";
+      }
+    });
+  }
   return {
     comments,
     loading,
+    getRandomComment,
     toggleCommentOptions,
     deleteComment,
     fetchComments,

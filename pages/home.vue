@@ -1,45 +1,32 @@
 <script setup>
 definePageMeta({ layout: "default" });
-const user = useUserStore();
-// REFS
 import { motion } from "motion-v";
-const { fetchComments, comments } = useComments();
-const { toggleLikePost } = useLikes();
-const { toggleFollowUser, checkIfFollowing } = useFollow();
+const user = useUserStore();
 const posts = usePostsStore();
+// REFS
+const { fetchComments, getRandomComment } = useComments();
+const { toggleLikePost } = useLikes();
+const {
+  toggleFollowUser,
+  checkIfFollowing,
+  getFollowButtonText,
+  getFollowFeedback,
+} = useFollow();
 const pending = ref(false);
-
 const fallbackImage =
   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 // LIKE POSTS
 async function toggleLike(post) {
-  if (!post) return;
-  try {
-    await toggleLikePost(post.posts.id, post.posts.likedByMe);
-    post.posts.likedByMe = !post.posts.likedByMe;
-  } catch (error) {
-    console.error("Error toggling like:", error);
-    throw new Error("Failed to toggle like. Please try again.");
-  }
+  await toggleLikePost(post.posts.id, post.posts.likedByMe);
+  post.posts.likedByMe = !post.posts.likedByMe;
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
 }
 
-const followStatus = (id) => {
-  let status = user.followStatus[id];
-  if (status === "followed") {
-    return "Unfollow";
-  } else if (status === "pending") {
-    return "Pending";
-  } else if (status === "unfollowed") {
-    return "Follow";
-  }
-  return status;
-};
-
 // FOLLOW / UNFOLLOW USER
-async function handleFollowClick(targetUserId, isPrivate) {
+async function handleFollowClick(targetUserId, isPrivate, profile) {
   if (!targetUserId) return;
   await toggleFollowUser(targetUserId, isPrivate);
+  getFollowFeedback(targetUserId, profile);
 }
 
 // HOOKS
@@ -51,36 +38,18 @@ onMounted(async () => {
     .filter((post) => post.profiles?.id)
     .map((post) => checkIfFollowing(post.profiles?.id));
   // FETCH RANDOM COMMENT FOR EACH POST
-  const commentFetches = posts.allPosts.map(async (post) => {
-    try {
-      const postComments = await fetchComments(post.posts.id);
-      if (postComments && postComments.length > 0) {
-        const randomIndex = Math.floor(Math.random() * postComments.length);
-        post.displayComment = `"${postComments[randomIndex].commentText}"`;
-      } else {
-        post.displayComment = "Be the first one to comment";
-      }
-    } catch (error) {
-      console.error(
-        `Failed to fetch comments for post ${post.posts.id}:`,
-        error
-      );
-      post.displayComment = "Could not load comments.";
-    }
-  });
-
+  await getRandomComment();
   try {
     await Promise.all([...followChecks, ...commentFetches]);
   } catch (error) {
     console.error("Error during onMounted data fetching:", error);
   }
-
   pending.value = false;
 });
 </script>
 <template>
   <div class="min-h-screen max-w-screen px-4 pb-10">
-    <!-- PAGE TITLE -->
+    <!-- HOME PAGE TITLE -->
     <div class="text-center mt-12 animate__animated animate__bounce">
       <h1
         class="text-4xl sm:text-5xl font-extrabold text-[--color-primary] drop-shadow-lg tracking-wide"
@@ -155,7 +124,11 @@ onMounted(async () => {
                 post.profiles.id !== user.userId
               "
               @click="
-                handleFollowClick(post.profiles.id, post.profiles.isPrivate)
+                handleFollowClick(
+                  post.profiles.id,
+                  post.profiles.isPrivate,
+                  post.profiles
+                )
               "
               class="cursor-pointer px-4 py-1.5 rounded-md transition text-sm text-white font-semibold shadow-sm hover:shadow-md"
               :class="{
@@ -167,7 +140,7 @@ onMounted(async () => {
                   user.followStatus[post.profiles.id] === 'unfollowed',
               }"
             >
-              {{ followStatus(post.profiles.id) }}
+              {{ getFollowButtonText(post.profiles.id) }}
             </button>
           </div>
 

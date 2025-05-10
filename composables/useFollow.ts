@@ -3,8 +3,10 @@ interface FollowAPIResponse {
 }
 export function useFollow() {
   const loading = ref(false);
-
+  const toast = useToast();
   const user = useUserStore();
+
+  // FOLLOW / UNFOLLOW / SEND REQUEST
   async function toggleFollowUser(targetUserId: string, isPrivate: boolean) {
     if (!user.userId) {
       console.error("User must be logged in to follow/unfollow.");
@@ -65,6 +67,9 @@ export function useFollow() {
       loading.value = false;
     }
   }
+
+  // CHECK FOLLOWING
+
   async function checkIfFollowing(targetUserId: string) {
     if (!user.userId || !targetUserId) {
       console.log("Could not get userId or targetUserId");
@@ -99,9 +104,52 @@ export function useFollow() {
       user.followStatus[targetUserId] = "unfollowed";
     }
   }
+
+  // GET FOLLOW BUTTON TEXT
+
+  function getFollowButtonText(id: any) {
+    let status = user.followStatus[id];
+    if (status === "followed") {
+      return "Unfollow";
+    } else if (status === "pending") {
+      return "Pending";
+    } else if (status === "unfollowed") {
+      return "Follow";
+    }
+    return status;
+  }
+
+  // PROVIDE FOLLOW FEEDBACK
+
+  function getFollowFeedback(id: any, profile: any) {
+    if (!id || !profile) {
+      return;
+    }
+    if (user.followStatus[id] === "followed") {
+      return toast.success({
+        message: `Successfully followed ` + profile.fullName,
+        timeout: 3000,
+        position: "topRight",
+      });
+    } else if (user.followStatus[id] === "pending") {
+      return toast.info({
+        message: "Sent follow request",
+        timeout: 3000,
+        position: "topRight",
+      });
+    } else if (user.followStatus[id] === "unfollowed") {
+      return toast.success({
+        message: `Successfully unfollowed ` + profile.fullName,
+        timeout: 3000,
+        position: "topRight",
+      });
+    }
+  }
   return {
     loading,
+    getFollowFeedback,
     toggleFollowUser,
+    getFollowButtonText,
     checkIfFollowing,
   };
 }

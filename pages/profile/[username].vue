@@ -1,152 +1,26 @@
 <script setup>
-import { usePublicStore } from "~/stores/profile/public";
 // STORES
+
 const route = useRoute();
-const toast = useToast();
-
-const publicStore = usePublicStore();
 const user = useUserStore();
-
-// LOCAL REFS FOR COMPONENT STATE
 const fallbackImage =
   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
-const profile = ref(null);
-const posts = ref([]);
-const loadingProfile = ref(true);
 
 // COMPOSABLES
+
+const usernameRef = computed(() => route.params.username);
 const { openModal, activePost, closeModal } = useModal();
+const { profile, posts, loadingProfile, isOwnProfile } =
+  useUserProfileData(usernameRef);
+const { toggleFollowUser, loading, getFollowButtonText, getFollowFeedback } =
+  useFollow();
 
-const { toggleFollowUser, checkIfFollowing, loading } = useFollow();
-
-const isOwnProfile = computed(() => {
-  return (
-    profile.value?.username &&
-    user.username &&
-    profile.value.username === user.username
-  );
-});
-
-const getFollowButtonText = () => {
-  if (!profile.value?.id) return "Follow";
-  const status = user.followStatus[profile.value.id];
-  if (status === "followed") return "Unfollow";
-  if (status === "pending") return "Pending";
-  return "Follow";
-};
+// FOLLOW USER
 
 async function handleFollowClickOnProfile() {
-  if (!profile.value?.id || !user.userId) {
-    return;
-  }
-
-  try {
-    await toggleFollowUser(profile.value.id, profile.value.isPrivate);
-    if (user.followStatus[profile.value.id] === "followed") {
-      toast.success({
-        message: `Successfully followed ` + profile.value.fullName,
-        timeout: 3000,
-        position: "topRight",
-      });
-    } else if (user.followStatus[profile.value.id] === "pending") {
-      toast.info({
-        message: "Sent follow request",
-        timeout: 3000,
-        position: "topRight",
-      });
-    } else if (user.followStatus[profile.value.id] === "unfollowed") {
-      toast.success({
-        message: `Successfully unfollowed ` + profile.value.fullName,
-        timeout: 3000,
-        position: "topRight",
-      });
-    }
-  } catch (error) {
-    console.error("Error toggling follow in component:", error);
-  }
+  await toggleFollowUser(profile.value.id, profile.value.isPrivate);
+  getFollowFeedback(profile.value.id, profile.value);
 }
-
-// LIFECYCLE HOOKS
-onBeforeMount(async () => {
-  loadingProfile.value = true;
-  const routeUsername = route.params.username;
-  if (user.username === routeUsername) {
-    navigateTo("/profile/me", { replace: true });
-    return;
-  }
-
-  try {
-    const fetchedData = await publicStore.fetchPublicProfile(routeUsername);
-
-    if (!fetchedData || !fetchedData.profiles) {
-      console.error("Profile not found for username:", routeUsername);
-      profile.value = null;
-      posts.value = [];
-      loadingProfile.value = false;
-      return;
-    }
-    profile.value = fetchedData.profiles;
-    posts.value = fetchedData.posts || [];
-
-    if (user.userId && profile.value?.id) {
-      await checkIfFollowing(profile.value.id);
-    }
-  } catch (error) {
-    console.error("Error loading profile:", error);
-    profile.value = null;
-    posts.value = [];
-  } finally {
-    loadingProfile.value = false;
-  }
-});
-
-// WATCHER for route changes
-watch(
-  () => route.params.username,
-  async (newUsername, oldUsername) => {
-    if (
-      newUsername &&
-      newUsername !== oldUsername &&
-      typeof newUsername === "string"
-    ) {
-      profile.value = null;
-      posts.value = [];
-      loadingProfile.value = true;
-
-      const routeUsername = newUsername;
-      if (user.username === routeUsername) {
-        navigateTo("/profile/me", { replace: true });
-        return;
-      }
-      try {
-        const fetchedData = await publicStore.fetchPublicProfile(routeUsername);
-        if (!fetchedData || !fetchedData.profiles) {
-          profile.value = null;
-          posts.value = [];
-        } else {
-          profile.value = fetchedData.profiles;
-          posts.value = fetchedData.posts || [];
-          if (user.userId && profile.value?.id) {
-            const stillNotOwnProfile = !(
-              user.username && profile.value.username === user.username
-            );
-            if (stillNotOwnProfile) {
-              await checkIfFollowing(profile.value.id);
-            } else {
-              navigateTo("/profile/me", { replace: true });
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error loading profile on watch:", error);
-        profile.value = null;
-        posts.value = [];
-      } finally {
-        loadingProfile.value = false;
-      }
-    }
-  }
-);
 </script>
 
 <template>
@@ -201,7 +75,7 @@ watch(
               !user.followStatus[profile.id],
           }"
         >
-          {{ getFollowButtonText() }}
+          {{ getFollowButtonText(profile.id) }}
         </button>
         <button
           v-if="isOwnProfile"
@@ -254,7 +128,7 @@ watch(
         class="w-full aspect-square overflow-hidden rounded-lg bg-slate-800 shadow-md hover:shadow-amber-500/20 transition"
       >
         <NuxtImg
-          :src="postItem.contentImage || fallbackImage"
+          :src="postItem.contentImage"
           @click="openModal(postItem.id)"
           alt="Post image"
           class="w-full h-full object-cover cursor-pointer transform hover:scale-105 transition duration-300 hover:opacity-80"
