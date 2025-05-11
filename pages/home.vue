@@ -4,7 +4,8 @@ import { motion } from "motion-v";
 const user = useUserStore();
 const posts = usePostsStore();
 // REFS
-const { fetchComments, getRandomComment } = useComments();
+const { getRandomComment } = useComments();
+const { toggleNotification } = useNotifications();
 const { toggleLikePost } = useLikes();
 const {
   toggleFollowUser,
@@ -20,6 +21,12 @@ async function toggleLike(post) {
   await toggleLikePost(post.posts.id, post.posts.likedByMe);
   post.posts.likedByMe = !post.posts.likedByMe;
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
+  await toggleNotification({
+    userId: user.userId,
+    targetUserId: post.profiles.id,
+    postId: post.posts.id,
+    type: post.posts.likedByMe ? "like" : "unlike",
+  });
 }
 
 // FOLLOW / UNFOLLOW USER
@@ -90,16 +97,11 @@ onMounted(async () => {
           <!--POST CONTENT-->
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-4">
-              <div
-                class="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-amber-400"
-              >
-                <NuxtImg
-                  :src="post.profiles.profilePicture || fallbackImage"
-                  alt="avatar"
-                  @click="navigateTo(`/profile/${post.profiles.username}`)"
-                  class="w-full hover:opacity-40 transition-all duration-400 h-full object-cover cursor-pointer"
-                />
-              </div>
+              <ProfilePicture
+                :src="post.profiles.profilePicture"
+                :navigateToPath="`/profile/${post.profiles.username}`"
+                :altText="'User profile picture'"
+              />
               <div>
                 <h2
                   class="text-white text-sm font-bold md:text-md leading-tight"
@@ -204,10 +206,11 @@ onMounted(async () => {
             v-if="post.displayComment"
             class="flex items-center gap-3 text-slate-400 text-sm mt-3 italic"
           >
-            <NuxtImg
-              :src="post.profiles.profilePicture || fallbackImage"
-              alt="avatar"
-              class="w-8 h-8 rounded-full mr-2"
+            <ProfilePicture
+              :src="post.profiles.profilePicture"
+              :navigateToPath="`/profile/${post.profiles.username}`"
+              :altText="'User profile picture'"
+              :sizeClasses="'w-8 h-8 rounded-full'"
             />
             {{ post.displayComment }}
           </p>

@@ -38,6 +38,15 @@ export default defineEventHandler(async (event) => {
             )
           )
           .execute();
+        await db
+          .delete(followers)
+          .where(
+            and(
+              eq(followers.followerId, userId),
+              eq(followers.followingId, followingUserId)
+            )
+          )
+          .execute();
         return { status: "unfollowed" };
       }
     } catch (error) {

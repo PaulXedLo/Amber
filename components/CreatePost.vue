@@ -80,18 +80,11 @@ function handleCancelPost() {
       Uploading...
     </div>
     <div class="flex items-start gap-4">
-      <div
-        class="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400"
-      >
-        <NuxtImg
-          :src="profilePic"
-          @click="navigateTo('/profile/myprofile')"
-          alt="Profile"
-          densities="x1"
-          class="w-full cursor-pointer hover:opacity-40 transition-all duration-400 h-full object-cover"
-        />
-      </div>
-
+      <ProfilePicture
+        :src="user.profilePic"
+        :navigateToPath="'/profile/me'"
+        :altText="'User profile picture'"
+      />
       <!-- Post content -->
       <textarea
         :placeholder="'What is on your mind, ' + fullName + '?'"

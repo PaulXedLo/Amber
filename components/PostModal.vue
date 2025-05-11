@@ -20,8 +20,6 @@ const activePost = ref(null);
 const showPostOptions = ref(false);
 const { userId } = toRefs(user);
 let commentInput = ref("");
-const fallbackImage =
-  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 
 // GO TO PROFILE
 
@@ -216,16 +214,12 @@ onBeforeUnmount(() => {
           <div class="flex justify-between items-start">
             <!-- Profile Info -->
             <div class="flex items-center gap-3">
-              <NuxtLink
+              <ProfilePicture
+                :src="post.profiles.profilePicture"
+                :navigateToPath="`/profile/${post.profiles.username}`"
+                :altText="'User profile picture'"
                 @click="$emit('close')"
-                :to="`/profile/${post.profiles.username}`"
-              >
-                <NuxtImg
-                  :src="post.profiles.profilePicture || fallbackImage"
-                  alt="Profile Picture"
-                  class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
-                />
-              </NuxtLink>
+              />
               <div>
                 <NuxtLink
                   @click="$emit('close')"
@@ -322,16 +316,12 @@ onBeforeUnmount(() => {
           <div
             class="hidden md:flex items-center gap-3 pb-3 border-b md:border-slate-700"
           >
-            <NuxtLink
+            <ProfilePicture
+              :src="post.profiles.profilePicture"
+              :navigateToPath="`/profile/${post.profiles.username}`"
+              :altText="'User profile picture'"
               @click="$emit('close')"
-              :to="`/profile/${post.profiles.username}`"
-            >
-              <NuxtImg
-                :src="post.profiles.profilePicture || fallbackImage"
-                alt="Profile Picture"
-                class="cursor-pointer w-10 h-10 rounded-full object-cover border-2 border-amber-400"
-              />
-            </NuxtLink>
+            />
             <div>
               <NuxtLink
                 @click="$emit('close')"

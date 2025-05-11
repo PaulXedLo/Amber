@@ -56,18 +56,12 @@ onMounted(async () => {
     <!-- Profile header -->
     <div class="flex flex-col items-center gap-4">
       <div class="avatar">
-        <div
-          class="w-32 h-32 rounded-full overflow-hidden border-4 border-amber-400 shadow-md"
-        >
-          <NuxtImg
-            width="128"
-            height="128"
-            densities="x1"
-            :src="profilePicture || fallbackImage"
-            alt="Profile Picture"
-            class="object-cover w-full h-full"
-          />
-        </div>
+        <ProfilePicture
+          :src="profilePicture"
+          :isClickable="false"
+          :altText="'User profile picture'"
+          :sizeClasses="'w-32 h-32'"
+        />
       </div>
 
       <div class="flex flex-col justify-center items-center">

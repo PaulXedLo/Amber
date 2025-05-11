@@ -110,10 +110,12 @@ function toggleEditingBio() {
           accept="image/*"
           @change="handleNewPicture"
         />
-        <NuxtImg
+        <ProfilePicture
           :src="previewUrl"
-          alt="Profile Picture"
-          class="w-full h-full object-cover group-hover:opacity-60 transition duration-300"
+          :isClickable="true"
+          :altText="'User profile picture'"
+          :sizeClasses="'w-full h-full'"
+          :containerClasses="'group-hover:opacity-60 transition'"
         />
         <div
           class="absolute inset-0 flex items-center justify-center text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition"

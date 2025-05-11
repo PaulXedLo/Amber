@@ -3,6 +3,7 @@ const user = useUserStore();
 import { motion } from "motion-v";
 const showSearchBar = ref(false);
 const searchQuery = ref("");
+const showNotifications = ref(false);
 const sidebarRef = ref(null);
 const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
@@ -131,16 +132,11 @@ watch(showMobileMenu, (newValue) => {
       </button>
 
       <!-- Profile Pic -->
-      <div
-        class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400 shrink-0"
-      >
-        <NuxtImg
-          :src="user.profilePic"
-          @click="$router.push('/profile/me')"
-          alt="Profile"
-          class="w-full h-full object-cover cursor-pointer"
-        />
-      </div>
+      <ProfilePicture
+        :src="user.profilePic"
+        :navigateToPath="'/profile/me'"
+        :altText="'User profile picture'"
+      />
     </div>
   </div>
 
@@ -168,83 +164,59 @@ watch(showMobileMenu, (newValue) => {
       <nav
         class="flex flex-col gap-4 md:ml-4 mt-14 md:mt-10 text-slate-200 overflow-y-hidden"
       >
-        <NuxtLink
-          to="/profile/me"
-          class="hidden p-2 md:flex items-center gap-3 hover:text-amber-400 transition"
-        >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <NuxtImg
-              :src="user.profilePic"
-              class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400"
-            />
-            My Profile
-          </motion.div>
-        </NuxtLink>
-        <NuxtLink
-          to="/home"
-          class="flex items-center p-2 gap-3 hover:text-amber-400 transition"
-        >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <Icon name="mdi:home-outline" size="35" /> Home
-          </motion.div>
-        </NuxtLink>
-        <NuxtLink
-          to="/profile/settings/profilesettings"
-          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
-        >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <Icon name="mdi:notifications" size="35" /> Notifications
-          </motion.div>
-        </NuxtLink>
-        <NuxtLink
-          to="/uploadpost"
-          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
-        >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <Icon name="mdi:upload-outline" size="35" /> Upload post
-          </motion.div>
-        </NuxtLink>
-        <NuxtLink
-          to="/explore"
-          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
-        >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <Icon name="mdi:compass-outline" size="35" /> Explore
-          </motion.div>
-        </NuxtLink>
+        <!--MY PROFILE BUTTON-->
 
-        <NuxtLink
-          to="/profile/settings/profilesettings"
-          class="flex p-2 items-center gap-3 hover:text-amber-400 transition"
+        <SidebarButton :navigateLocation="'/profile/me'">
+          <NuxtImg
+            :src="user.profilePic"
+            class="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-400"
+          />
+          My Profile
+        </SidebarButton>
+
+        <!--HOME BUTTON-->
+
+        <SidebarButton
+          :iconName="'mdi:home-outline'"
+          :navigateLocation="'/home'"
         >
-          <motion.div
-            class="flex items-center gap-3"
-            :whileHover="{ scale: 1.1 }"
-            :whilePress="{ scale: 0.9 }"
-          >
-            <Icon name="mdi:cog-outline" size="35" /> Settings
-          </motion.div>
-        </NuxtLink>
+          Home
+        </SidebarButton>
+
+        <!--NOTIFICATIONS BUTTON-->
+
+        <div @click="showNotifications = !showNotifications">
+          <SidebarButton :iconName="'mdi:notifications'">
+            Notifications
+          </SidebarButton>
+        </div>
+
+        <!--UPLOAD POST BUTTON-->
+
+        <SidebarButton
+          :iconName="'mdi:upload-outline'"
+          :navigateLocation="'/uploadpost'"
+        >
+          Upload Post
+        </SidebarButton>
+
+        <!--EXPLORE BUTTON-->
+
+        <SidebarButton
+          :iconName="'mdi:compass-outline'"
+          :navigateLocation="'/explore'"
+        >
+          Explore
+        </SidebarButton>
+
+        <!--SETTINGS BUTTON-->
+
+        <SidebarButton
+          :iconName="'mdi:cog-outline'"
+          :navigateLocation="'/profile/settings/profileSettings'"
+        >
+          Settings
+        </SidebarButton>
       </nav>
     </div>
 
@@ -260,6 +232,8 @@ watch(showMobileMenu, (newValue) => {
       </motion.button>
     </div>
   </motion.aside>
+  <!--NOTIFICATIONS BAR-->
+  <SidebarNotifications v-if="showNotifications" />
 </template>
 
 <style scoped>
