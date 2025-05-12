@@ -274,13 +274,20 @@ onBeforeUnmount(() => {
 
         <!--LEFT SIDE (IMAGE)-->
         <div
-          class="w-full h-[40vh] md:h-auto md:flex-1 flex items-center justify-center"
+          class="w-full h-[40vh] md:h-auto md:flex-1 flex items-center justify-center bg-black"
         >
           <NuxtImg
             :src="post.posts.contentImage"
             alt="Post Image"
-            densities="x1"
-            class="object-contain md:object-contain p-0.5 md:p-0 w-full h-full"
+            class="object-contain w-full h-full"
+            sizes="
+            (max-width: 767px) 90vw,            
+            (min-width: 768px) and (max-width: 1023px) 55vw, 
+            (min-width: 1024px) 600px            
+          "
+            loading="lazy"
+            format="webp"
+            quality="80"
           />
         </div>
 
