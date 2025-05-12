@@ -1,6 +1,6 @@
 export function useNotifications() {
   const user = useUserStore();
-  const showNotifications = ref(false);
+  let showNotifications = ref(false);
   const notifications = ref([]);
   const loading = ref(false);
   // FETCH NOTIFICATIONS
@@ -12,11 +12,13 @@ export function useNotifications() {
       return;
     }
     try {
-      const { allNotifications } = await $fetch("/api/notifications", {
+      const response = await $fetch("/api/notifications", {
         method: "GET",
         query: { userId: user.userId },
       });
-      notifications.value = allNotifications.value || [];
+
+      const { data, post } = response as any;
+      notifications.value = data;
       loading.value = false;
     } catch (err) {
       console.error("Failed to fetch notifications", err);
@@ -44,7 +46,6 @@ export function useNotifications() {
             targetUserId: values.targetUserId,
             postId: values.postId,
             type: values.type,
-            isRead: values.isRead || "false",
           },
         });
         if (status === "sent") {
@@ -78,6 +79,7 @@ export function useNotifications() {
       }
     }
   }
+  // MARK NOTIFICATION AS READ
 
   return {
     fetchNotifications,

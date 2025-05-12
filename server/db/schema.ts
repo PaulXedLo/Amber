@@ -81,6 +81,7 @@ export const followRequests = pgTable(
   }
 );
 export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
   receiverId: uuid("receiverId").references(() => profiles.id),
   senderId: uuid("senderId").references(() => profiles.id),
   postId: uuid("postId").references(() => posts.id),

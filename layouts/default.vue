@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex min-h-screen max-w-screen bg-gradient-to-br from-purple-950 via-slate-900 to-amber-900"
+    class="flex min-h-screen max-w-screen bg-gradient-to-br from-[#400349] via-slate-900 to-amber-900"
   >
     <SideBar />
     <div class="mt-10 flex-1 w-full flex flex-col min-h-screen">

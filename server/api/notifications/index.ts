@@ -15,25 +15,25 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
       });
     }
-    try {
-      await db
-        .insert(notifications)
-        .values({
-          senderId: userId,
-          receiverId: targetUserId,
-          postId: postId,
-          type: type,
-          isRead: isRead,
-        })
-        .onConflictDoNothing()
-        .execute();
-      return { status: "sent" };
-    } catch (err) {
-      console.error("Failed to send notification", err);
-      throw createError({
-        message: "Failed to send notification",
-        statusCode: 500,
-      });
+    if (type === "like" || type === "comment") {
+      try {
+        await db
+          .insert(notifications)
+          .values({
+            senderId: userId,
+            receiverId: targetUserId,
+            postId: postId,
+            type: type,
+          })
+          .execute();
+        return { status: "sent" };
+      } catch (err) {
+        console.error("Failed to send notification", err);
+        throw createError({
+          message: "Failed to send notification",
+          statusCode: 500,
+        });
+      }
     }
   }
   // GET NOTIFICATIONS
@@ -48,12 +48,16 @@ export default defineEventHandler(async (event) => {
       });
     }
     try {
-      const allNotifications = await db
+      const data = await db
         .select()
         .from(notifications)
         .where(eq(notifications.receiverId, userId))
+        .leftJoin(profiles, eq(profiles.id, notifications.senderId))
+        .leftJoin(posts, eq(posts.id, notifications.postId))
         .execute();
-      return { status: "received", allNotifications };
+      if (data) {
+        return { data };
+      }
     } catch (err) {
       console.error("Failed to get notifications for user", err);
       throw createError({

@@ -1,30 +1,51 @@
 <script setup>
-import { motion, AnimatePresence } from "motion-v";
+import { motion } from "motion-v";
 </script>
+
 <template>
-  <AnimatePresence>
-    <motion.div class="min-w-90 fixed left-64">
-      <div
-        :class="[
-          'h-screen w-64 flex flex-col justify-between px-6 py-8 bg-slate-900/80 border-r border-amber-500/10 backdrop-blur-md',
-          'fixed top-0 left-0 z-40',
-          'md:sticky md:!transform-none md:left-auto md:top-0 md:z-auto',
-        ]"
-        class="border-2 border-amber-200 flex flex-col min-w-full min-h-full items-center"
-      >
-        <div class="flex flex-col items-center gap-4 w-full">
-          <h1
-            class="cursor-pointer hidden md:block text-3xl font-extrabold text-amber-600 tracking-wide hover:text-amber-300 transition"
+  <motion.div
+    class="fixed top-0 left-64 z-30 w-89 h-screen"
+    :initial="{ x: '-100%', opacity: 0 }"
+    :animate="{ x: 0, opacity: 1 }"
+    :exit="{ x: '-100%', opacity: 0 }"
+    :transition="{ duration: 0.3, ease: 'easeInOut' }"
+  >
+    <div
+      class="w-full h-full flex flex-col bg-slate-900/80 backdrop-blur-md border-l border-amber-500/20"
+    >
+      <div class="px-4 pt-6 pb-4 border-b border-slate-700/50 flex-shrink-0">
+        <h1
+          class="text-2xl font-bold text-amber-500 tracking-tight mb-4 text-center"
+        >
+          Notifications
+        </h1>
+        <div class="flex justify-center gap-3">
+          <SidebarButton size="sm"> Clear all </SidebarButton>
+          <SidebarButton
+            size="sm"
+            :navigateLocation="'/profile/settings/notifications'"
           >
-            Notifications
-          </h1>
-          <div class="flex gap-4">
-            <SidebarButton> Clear all </SidebarButton>
-            <SidebarButton> Settings </SidebarButton>
-          </div>
-          <Notification />
+            Settings
+          </SidebarButton>
         </div>
       </div>
-    </motion.div>
-  </AnimatePresence>
+
+      <div class="flex-grow overflow-y-auto p-4 notification-list-area">
+        <SidebarNotificationsNotification />
+      </div>
+    </div>
+  </motion.div>
 </template>
+
+<style scoped>
+.notification-list-area::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-list-area::-webkit-scrollbar-thumb {
+  background-color: #fbbf24;
+  border-radius: 3px;
+}
+.notification-list-area::-webkit-scrollbar-track {
+  background-color: rgba(203, 213, 225, 0.1);
+}
+</style>

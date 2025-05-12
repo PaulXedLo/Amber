@@ -3,14 +3,16 @@ const user = useUserStore();
 import { motion } from "motion-v";
 const showSearchBar = ref(false);
 const searchQuery = ref("");
-const showNotifications = ref(false);
 const sidebarRef = ref(null);
+let showNotifications = ref(false);
 const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
+function handleShowNotifications() {
+  showNotifications.value = !showNotifications.value;
+}
 async function signOut() {
   await user.signOut();
 }
-
 function openSearch() {
   showSearchBar.value = true;
   nextTick(() => {
@@ -185,7 +187,7 @@ watch(showMobileMenu, (newValue) => {
 
         <!--NOTIFICATIONS BUTTON-->
 
-        <div @click="showNotifications = !showNotifications">
+        <div @click="handleShowNotifications">
           <SidebarButton :iconName="'mdi:notifications'">
             Notifications
           </SidebarButton>
