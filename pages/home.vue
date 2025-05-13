@@ -14,25 +14,34 @@ const {
   getFollowFeedback,
 } = useFollow();
 const pending = ref(false);
-const fallbackImage =
-  "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg";
 // LIKE POSTS
 async function toggleLike(post) {
+  // TOGGLE LIKE POST
   await toggleLikePost(post.posts.id, post.posts.likedByMe);
   post.posts.likedByMe = !post.posts.likedByMe;
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
-  await toggleNotification({
-    userId: user.userId,
-    targetUserId: post.profiles.id,
-    postId: post.posts.id,
-    type: post.posts.likedByMe ? "like" : "unlike",
-  });
+  // SEND(or)CANCEL NOTIFICATION
+  if (post.posts.likedByMe) {
+    await toggleNotification({
+      targetUserId: post.profiles.id,
+      postId: post.posts.id,
+      type: post.posts.likedByMe ? "like" : "unlike",
+    });
+  }
 }
 
 // FOLLOW / UNFOLLOW USER
 async function handleFollowClick(targetUserId, isPrivate, profile) {
   if (!targetUserId) return;
+  // TOGGLE FOLLOW USER
   await toggleFollowUser(targetUserId, isPrivate);
+  // SEND (OR) REMOVE NOTIFICATION
+  await toggleNotification({
+    targetUserId,
+    type:
+      user.followStatus[targetUserId] === "followed" ? "follow" : "unfollow",
+  });
+  // GET FOLLOW FEEDBACK (TOAST)
   getFollowFeedback(targetUserId, profile);
 }
 
@@ -166,7 +175,7 @@ onMounted(async () => {
           <div class="flex items-center gap-6 mt-4">
             <!-- Like Button -->
             <button
-              @click="toggleLike(post)"
+              @click.prevent="toggleLike(post)"
               class="cursor-pointer flex items-center gap-3 text-slate-300 hover:text-amber-400 transition"
             >
               <motion.span

@@ -1,7 +1,8 @@
 export function useNotifications() {
   const user = useUserStore();
   let showNotifications = ref(false);
-  const notifications = ref([]);
+  const notifications: any = ref([]);
+
   const loading = ref(false);
   // FETCH NOTIFICATIONS
   async function fetchNotifications() {
@@ -17,11 +18,14 @@ export function useNotifications() {
         query: { userId: user.userId },
       });
 
-      const { data, post } = response as any;
+      const { data, comment } = response as any;
+      console.log(data);
       notifications.value = data;
       loading.value = false;
     } catch (err) {
       console.error("Failed to fetch notifications", err);
+      notifications.value = [];
+    } finally {
       loading.value = false;
     }
   }
@@ -58,32 +62,52 @@ export function useNotifications() {
         console.error("Failed to send notification", err);
         return;
       }
-    }
-    // DELETE NOTIFICATION
-    else {
-      try {
-        const { status } = await $fetch("/api/notifications", {
-          method: "DELETE",
-          query: {
-            targetUserId: values.targetUserId,
-          },
-        });
-        if (status === "deleted") {
-          return true;
-        } else {
-          return false;
-        }
-      } catch (err) {
-        console.error("Failed to remove notification", err);
-        return;
-      }
+    } else {
+      return;
     }
   }
-  // MARK NOTIFICATION AS READ
-
+  async function deleteNotification(notificationId: string) {
+    loading.value = true;
+    if (!notificationId) {
+      console.error("Could not get notificationId");
+      return;
+    }
+    try {
+      await $fetch("/api/notifications", {
+        method: "DELETE",
+        query: { notificationId },
+      });
+      await fetchNotifications();
+      loading.value = false;
+      return true;
+    } catch (err) {
+      console.error("Failed to delete notification", err);
+      loading.value = false;
+      return false;
+    }
+  }
+  // CLEAR ALL NOTIFICATIONS
+  async function clearNotifications() {
+    loading.value = true;
+    try {
+      await $fetch("/api/notifications/clear", {
+        method: "DELETE",
+        query: { userId: user.userId },
+      });
+      await fetchNotifications();
+      loading.value = false;
+      return;
+    } catch (err) {
+      console.error("Failed to clear notifications", err);
+      loading.value = false;
+      return;
+    }
+  }
   return {
     fetchNotifications,
     notifications,
+    deleteNotification,
+    clearNotifications,
     loading,
     showNotifications,
     toggleNotification,

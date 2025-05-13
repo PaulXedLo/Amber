@@ -1,5 +1,6 @@
 <script setup>
 import { motion } from "motion-v";
+const { clearNotifications, loading } = useNotifications();
 </script>
 
 <template>
@@ -14,13 +15,18 @@ import { motion } from "motion-v";
       class="w-full h-full flex flex-col bg-slate-900/80 backdrop-blur-md border-l border-amber-500/20"
     >
       <div class="px-4 pt-6 pb-4 border-b border-slate-700/50 flex-shrink-0">
+        <!-- NOTIFICATIONS HEADER-->
         <h1
           class="text-2xl font-bold text-amber-500 tracking-tight mb-4 text-center"
         >
           Notifications
         </h1>
         <div class="flex justify-center gap-3">
-          <SidebarButton size="sm"> Clear all </SidebarButton>
+          <!-- CLEAR ALL NOTIFICATIONS BUTTON-->
+          <div @click="async () => await clearNotifications()">
+            <SidebarButton size="sm"> Clear all </SidebarButton>
+          </div>
+          <!-- NOTIFICATION SETTINGS BUTTON-->
           <SidebarButton
             size="sm"
             :navigateLocation="'/profile/settings/notifications'"
@@ -31,7 +37,8 @@ import { motion } from "motion-v";
       </div>
 
       <div class="flex-grow overflow-y-auto p-4 notification-list-area">
-        <SidebarNotificationsNotification />
+        <LoadingSpinner v-if="loading" />
+        <SidebarNotificationsNotification v-if="!loading" />
       </div>
     </div>
   </motion.div>

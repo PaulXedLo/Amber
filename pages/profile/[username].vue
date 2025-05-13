@@ -12,13 +12,24 @@ const usernameRef = computed(() => route.params.username);
 const { openModal, activePost, closeModal } = useModal();
 const { profile, posts, loadingProfile, isOwnProfile } =
   useUserProfileData(usernameRef);
+const { toggleNotification } = useNotifications();
 const { toggleFollowUser, loading, getFollowButtonText, getFollowFeedback } =
   useFollow();
 
 // FOLLOW USER
 
 async function handleFollowClickOnProfile() {
+  // TOGGLE FOLLOW USER
   await toggleFollowUser(profile.value.id, profile.value.isPrivate);
+  //SEND (OR) REMOVE NOTIFICATION
+  await toggleNotification({
+    targetUserId: profile.value.id,
+    type:
+      user.followStatus[profile.value.id] === "followed"
+        ? "follow"
+        : "unfollow",
+  });
+  // GET FOLLOW FEEDBACK ( TOAST )
   getFollowFeedback(profile.value.id, profile.value);
 }
 </script>

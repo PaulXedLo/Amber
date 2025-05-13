@@ -9,6 +9,7 @@ const user = useUserStore();
 // COMPOSABLES
 const { comments, fetchComments, addComment, loading, deleteComment } =
   useComments();
+const { toggleNotification } = useNotifications();
 const { sendReport } = useReport();
 const { toggleLikePost } = useLikes();
 // REFS
@@ -53,9 +54,16 @@ async function handleDeletePost() {
 // LIKE POST
 async function likePost(postInfo) {
   try {
+    // TOGGLE LIKE POST
     await toggleLikePost(postInfo.id, postInfo.likedByMe);
     postInfo.likedByMe = !postInfo.likedByMe;
     postInfo.likesCount += postInfo.likedByMe ? 1 : -1;
+    // TOGGLE SEND (OR) DELETE NOTIFICATION
+    await toggleNotification({
+      targetUserId: postInfo.userId,
+      postId: postInfo.id,
+      type: postInfo.likedByMe ? "like" : "unlike",
+    });
   } catch (error) {
     toast.error({
       message: "Failed to like post",
@@ -100,6 +108,11 @@ async function handleAddComment() {
   const content = commentText.value.trim();
   try {
     await addComment(userId.value, postId.value, content);
+    await toggleNotification({
+      targetUserId: postInfo.value.userId,
+      postId: postInfo.value.id,
+      type: "comment",
+    });
     commentText.value = "";
     activeCommentId.value = null;
     showCommentOptions.value = false;
