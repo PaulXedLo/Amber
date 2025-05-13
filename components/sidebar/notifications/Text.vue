@@ -40,7 +40,7 @@ const props = defineProps({
     <div v-else-if="type === 'comment'" class="flex items-center gap-2 mt-1">
       <Icon name="mdi:comment-text-outline" size="18" class="text-blue-400" />
       <p class="text-sm text-slate-300">
-        Commented on your post: "{{ comment.substring(0, 30) }}..."
+        Commented on your post: "{{ comment?.substring(0, 30) }}..."
       </p>
     </div>
 

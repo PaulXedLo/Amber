@@ -1,11 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { motion } from "motion-v";
 const { clearNotifications, loading } = useNotifications();
+const emit = defineEmits(["close"]);
 </script>
 
 <template>
   <motion.div
-    class="fixed top-0 left-64 z-30 w-89 h-screen"
+    class="md:block fixed top-0 md:left-64 z-50 w-89 h-screen"
     :initial="{ x: '-100%', opacity: 0 }"
     :animate="{ x: 0, opacity: 1 }"
     :exit="{ x: '-100%', opacity: 0 }"
@@ -16,6 +17,20 @@ const { clearNotifications, loading } = useNotifications();
     >
       <div class="px-4 pt-6 pb-4 border-b border-slate-700/50 flex-shrink-0">
         <!-- NOTIFICATIONS HEADER-->
+        <!--MOBILE GO BACK ARROW-->
+        <div
+          class="flex md:hidden cursor-pointer"
+          @click.prevent="emit('close')"
+        >
+          <Icon name="fluent-mdl2:chrome-back" size="20" />
+        </div>
+        <!--DESKTOP CLOSE NOTIFICATIONS BUTTON-->
+        <div
+          @click.prevent="emit('close')"
+          class="hidden md:block cursor-pointer hover:text-amber-500 absolute right-5"
+        >
+          <Icon name="fluent-mdl2:clear" size="15" />
+        </div>
         <h1
           class="text-2xl font-bold text-amber-500 tracking-tight mb-4 text-center"
         >

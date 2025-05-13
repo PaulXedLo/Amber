@@ -9,6 +9,7 @@ const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
 function handleShowNotifications() {
   showNotifications.value = !showNotifications.value;
+  toggleMobileMenu();
 }
 async function signOut() {
   await user.signOut();
@@ -235,7 +236,10 @@ watch(showMobileMenu, (newValue) => {
     </div>
   </motion.aside>
   <!--NOTIFICATIONS BAR-->
-  <SidebarNotifications v-if="showNotifications" />
+  <SidebarNotifications
+    v-if="showNotifications"
+    @close="handleShowNotifications"
+  />
 </template>
 
 <style scoped>

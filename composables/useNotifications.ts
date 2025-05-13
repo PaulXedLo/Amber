@@ -2,7 +2,7 @@ export function useNotifications() {
   const user = useUserStore();
   let showNotifications = ref(false);
   const notifications: any = ref([]);
-
+  const unreadNotifications = ref(0);
   const loading = ref(false);
   // FETCH NOTIFICATIONS
   async function fetchNotifications() {
@@ -18,13 +18,15 @@ export function useNotifications() {
         query: { userId: user.userId },
       });
 
-      const { data, comment } = response as any;
-      console.log(data);
+      const { data, unreadCount } = response as any;
       notifications.value = data;
+      unreadNotifications.value = unreadCount;
+      console.log(unreadNotifications);
       loading.value = false;
     } catch (err) {
       console.error("Failed to fetch notifications", err);
       notifications.value = [];
+      unreadNotifications.value = 0;
     } finally {
       loading.value = false;
     }
@@ -108,6 +110,7 @@ export function useNotifications() {
     notifications,
     deleteNotification,
     clearNotifications,
+    unreadNotifications,
     loading,
     showNotifications,
     toggleNotification,

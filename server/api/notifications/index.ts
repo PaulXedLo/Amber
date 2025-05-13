@@ -101,8 +101,24 @@ export default defineEventHandler(async (event) => {
         .orderBy(sql`notifications.created_at DESC`)
         .limit(10)
         .execute();
+      const unreadCountResult = await db
+        .select({
+          count: sql<number>`count(${notifications.id})`.mapWith(Number),
+        })
+        .from(notifications)
+        .where(
+          and(
+            eq(notifications.receiverId, userId),
+            eq(notifications.isRead, false)
+          )
+        )
+        .execute();
 
-      return { data: notificationsData || [] };
+      const unreadNotificationsCount = unreadCountResult[0]?.count || 0;
+      return {
+        data: notificationsData || [],
+        unreadCount: unreadNotificationsCount,
+      };
     } catch (err) {
       console.error("Failed to get notifications for user", err);
       throw createError({
