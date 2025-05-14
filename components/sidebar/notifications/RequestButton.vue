@@ -1,18 +1,10 @@
 <script setup lang="ts">
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  senderId: {
-    type: String,
-    required: true,
-  },
-  notificationId: {
-    type: String,
-    required: true,
-  },
-});
+import type { Notification } from "~/types/notification";
+const props = defineProps<{
+  name: string;
+  senderId: Notification["senderId"];
+  notificationId: Notification["id"];
+}>();
 const emit = defineEmits(["handleRequest"]);
 const buttonVariants = {
   initial: { scale: 1.0 },

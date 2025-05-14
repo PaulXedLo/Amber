@@ -1,36 +1,42 @@
-<script setup>
+<script setup lang="ts">
 import { motion } from "motion-v";
-const props = defineProps({
-  postItemData: {
-    type: Object,
-    required: true,
-  },
-  currentUserId: {
-    type: String,
-    default: null,
-  },
-  followStatusOfPostAuthor: {
-    type: String,
-    default: "unfollowed",
-  },
-  followButtonTextContent: {
-    type: String,
-    default: "Follow",
-  },
-});
+// TYPESCRIPT TYPES
+import type { PostWithProfile } from "~/types/post";
+interface Props {
+  postItemData: PostWithProfile;
+  currentUserId?: string | null;
+  followStatusOfPostAuthor?: string;
+  followButtonTextContent?: string;
+}
 
-const emit = defineEmits(["toggle-like-post", "trigger-follow-user"]);
+// PROPS & EMITS
+const props = defineProps<Props>();
+const emit = defineEmits<{
+  (e: "toggle-like-post", postItemData: PostWithProfile): void;
+  (
+    e: "trigger-follow-user",
+    payload: {
+      targetUserId: string;
+      isPrivate: boolean;
+      profile: any;
+    }
+  ): void;
+}>();
 
+// EMIT LIKE POST FUNCTION
+// This function emits an event to toggle the like status of a post.
 function onLikeClick() {
   emit("toggle-like-post", props.postItemData);
 }
-
+// EMIT FOLLOW USER FUNCTION
+// This function emits an event to follow or unfollow a user.
 function onFollowClick() {
-  if (props.postItemData.profiles?.id) {
+  const { profiles } = props.postItemData;
+  if (profiles?.id) {
     emit("trigger-follow-user", {
-      targetUserId: props.postItemData.profiles.id,
-      isPrivate: props.postItemData.profiles.isPrivate,
-      profile: props.postItemData.profiles,
+      targetUserId: profiles.id,
+      isPrivate: profiles.isPrivate || false,
+      profile: profiles,
     });
   }
 }
@@ -59,7 +65,7 @@ function onFollowClick() {
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center gap-4">
         <ProfilePicture
-          :src="postItemData.profiles.profilePicture"
+          :src="postItemData.profiles.profilePicture || ''"
           :navigateToPath="`/profile/${postItemData.profiles.username}`"
           :altText="'User profile picture'"
         />
@@ -154,7 +160,7 @@ function onFollowClick() {
       class="flex items-center gap-3 text-slate-400 text-sm mt-3 italic"
     >
       <ProfilePicture
-        :src="postItemData.profiles.profilePicture"
+        :src="postItemData.profiles.profilePicture || ''"
         :navigateToPath="`/profile/${postItemData.profiles.username}`"
         :altText="'User profile picture'"
         :sizeClasses="'w-8 h-8 rounded-full'"

@@ -1,11 +1,23 @@
 import { defineStore } from "pinia";
+import type {
+  PostWithProfile,
+  CreatePostPayload,
+  DeletePostPayload,
+  Comment,
+} from "~/types/post";
 
 export const usePostsStore = defineStore("posts", {
   state: () => ({
-    userPosts: [],
-    allPosts: [],
+    userPosts: [] as PostWithProfile[],
+    allPosts: [] as PostWithProfile[],
   }),
+
   actions: {
+    // FETCH POSTS
+    // This function fetches posts for the authenticated user
+    // It first checks if the user is authenticated and retrieves their user ID
+    // It then fetches the user's posts and all posts from the API
+    // The fetched posts are stored in the userPosts and allPosts state variables
     async fetchPosts() {
       const supabase = useNuxtApp().$supabase;
 
@@ -16,14 +28,28 @@ export const usePostsStore = defineStore("posts", {
 
       const userId = session.user.id;
 
-      const { userPosts, allPosts }: any = await $fetch("/api/posts", {
+      const { userPosts, allPosts } = await $fetch<{
+        userPosts: PostWithProfile[];
+        allPosts: PostWithProfile[];
+      }>("/api/posts", {
         query: { userId },
         method: "GET",
       });
+
       this.userPosts = userPosts;
       this.allPosts = allPosts;
+      console.log("User posts:", this.userPosts);
+      console.log("All posts:", this.allPosts);
     },
-    async addPost(values: any) {
+    // ADD POST
+    // This function adds a new post
+    // It first checks if the user is authenticated and retrieves their user ID
+    // It then uploads the image to Supabase storage if provided
+    async addPost(values: {
+      content: string;
+      postFeeling?: string;
+      contentImage?: File;
+    }) {
       const supabase = useNuxtApp().$supabase;
 
       const {
@@ -31,8 +57,8 @@ export const usePostsStore = defineStore("posts", {
       } = await supabase.auth.getSession();
       if (!session) return;
 
-      const userId = session?.user?.id;
-      let uploadedImageUrl = null;
+      const userId = session.user.id;
+      let uploadedImageUrl: string | null = null;
 
       if (values.contentImage) {
         const file = values.contentImage;
@@ -46,6 +72,7 @@ export const usePostsStore = defineStore("posts", {
             cacheControl: "3600",
             upsert: false,
           });
+
         if (uploadError) {
           console.error("Upload Error:", uploadError.message);
           throw uploadError;
@@ -54,25 +81,30 @@ export const usePostsStore = defineStore("posts", {
         const { data: publicUrlData } = supabase.storage
           .from("posts")
           .getPublicUrl(filePath);
-
         uploadedImageUrl = publicUrlData.publicUrl;
       }
+
+      const payload: CreatePostPayload = {
+        userId,
+        contentText: values.content,
+        contentImage: uploadedImageUrl,
+        feeling: values.postFeeling,
+      };
+
       try {
         await $fetch("/api/posts", {
           method: "POST",
-          body: {
-            userId,
-            contentImage: uploadedImageUrl,
-            contentText: values.content,
-            feeling: values.postFeeling,
-          },
+          body: payload,
         });
         await this.fetchPosts();
       } catch (error) {
-        console.log("Error! couldnt add post", error);
+        console.error("Error adding post:", error);
       }
     },
-    async deletePost(postId: any) {
+    // DELETE POST
+    // This function deletes a post by its ID
+    // It first checks if the user is authenticated and retrieves their user ID
+    async deletePost(postId: string) {
       const supabase = useNuxtApp().$supabase;
 
       const {
@@ -80,32 +112,39 @@ export const usePostsStore = defineStore("posts", {
       } = await supabase.auth.getSession();
       if (!session) return;
 
-      const userId = session?.user?.id;
+      const userId = session.user.id;
+      const payload: DeletePostPayload = { postId, userId };
+
       try {
-        const success = await $fetch("/api/posts", {
+        const response = await $fetch<{ success: boolean }>("/api/posts", {
           method: "DELETE",
-          body: { postId, userId },
+          body: payload,
         });
-        if (!success) {
+
+        if (!response.success) {
           throw new Error("Failed to delete post");
-        } else {
-          await this.fetchPosts();
-          return success;
         }
+
+        await this.fetchPosts();
+        return response.success;
       } catch (error) {
-        console.log("Error! couldnt delete post", error);
+        console.error("Error deleting post:", error);
       }
     },
-    async fetchComments(postId: any) {
-      if (!postId) return;
+    // FETCH COMMENTS FOR POST
+    // This function fetches comments for a specific post
+    // It takes the post ID as an argument and retrieves the comments from the API
+    // It returns an array of comments
+    async fetchComments(postId: string): Promise<Comment[]> {
+      if (!postId) return [];
       try {
-        const allComments = await $fetch("/api/posts/comment", {
+        const allComments = await $fetch<Comment[]>("/api/posts/comment", {
           method: "GET",
           query: { postId },
         });
         return allComments;
       } catch (error) {
-        console.log("Could not fetch comments", error);
+        console.error("Could not fetch comments", error);
         throw new Error("Cannot get comments");
       }
     },

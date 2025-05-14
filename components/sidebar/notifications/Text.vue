@@ -1,28 +1,17 @@
 <script setup lang="ts">
-import { motion } from "motion-v";
-const props = defineProps({
-  type: {
-    type: String,
-    required: true,
-  },
-  post: {
-    type: Object,
-    required: false,
-  },
-  comment: {
-    type: Object,
-    required: false,
-  },
-  notificationData: {
-    type: Object,
-    required: false,
-  },
-});
-const { acceptRequest, loading } = useNotifications();
+import type { Notification } from "~/types/notification";
+const props = defineProps<{
+  type: Notification["type"];
+  post?: Notification["postContentImage"];
+  comment?: Notification["commentContent"];
+  notificationData?: Notification;
+}>();
+
+const { acceptRequest } = useNotifications();
 async function handleAcceptRequest() {
   await acceptRequest(
-    props.notificationData?.senderId,
-    props.notificationData?.id
+    props.notificationData?.senderId as string,
+    props.notificationData?.id as string
   );
 }
 </script>
@@ -37,7 +26,7 @@ async function handleAcceptRequest() {
       </div>
       <span v-if="post" class="w-10 h-10 flex-shrink-0">
         <NuxtImg
-          @click="navigateTo(`/posts/${post?.id}`)"
+          @click="navigateTo(`/posts/${notificationData?.postId}`)"
           class="cursor-pointer w-full h-full object-cover rounded-md border border-slate-600"
           :src="post"
           densities="x1"
@@ -70,14 +59,14 @@ async function handleAcceptRequest() {
       <!--ACCEPT / REJECT FOLLOW BUTTON-->
       <SidebarNotificationsRequestButton
         :name="'Accept'"
-        :senderId="notificationData?.senderId"
-        :notificationId="notificationData?.id"
+        :senderId="notificationData?.senderId as string"
+        :notificationId="notificationData?.id as string"
         @handleRequest="handleAcceptRequest"
       />
       <SidebarNotificationsRequestButton
         :name="'Reject'"
-        :senderId="notificationData?.senderId"
-        :notificationId="notificationData?.id"
+        :senderId="notificationData?.senderId as string"
+        :notificationId="notificationData?.id as string"
       />
     </div>
   </div>

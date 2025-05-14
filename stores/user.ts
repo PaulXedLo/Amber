@@ -1,5 +1,10 @@
 import { defineStore } from "pinia";
-import type { SignUpData, UserProfile } from "~/types/auth";
+import type {
+  SignUpData,
+  UserProfile,
+  LogInData,
+  UpdatePasswordData,
+} from "~/types/auth";
 
 export const useUserStore = defineStore("user", {
   state: (): UserProfile => ({
@@ -11,13 +16,15 @@ export const useUserStore = defineStore("user", {
     profilePic: null,
     isPrivate: false,
     username: null,
-    followersCount: null,
-    followingCount: null,
-    postsCount: null,
+    followersCount: 0,
+    followingCount: 0,
+    postsCount: 0,
     bio: null,
     followStatus: {},
   }),
   actions: {
+    // FETCH USER PROFILE
+    // This function fetches the user profile from the server and updates the store state.
     async fetchUserProfile() {
       const supabase = useNuxtApp().$supabase;
       const {
@@ -76,7 +83,13 @@ export const useUserStore = defineStore("user", {
         this.isSignedIn = false;
       }
     },
-    async signUpUser(values: SignUpData) {
+    // SIGN UP USER
+    // This function handles user sign-up, including creating a new user and inserting their profile into the database.
+    async signUpUser(values: SignUpData): Promise<{
+      success: boolean;
+      data?: { signupData: any; profileData: any };
+      error?: Error;
+    }> {
       const supabase = useNuxtApp().$supabase;
 
       if (
@@ -138,10 +151,17 @@ export const useUserStore = defineStore("user", {
       } catch (error) {
         console.error("Unexpected SignUp Error:", error);
         alert("An unexpected error occurred during sign up.");
-        return { success: false, error };
+        return {
+          success: false,
+          error: Error("Unexpected error during sign up"),
+        };
       }
     },
-    async logInUser(values: any) {
+    // LOG IN USER
+    // This function handles user login, including fetching the user profile after successful login.
+    async logInUser(
+      values: LogInData
+    ): Promise<{ success: boolean; error?: Error }> {
       const supabase = useNuxtApp().$supabase;
       try {
         const {
@@ -186,10 +206,15 @@ export const useUserStore = defineStore("user", {
       } catch (error) {
         console.error("Unexpected Login Error:", error);
         alert("An unexpected error occurred during login.");
-        return { success: false, error };
+        return {
+          success: false,
+          error: Error("Unexpected error during login"),
+        };
       }
     },
-    async updateUserPassword(values: any) {
+    // UPDATE USER PASSWORD
+    // This function updates the user's password.
+    async updateUserPassword(values: UpdatePasswordData): Promise<void> {
       const supabase = useNuxtApp().$supabase;
       try {
         const { error } = await supabase.auth.updateUser({
@@ -206,6 +231,8 @@ export const useUserStore = defineStore("user", {
         alert("An unexpected error occurred while updating the password.");
       }
     },
+    // CHECK AUTH
+    // This function checks if the user is authenticated and fetches their profile.
     async checkAuth() {
       const supabase = useNuxtApp().$supabase;
       try {
@@ -234,9 +261,9 @@ export const useUserStore = defineStore("user", {
             this.username = null;
             this.bio = null;
             this.isPrivate = false;
-            this.followersCount = null;
-            this.followingCount = null;
-            this.postsCount = null;
+            this.followersCount = 0;
+            this.followingCount = 0;
+            this.postsCount = 0;
             this.followStatus = {};
           }
         }
@@ -250,6 +277,8 @@ export const useUserStore = defineStore("user", {
         this.hydrated = true;
       }
     },
+    // SIGN OUT USER
+    // This function signs out the user and resets the store state.
     async signOut() {
       const supabase = useNuxtApp().$supabase;
       try {
@@ -268,18 +297,21 @@ export const useUserStore = defineStore("user", {
         this.fullName = null;
         this.bio = null;
         this.isPrivate = false;
-        this.followersCount = null;
-        this.followingCount = null;
-        this.postsCount = null;
+        this.followersCount = 0;
+        this.followingCount = 0;
+        this.postsCount = 0;
         this.followStatus = {};
         this.hydrated = true;
 
         await navigateTo("/auth");
       }
     },
+    // UPDATE USER PROFILE
+    // This function updates the user's profile information, including their profile picture.
+    // It handles the upload of the profile picture to Supabase storage and updates the database.
     async updateProfile(
       values: Partial<UserProfile & { profilePicture?: File }>
-    ) {
+    ): Promise<void> {
       const supabase = useNuxtApp().$supabase;
       if (!this.userId) {
         console.error("Cannot update profile: User ID is missing.");

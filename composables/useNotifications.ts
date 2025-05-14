@@ -1,32 +1,42 @@
+import type { Notification, NotificationPayload } from "~/types/notification";
+
 export function useNotifications() {
   const user = useUserStore();
   const toast = useToast();
-  let showNotifications = ref(false);
-  const notifications: any = ref([]);
+
+  const showNotifications = ref(false);
+  const notifications = ref<Notification[]>([]);
   const unreadNotifications = ref(0);
   const loading = ref(false);
-  // FETCH NOTIFICATIONS INTERNAL ( NO LOADING STATE )
+
+  // INTERNAL FETCH NOTIFICATIONS (WITHOUT LOADING STATE)
+  // This function fetches notifications for the authenticated user
   async function fetchNotificationsInternal() {
     if (!user.userId) {
       console.error("Could not get userId for fetching notifications");
       return;
     }
     try {
-      const response = await $fetch("/api/notifications", {
+      const response = await $fetch<{
+        data: Notification[];
+        unreadCount: number;
+      }>("/api/notifications", {
         method: "GET",
         query: { userId: user.userId },
       });
 
-      const { data, unreadCount } = response as any;
-      notifications.value = data;
-      unreadNotifications.value = unreadCount;
+      notifications.value = response.data;
+      unreadNotifications.value = response.unreadCount;
     } catch (err) {
       console.error("Failed to fetch notifications", err);
       notifications.value = [];
       unreadNotifications.value = 0;
     }
   }
-  // FETCH NOTIFICATIONS
+
+  // FETCH NOTIFICATIONS WITH LOADING STATE
+  // This function fetches notifications and sets the loading state
+  // It uses the fetchNotificationsInternal function to get the data
   async function fetchNotifications() {
     loading.value = true;
     try {
@@ -37,49 +47,47 @@ export function useNotifications() {
   }
 
   // SEND OR DELETE NOTIFICATION
-  async function toggleNotification(values: any) {
-    // HANDLE ERROR
+  // This function sends or deletes a notification based on the type
+  // It takes a NotificationPayload object as an argument
+  async function toggleNotification(values: NotificationPayload) {
     if (!user.userId || !values) {
-      console.error("Could not get userId or values");
+      console.error("Could not get userId or notification values");
       return;
     }
-    // SEND NOTIFICATION (LIKE, COMMENT, FOLLOW)
-    if (
-      values.type === "like" ||
-      values.type === "comment" ||
-      values.type === "follow" ||
-      values.type === "request"
-    ) {
+
+    if (["like", "comment", "follow", "request"].includes(values.type)) {
       try {
-        const { status } = await $fetch("/api/notifications", {
-          method: "POST",
-          body: {
-            userId: user.userId,
-            targetUserId: values.targetUserId,
-            postId: values.postId,
-            type: values.type,
-          },
-        });
-        if (status === "sent") {
-          return true;
-        } else {
-          console.error("Failed to send notification", status);
-          return false;
-        }
+        const { status } = await $fetch<{ status: string }>(
+          "/api/notifications",
+          {
+            method: "POST",
+            body: {
+              userId: user.userId,
+              targetUserId: values.targetUserId,
+              postId: values.postId,
+              type: values.type,
+            },
+          }
+        );
+
+        return status === "sent";
       } catch (err) {
         console.error("Failed to send notification", err);
-        return;
+        return false;
       }
-    } else {
-      return;
     }
+
+    return false;
   }
-  // DELETE NOTIFICATION API
+
+  // DELETE NOTIFICATION API CALL
+  // This function deletes a notification by its ID
   async function deleteNotificationAPI(notificationId: string) {
     if (!notificationId) {
-      console.error("Could not get notificationId for API delete");
+      console.error("Notification ID is required to delete");
       return false;
     }
+
     try {
       await $fetch("/api/notifications", {
         method: "DELETE",
@@ -91,27 +99,23 @@ export function useNotifications() {
       return false;
     }
   }
-  // DELETE NOTIFICATION
+
+  // DELETE NOTIFICATION AND REFRESH
+  // This function deletes a notification by its ID and refreshes the notifications
   async function deleteNotification(notificationId: string) {
-    if (!notificationId) {
-      console.error("Could not get notificationId");
-      return false;
-    }
     loading.value = true;
     try {
       const success = await deleteNotificationAPI(notificationId);
-      if (success) {
-        await fetchNotificationsInternal();
-      }
+      if (success) await fetchNotificationsInternal();
       return success;
-    } catch (err) {
-      console.error("Failed to delete notification", err);
-      return false;
     } finally {
       loading.value = false;
     }
   }
+
   // CLEAR ALL NOTIFICATIONS
+  // This function clears all notifications for the authenticated user
+  // It sets the loading state while performing the operation
   async function clearNotifications() {
     loading.value = true;
     try {
@@ -126,28 +130,31 @@ export function useNotifications() {
       loading.value = false;
     }
   }
+
   // ACCEPT FOLLOW REQUEST
+  // This function accepts a follow request from another user
+  // It removes the notificaiton and follow request in the database and posts a new follower
   async function acceptRequest(targetUserId: string, notificationId: string) {
     if (!user.userId || !targetUserId) {
-      console.error("Could not get userId or targetUserId");
+      console.error("Missing userId or targetUserId");
       return;
     }
     loading.value = true;
+
     try {
       await $fetch("/api/followrequest", {
         method: "POST",
         body: { userId: user.userId, targetUserId },
       });
+
       await deleteNotificationAPI(notificationId);
 
-      // 3. Show success toast
       toast.success({
         message: "Successfully accepted follow request",
         timeout: 3000,
         position: "topRight",
       });
 
-      // 4. Fetch all notifications to update the list (only once)
       await fetchNotificationsInternal();
     } catch (err) {
       console.error("Failed to accept request", err);

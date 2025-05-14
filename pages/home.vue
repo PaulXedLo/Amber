@@ -1,9 +1,12 @@
-<script setup>
+<script setup lang="ts">
 definePageMeta({ layout: "default" });
-import PostItem from "~/components/home/PostItem.vue";
+// TYPESCRIPT TYPES
+import type { PostWithProfile } from "~/types/post";
+import type { FollowUserPayload } from "~/types/follow";
+// STORES
 const user = useUserStore();
 const posts = usePostsStore();
-// REFS
+// COMPOSABLES & REFS
 const { getRandomComment } = useComments();
 const { toggleNotification } = useNotifications();
 const { toggleLikePost } = useLikes();
@@ -14,28 +17,35 @@ const {
   getFollowFeedback,
 } = useFollow();
 const pending = ref(false);
-// LIKE POSTS
-async function toggleLike(post) {
-  // TOGGLE LIKE POST
-  await toggleLikePost(post.posts.id, post.posts.likedByMe);
+
+// TOGGLE LIKE FUNCTION
+// This function toggles the like status of a post and updates the likes count.
+// It also sends a notification if the post is liked.
+async function toggleLike(post: PostWithProfile) {
+  await toggleLikePost(post.posts.id, post.posts.likedByMe ?? false);
   post.posts.likedByMe = !post.posts.likedByMe;
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
-  // SEND(or)CANCEL NOTIFICATION
+
   if (post.posts.likedByMe) {
     await toggleNotification({
       targetUserId: post.profiles.id,
       postId: post.posts.id,
-      type: post.posts.likedByMe ? "like" : "unlike",
+      type: "like",
     });
   }
 }
-
-// FOLLOW / UNFOLLOW USER
-async function handleFollowClick(targetUserId, isPrivate, profile) {
+// TOGGLE FOLLOW FUNCTION
+// This function toggles the follow status of a user and updates the follow status.
+// It also sends a notification if the user is followed.
+async function handleFollowClick(
+  targetUserId: string,
+  isPrivate: boolean,
+  profile: any
+) {
   if (!targetUserId) return;
-  // TOGGLE FOLLOW USER
+
   await toggleFollowUser(targetUserId, isPrivate);
-  // SEND (OR) REMOVE NOTIFICATION
+
   if (user.followStatus[targetUserId] !== "unfollowed") {
     await toggleNotification({
       targetUserId,
@@ -43,22 +53,22 @@ async function handleFollowClick(targetUserId, isPrivate, profile) {
         user.followStatus[targetUserId] === "followed" ? "follow" : "request",
     });
   }
-  // GET FOLLOW FEEDBACK (TOAST)
+
   getFollowFeedback(targetUserId, profile);
 }
-
 // HOOKS
+// This hook is used to fetch posts and check if the current user is following the authors of those posts.
+// It also fetches a random comment to display on the home page for each post.
 onMounted(async () => {
   pending.value = true;
   await posts.fetchPosts();
-  // CHECK IF USER IS FOLLOWING PROFILES
+
   const followChecks = posts.allPosts
     .filter((post) => post.profiles?.id)
-    .map((post) => checkIfFollowing(post.profiles?.id));
-  // FETCH RANDOM COMMENT FOR EACH POST
-  await getRandomComment();
+    .map((post) => checkIfFollowing(post.profiles.id));
+
   try {
-    await Promise.all([...followChecks, ...commentFetches]);
+    await Promise.all([getRandomComment(), ...followChecks]);
   } catch (error) {
     console.error("Error during onMounted data fetching:", error);
   }
@@ -84,16 +94,16 @@ onMounted(async () => {
     <!--POSTS-->
     <template v-else>
       <div class="flex flex-col items-center mt-8 gap-10">
-        <PostItem
+        <HomePostItem
           v-for="post in posts.allPosts"
           :key="post.posts.id"
           :postItemData="post"
           :currentUserId="user.userId"
-          :followStatusOfPostAuthor="user.followStatus[post.profiles.id]"
-          :followButtonTextContent="getFollowButtonText(post.profiles.id)"
+          :followStatusOfPostAuthor="user.followStatus[post.profiles.id] as string | undefined"
+          :followButtonTextContent="getFollowButtonText(post.profiles.id) as string | undefined"
           @toggle-like-post="toggleLike"
           @trigger-follow-user="
-            ({ targetUserId, isPrivate, profile }) =>
+            ({ targetUserId, isPrivate, profile }: FollowUserPayload) =>
               handleFollowClick(targetUserId, isPrivate, profile)
           "
         />
