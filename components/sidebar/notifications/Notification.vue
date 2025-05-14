@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { motion } from "motion-v";
-const { fetchNotifications, deleteNotification, notifications, loading } =
-  useNotifications();
-
+const {
+  fetchNotifications,
+  deleteNotification,
+  notifications,
+  loading: notificationLoading,
+} = useNotifications();
 const buttonVariants = {
   initial: {
     scale: 1,
@@ -18,15 +21,17 @@ onBeforeMount(async () => {
 </script>
 <template>
   <div>
-    <LoadingSpinner v-if="loading" />
+    <LoadingSpinner v-if="notificationLoading" />
 
-    <div v-if="!loading && notifications.length < 1" class="text-center py-10">
+    <div
+      v-if="!notificationLoading && notifications.length < 1"
+      class="text-center py-10"
+    >
       <p class="text-sm text-gray-500">You currently have no notifications.</p>
     </div>
 
     <div v-else class="flex flex-col space-y-3">
       <div
-        v-if="!loading"
         v-for="notification in notifications"
         :key="notification.id"
         class="bg-slate-800/50 p-3 rounded-lg shadow-sm border border-slate-700/50 hover:bg-slate-800 transition-colors duration-150 overflow-hidden"
@@ -63,7 +68,6 @@ onBeforeMount(async () => {
           </div>
         </div>
         <!-- NOTIFICATION TEXT -->
-
         <SidebarNotificationsText
           :post="notification.postContentImage"
           :type="notification.type"
@@ -84,6 +88,7 @@ onBeforeMount(async () => {
             View
           </motion.button>
           <motion.button
+            v-if="notification.type !== 'request'"
             :variants="buttonVariants"
             initial="initial"
             whileHover="whileHover"

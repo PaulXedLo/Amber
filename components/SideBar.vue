@@ -7,8 +7,16 @@ const sidebarRef = ref(null);
 let showNotifications = ref(false);
 const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
-function handleShowNotifications() {
+const { unreadNotifications, fetchNotifications } = useNotifications();
+
+async function handleShowNotifications() {
   showNotifications.value = !showNotifications.value;
+  if (showNotifications.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    await fetchNotifications();
+    document.body.style.overflow = "";
+  }
   toggleMobileMenu();
 }
 async function signOut() {
@@ -56,6 +64,11 @@ watch(showMobileMenu, (newValue) => {
   if (newValue) document.addEventListener("mousedown", handleClickOutside);
   else document.removeEventListener("mousedown", handleClickOutside);
 });
+
+// HOOKS
+onMounted(async()=> {
+  await fetchNotifications()
+})
 </script>
 <template>
   <!-- Overlay for lower opacity of outer content when the mobile menu is open -->
@@ -188,13 +201,17 @@ watch(showMobileMenu, (newValue) => {
 
         <!--NOTIFICATIONS BUTTON-->
 
-        <div @click="handleShowNotifications">
+        <div @click="handleShowNotifications" class="flex items-center gap-2">
           <SidebarButton :iconName="'mdi:notifications'">
             Notifications
           </SidebarButton>
-        </div>
+          <span
+            v-if="unreadNotifications >= 1"
+            class="rounded-full w-3 h-3 bg-amber-500"
+          ></span>
+        </div
 
-        <!--UPLOAD POST BUTTON-->
+       <!--UPLOAD POST BUTTON-->
 
         <SidebarButton
           :iconName="'mdi:upload-outline'"
