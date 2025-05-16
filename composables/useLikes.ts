@@ -1,12 +1,19 @@
+import type { ToggleLikePayload } from "~/types/post";
 export function useLikes() {
   const user = useUserStore();
   async function toggleLikePost(postId: string, likedByMe: boolean) {
     if (!postId) return;
+    const payload: ToggleLikePayload = {
+      userId: user.userId as string,
+      postId,
+    };
+    if (!user.userId) {
+    }
     if (!likedByMe) {
       try {
         await $fetch("/api/posts/togglelike", {
           method: "POST",
-          body: { userId: user.userId, postId },
+          body: payload,
         });
       } catch (error) {
         console.error("Could not like post", error);
@@ -16,7 +23,7 @@ export function useLikes() {
       try {
         await $fetch("/api/posts/togglelike", {
           method: "DELETE",
-          body: { userId: user.userId, postId },
+          body: payload,
         });
       } catch (error) {
         console.error("Could not unlike post", error);

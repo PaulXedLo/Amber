@@ -1,13 +1,14 @@
 import { getDb } from "~/server/db";
 import { followers, followRequests } from "~/server/db/schema";
 import { eq, and } from "drizzle-orm";
-
+import type { IsFollowingResponse } from "~/types/follow";
 export default defineEventHandler(async (event) => {
   const db = getDb();
   const query = getQuery(event);
-  const userId = query.userId as string | undefined;
-  const targetUserId = query.targetUserId as string | undefined;
-
+  const { userId, targetUserId } = getQuery(event) as {
+    userId?: string;
+    targetUserId?: string;
+  };
   if (!userId || !targetUserId) {
     throw createError({
       statusCode: 400,
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
       .limit(1);
 
     if (existingFollow.length > 0 && existingFollow[0].status === "followed") {
-      return { isFollowing: true, status: "followed" };
+      return <IsFollowingResponse>{ isFollowing: true, status: "followed" };
     }
     const pendingRequest = await db
       .select({ status: followRequests.status })
@@ -42,10 +43,10 @@ export default defineEventHandler(async (event) => {
       .limit(1);
 
     if (pendingRequest.length > 0 && pendingRequest[0].status === "pending") {
-      return { isFollowing: false, status: "pending" };
+      return <IsFollowingResponse>{ isFollowing: false, status: "pending" };
     }
 
-    return { isFollowing: false, status: "unfollowed" };
+    return <IsFollowingResponse>{ isFollowing: false, status: "unfollowed" };
   } catch (error) {
     console.error("Could not check if user follows:", error);
     throw createError({

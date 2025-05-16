@@ -2,7 +2,8 @@
 definePageMeta({ layout: "default" });
 // TYPESCRIPT TYPES
 import type { PostWithProfile } from "~/types/post";
-import type { FollowUserPayload } from "~/types/follow";
+import type { NotificationPayload } from "~/types/notification";
+import type { FollowButtonText, FollowStatus } from "~/types/follow";
 // STORES
 const user = useUserStore();
 const posts = usePostsStore();
@@ -27,7 +28,7 @@ async function toggleLike(post: PostWithProfile) {
   post.posts.likesCount += post.posts.likedByMe ? 1 : -1;
 
   if (post.posts.likedByMe) {
-    await toggleNotification({
+    await toggleNotification(<NotificationPayload>{
       targetUserId: post.profiles.id,
       postId: post.posts.id,
       type: "like",
@@ -47,7 +48,7 @@ async function handleFollowClick(
   await toggleFollowUser(targetUserId, isPrivate);
 
   if (user.followStatus[targetUserId] !== "unfollowed") {
-    await toggleNotification({
+    await toggleNotification(<NotificationPayload>{
       targetUserId,
       type:
         user.followStatus[targetUserId] === "followed" ? "follow" : "request",
@@ -99,11 +100,11 @@ onMounted(async () => {
           :key="post.posts.id"
           :postItemData="post"
           :currentUserId="user.userId"
-          :followStatusOfPostAuthor="user.followStatus[post.profiles.id] as string | undefined"
-          :followButtonTextContent="getFollowButtonText(post.profiles.id) as string | undefined"
+          :followStatusOfPostAuthor="user.followStatus[post.profiles.id] as FollowStatus['status']"
+          :followButtonTextContent="getFollowButtonText(post.profiles.id) as FollowButtonText"
           @toggle-like-post="toggleLike"
           @trigger-follow-user="
-            ({ targetUserId, isPrivate, profile }: FollowUserPayload) =>
+            ({ targetUserId, isPrivate, profile }) =>
               handleFollowClick(targetUserId, isPrivate, profile)
           "
         />

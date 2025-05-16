@@ -1,3 +1,5 @@
+import type { FollowStatus } from "./follow";
+
 // SIGN UP DATA
 export interface SignUpData {
   email: string;
@@ -29,5 +31,5 @@ export interface UserProfile {
   followingCount: number;
   postsCount: number;
   bio: string | null;
-  followStatus: Record<string, unknown>;
+  followStatus: Record<string, FollowStatus["status"]>;
 }

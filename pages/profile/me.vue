@@ -43,12 +43,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PostModal
-    :post="activePost"
-    @close="closeModal"
-    @postRemoved="updatePostsCount"
-    @likeUpdated="likeUpdated"
-  />
+  <ModalPostModal @close="closeModal" @postRemoved="updatePostsCount" />
   <div
     v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"

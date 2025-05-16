@@ -1,13 +1,4 @@
-interface Comment {
-  commentId?: string;
-  commentText: string;
-  commentCreatedAt?: string | Date;
-  userId: string;
-  username?: string;
-  profilePicture?: string;
-  postId: string;
-}
-
+import type { Comment } from "~/types/post";
 export function useComments() {
   const comments = ref<Comment[]>([]);
   const loading = ref(false);

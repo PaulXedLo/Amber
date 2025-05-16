@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { motion } from "motion-v";
+import type { FollowButtonText, FollowStatus } from "~/types/follow";
 // TYPESCRIPT TYPES
 import type { PostWithProfile } from "~/types/post";
 interface Props {
   postItemData: PostWithProfile;
   currentUserId?: string | null;
-  followStatusOfPostAuthor?: string;
+  followStatusOfPostAuthor?: FollowStatus["status"];
   followButtonTextContent?: string;
 }
 

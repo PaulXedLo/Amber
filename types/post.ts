@@ -36,6 +36,7 @@ export interface Comment {
   userId: string;
   username: string;
   profilePicture: string | null;
+  postId: string;
 }
 
 // POST - Add new post
@@ -76,7 +77,13 @@ export interface ReportPostPayload {
   userId: string;
   postId: string;
 }
-
+export interface ReportPostResponse {
+  success: boolean;
+}
+export interface ReportDetails {
+  userId: string;
+  postId: string;
+}
 // GET - Post details
 export interface PostDetails {
   post: Post;

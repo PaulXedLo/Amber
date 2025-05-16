@@ -5,9 +5,9 @@ import { eq, and } from "drizzle-orm";
 export default defineEventHandler(async (event) => {
   const db = getDb();
   const body = await readBody(event);
-  const { userId, followingUserId, isPrivate } = body;
+  const { userId, targetUserId, isPrivate } = body;
 
-  if (!userId || !followingUserId) {
+  if (!userId || !targetUserId) {
     throw createError({
       statusCode: 400,
       message: "Missing userId or followingUserId",
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
           .where(
             and(
               eq(followRequests.requesterId, userId),
-              eq(followRequests.targetId, followingUserId)
+              eq(followRequests.targetId, targetUserId)
             )
           )
           .execute();
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
           .where(
             and(
               eq(followers.followerId, userId),
-              eq(followers.followingId, followingUserId)
+              eq(followers.followingId, targetUserId)
             )
           )
           .execute();
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
           .insert(followers)
           .values({
             followerId: userId,
-            followingId: followingUserId,
+            followingId: targetUserId,
             status: "followed",
           })
           .onConflictDoNothing()
@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
           .where(
             and(
               eq(followers.followerId, userId),
-              eq(followers.followingId, followingUserId)
+              eq(followers.followingId, targetUserId)
             )
           )
           .execute();

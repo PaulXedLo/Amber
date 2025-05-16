@@ -1,8 +1,14 @@
-interface FollowAPIResponse {
-  status: "pending" | "followed" | "unfollowed";
-}
+import type {
+  FollowAPIResponse,
+  FollowButtonText,
+  FollowStatus,
+  FollowStatusType,
+  FollowUserPayload,
+  IsFollowingResponse,
+} from "~/types/follow";
+import type { Profile } from "~/types/post";
 export function useFollow() {
-  const loading = ref(false);
+  const loading = ref<boolean>(false);
   const toast = useToast();
   const user = useUserStore();
 
@@ -14,13 +20,16 @@ export function useFollow() {
     }
 
     try {
-      const { status } = await $fetch("/api/profile/isfollowing", {
-        method: "GET",
-        query: {
-          userId: String(user.userId),
-          targetUserId: String(targetUserId),
-        },
-      });
+      const { status } = await $fetch<IsFollowingResponse>(
+        "/api/profile/isfollowing",
+        {
+          method: "GET",
+          query: {
+            userId: String(user.userId),
+            targetUserId: String(targetUserId),
+          },
+        }
+      );
 
       if (
         status === "pending" ||
@@ -43,82 +52,62 @@ export function useFollow() {
   }
   // FOLLOW / UNFOLLOW / SEND REQUEST
   async function toggleFollowUser(targetUserId: string, isPrivate: boolean) {
-    if (!user.userId) {
-      console.error("User must be logged in to follow/unfollow.");
+    if (!user.userId || !targetUserId) return;
 
-      return;
-    }
-    if (!targetUserId) {
-      console.error("Target user ID is missing.");
-      return;
-    }
-
-    const currentStatus = user.followStatus[targetUserId];
     loading.value = true;
+    const currentStatus = user.followStatus[targetUserId];
+    const payload: FollowUserPayload = {
+      userId: user.userId,
+      targetUserId,
+      isPrivate,
+    };
 
     try {
-      if (currentStatus === "followed" || currentStatus === "pending") {
-        const { status }: any = await $fetch("/api/profile/follow", {
-          method: "DELETE",
-          body: {
-            userId: user.userId,
-            followingUserId: targetUserId,
-            isPrivate,
-          },
-        });
-
-        if (status === "unfollowed") {
-          user.followStatus[targetUserId] = "unfollowed";
-        } else {
-          console.warn(
-            "Unexpected status after DELETE. Expected 'unfollowed', got:",
-            status
-          );
-          user.followStatus[targetUserId] = "unfollowed";
+      const method =
+        currentStatus === "followed" || currentStatus === "pending"
+          ? "DELETE"
+          : "POST";
+      const { status } = await $fetch<FollowAPIResponse>(
+        "/api/profile/follow",
+        {
+          method,
+          body: payload,
         }
-      } else {
-        const { status } = await $fetch<FollowAPIResponse>(
-          "/api/profile/follow",
-          {
-            method: "POST",
-            body: {
-              userId: user.userId,
-              followingUserId: targetUserId,
-              isPrivate,
-            },
-          }
-        );
+      );
 
-        if (status === "pending" || status === "followed") {
-          user.followStatus[targetUserId] = status;
-        } else {
-          console.warn("Unexpected follow status received:", status);
-          user.followStatus[targetUserId] = "unfollowed";
-        }
-      }
+      const isValidStatus = ["followed", "pending", "unfollowed"].includes(
+        status ?? ""
+      );
+      user.followStatus[targetUserId] = isValidStatus
+        ? (status as FollowStatusType)
+        : "unfollowed";
     } catch (error) {
       console.error("Could not toggle follow status", error);
+      toast.error({
+        message: "Something went wrong while updating follow state",
+      });
     } finally {
       loading.value = false;
     }
   }
   // GET FOLLOW BUTTON TEXT
 
-  function getFollowButtonText(id: any) {
-    let status = user.followStatus[id];
-    if (status === "followed") {
-      return "Unfollow";
-    } else if (status === "pending") {
-      return "Pending";
-    } else if (status === "unfollowed") {
-      return "Follow";
+  function getFollowButtonText(id: string): FollowButtonText {
+    const status: FollowStatus["status"] = user.followStatus[
+      id
+    ] as FollowStatus["status"];
+    switch (status) {
+      case "followed":
+        return "Unfollow";
+      case "pending":
+        return "Pending";
+      default:
+        return "Follow";
     }
-    return status;
   }
-
   // PROVIDE FOLLOW FEEDBACK
 
-  function getFollowFeedback(id: any, profile: any) {
+  function getFollowFeedback(id: string, profile: Profile) {
     if (!id || !profile) {
       return;
     }
