@@ -85,6 +85,7 @@ export function useModal(): ModalComposable {
         timeout: 3000,
         position: "topCenter",
       });
+      closeModal();
     }
     return false;
   }

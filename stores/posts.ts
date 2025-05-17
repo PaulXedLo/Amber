@@ -110,7 +110,7 @@ export const usePostsStore = defineStore("posts", {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) return false;
 
       const userId = session.user.id;
       const payload: DeletePostPayload = { postId, userId };
@@ -126,11 +126,13 @@ export const usePostsStore = defineStore("posts", {
         }
 
         await this.fetchPosts();
-        return response.success;
+        return true;
       } catch (error) {
         console.error("Error deleting post:", error);
+        return false;
       }
     },
+
     // FETCH COMMENTS FOR POST
     // This function fetches comments for a specific post
     // It takes the post ID as an argument and retrieves the comments from the API

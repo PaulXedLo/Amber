@@ -22,7 +22,7 @@ const fallbackImage =
   <div class="flex justify-between items-start">
     <!-- Left: Profile -->
     <div class="flex items-center gap-3">
-      <ProfilePicture
+      <MyprofilePicture
         :src="post.profiles.profilePicture || fallbackImage"
         :navigateToPath="`/profile/${post.profiles.username}`"
         :altText="'Profile Picture'"

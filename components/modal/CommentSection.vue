@@ -22,7 +22,7 @@ const {
       <div
         v-for="comment in comments"
         :key="comment.commentId"
-        class="flex gap-3 p-2 hover:bg-slate-700/50 rounded-md"
+        class="flex gap-3 p-2 relative hover:bg-slate-700/50 rounded-md"
       >
         <NuxtImg
           :src="comment.profilePicture || fallbackImage"
@@ -38,7 +38,7 @@ const {
                 <NuxtTime :datetime="comment.commentCreatedAt" relative />
               </span>
             </p>
-            <div class="relative mt-1.25 w-8">
+            <div class="relative top-5 mt-1.25 w-8">
               <Icon
                 name="weui:more-filled"
                 size="20"

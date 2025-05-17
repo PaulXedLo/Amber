@@ -9,6 +9,7 @@ import type {
 import type { Profile } from "~/types/post";
 export function useFollow() {
   const loading = ref<boolean>(false);
+  const { toggleNotification } = useNotifications();
   const toast = useToast();
   const user = useUserStore();
 
@@ -131,10 +132,30 @@ export function useFollow() {
       });
     }
   }
+
+  // FOLLOW USER ON PUBLIC PROFILE
+  async function publicUserFollow(
+    userId: string,
+    isPrivate: boolean,
+    profile: Profile
+  ): Promise<void> {
+    if (!userId || !profile) {
+      console.log("Could not get userId or profile");
+      return;
+    }
+    await toggleFollowUser(userId, isPrivate);
+    await toggleNotification({
+      targetUserId: profile.id,
+      type:
+        user.followStatus[profile.id] === "followed" ? "follow" : "unfollow",
+    });
+    getFollowFeedback(userId, profile);
+  }
   return {
     loading,
     getFollowFeedback,
     toggleFollowUser,
+    publicUserFollow,
     getFollowButtonText,
     checkIfFollowing,
   };

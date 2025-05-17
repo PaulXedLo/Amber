@@ -16,6 +16,9 @@ export interface Profile {
   id: string;
   username: string;
   fullName: string | null;
+  followingCount: number | 0;
+  followersCount: number | 0;
+  postsCount: number | 0;
   profilePicture: string | null;
   bio?: string | null;
   isPrivate?: boolean;
@@ -24,6 +27,7 @@ export interface Profile {
 // Combined Post and Profile for feed display
 export interface PostWithProfile {
   posts: Post;
+  likedByMe?: boolean;
   profiles: Profile;
   displayComment?: string | null;
 }

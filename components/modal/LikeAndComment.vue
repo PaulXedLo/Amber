@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <div class="flex items-center gap-4 mt-2">
     <button
-      @click="handleLikePost"
+      @click="async () => await handleLikePost()"
       class="flex cursor-pointer items-center gap-1 text-white hover:text-amber-400"
       aria-label="Toggle like"
     >

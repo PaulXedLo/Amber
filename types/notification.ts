@@ -21,5 +21,12 @@ export interface Notification {
 export interface NotificationPayload {
   targetUserId: string;
   postId?: string;
-  type: "like" | "unlike" | "comment" | "follow" | "request" | "accept";
+  type:
+    | "like"
+    | "unlike"
+    | "comment"
+    | "follow"
+    | "request"
+    | "accept"
+    | "unfollow";
 }

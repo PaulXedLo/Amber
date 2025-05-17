@@ -51,7 +51,7 @@ onMounted(async () => {
     <!-- Profile header -->
     <div class="flex flex-col items-center gap-4">
       <div class="avatar">
-        <ProfilePicture
+        <MyprofilePicture
           :src="profilePicture"
           :isClickable="false"
           :altText="'User profile picture'"

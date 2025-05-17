@@ -100,7 +100,6 @@ export default defineEventHandler(async (event) => {
   if (event.method === "DELETE") {
     const body = await readBody(event);
     const { postId, userId } = body;
-
     if (!postId || !userId) {
       console.error(
         "DELETE /api/posts - Missing postId or userId in body:",

@@ -39,7 +39,7 @@ onBeforeMount(async () => {
         <div class="flex items-start justify-between mb-2">
           <!--NOTIFICATION SENT BY PROFILE INFORMATION-->
           <div class="flex items-center gap-2 flex-shrink-0 mr-2">
-            <ProfilePicture
+            <MyprofilePicture
               :src="notification.senderProfilePicture"
               :sizeClasses="'w-8 h-8 rounded-full'"
               :navigateToPath="`/profile/${notification.senderUsername}`"

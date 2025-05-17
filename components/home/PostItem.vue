@@ -65,7 +65,7 @@ function onFollowClick() {
     <!--POST HEADER-->
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center gap-4">
-        <ProfilePicture
+        <MyprofilePicture
           :src="postItemData.profiles.profilePicture || ''"
           :navigateToPath="`/profile/${postItemData.profiles.username}`"
           :altText="'User profile picture'"

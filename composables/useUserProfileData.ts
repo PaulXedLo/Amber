@@ -7,7 +7,9 @@ export function useUserProfileData(usernameRef: string) {
   const profile: any = ref(null);
   const posts = ref([]);
   const loadingProfile = ref(true);
-
+  const fallbackImage = ref<string>(
+    "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
+  );
   const isOwnProfile = computed(() => {
     return (
       profile.value?.username &&
@@ -73,6 +75,7 @@ export function useUserProfileData(usernameRef: string) {
     profile,
     posts,
     loadingProfile,
+    fallbackImage,
     isOwnProfile,
     fetchProfileData: fetchProfile,
   };
