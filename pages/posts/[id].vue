@@ -7,6 +7,7 @@ definePageMeta({ layout: "default" });
 
 // COMPOSABLES
 const route = useRoute();
+const router = useRouter();
 const user = useUserStore();
 // usePosts composable
 const {
@@ -26,12 +27,11 @@ const {
   activePostId,
   activeCommentId,
 } = usePosts();
-
 onBeforeMount(async () => {
   try {
     await fetchSinglePost(route.params.id as string);
   } catch {
-    navigateTo("/home");
+    router.push(`/notfound/post`);
   }
 });
 </script>

@@ -43,6 +43,9 @@ export function usePosts() {
       pending.value = false;
     }
   }
+  // fetch individual post
+  // this function is used in the post page
+  // it fetches the post and its profile
   async function fetchSinglePost(postId: string) {
     try {
       const { post, profile } = await $fetch(`/api/posts/${postId}`, {
@@ -58,6 +61,9 @@ export function usePosts() {
   }
 
   // LIKE POST
+  // this function is used in the post page
+  // it toggles the like status of the post
+  // it also updates the likes count and the likedByMe status
   async function likePost(post: PostWithProfile["posts"]) {
     try {
       await toggleLikePost(post.id, post.likedByMe ?? false);
@@ -79,6 +85,8 @@ export function usePosts() {
   }
 
   // REPORT POST
+  // this function is used in the post page
+  // it sends a report to the server
   async function handleReport(postId: string) {
     try {
       await sendReport(userId.value as string, postId);
@@ -99,6 +107,9 @@ export function usePosts() {
   }
 
   // DELETE POST
+  // this function is used in the post page
+  // it deletes the post from the server
+  // it also removes the post from the store
   async function handleDeletePost(postId: string): Promise<boolean> {
     try {
       const success = await posts.deletePost(postId);
@@ -121,6 +132,10 @@ export function usePosts() {
   }
 
   // ADD COMMENT
+  // this function is used in the post page
+  // it adds a comment to the post
+  // it also updates the comments count and the comments array
+  // it also sends a notification to the post owner
   async function handleAddComment(postId: string) {
     const content = commentText.value.trim();
     try {
@@ -149,6 +164,9 @@ export function usePosts() {
   }
 
   // DELETE COMMENT
+  // this function is used in the post page
+  // it deletes the comment from the server
+  // it also updates the comments count and the comments array
   async function handleDeleteComment(commentId: string, postId: string) {
     try {
       await deleteComment(commentId, postId);

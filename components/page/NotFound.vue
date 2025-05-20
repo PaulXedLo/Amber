@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { motion } from "motion-v";
 const route = useRoute();
 const notFoundVariant = {
@@ -11,10 +11,14 @@ const notFoundVariant = {
     y: 0,
   },
 };
+
 const homeButtonVariant = {
   whileHover: { scale: 1.1 },
   whilePress: { scale: 0.9 },
 };
+const props = defineProps<{
+  type: String;
+}>();
 </script>
 <template>
   <motion.div
@@ -23,10 +27,18 @@ const homeButtonVariant = {
     animate="animate"
     class="flex flex-col justify-center gap-9 items-center min-h-200 overflow-y-hidden"
   >
-    <h2 class="text-2xl font-semibold">Profile not found</h2>
-    <p class="text-slate-400">
+    <h2 v-if="props.type === 'profile'" class="text-2xl font-semibold">
+      Profile not found
+    </h2>
+    <h2 v-else-if="props.type === 'post'" class="text-2xl font-semibold">
+      Post not found
+    </h2>
+    <p v-if="props.type === 'profile'" class="text-slate-400">
       The user @{{ route.params.username }} does not exist or there was an issue
       loading their profile.
+    </p>
+    <p v-if="props.type === 'post'" class="text-slate-400">
+      The post does not exist or there was an issue loading it.
     </p>
     <motion.button
       :variants="homeButtonVariant"

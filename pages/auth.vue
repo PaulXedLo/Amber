@@ -45,6 +45,7 @@ onBeforeMount(async () => {
 <template>
   <div v-if="!loading">
     <div class="flex flex-col items-center justify-center">
+      <!--Background video-->
       <video
         autoplay
         muted
@@ -58,6 +59,7 @@ onBeforeMount(async () => {
       <div
         class="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-amber-900/30 to-transparent backdrop-blur-sm z-0"
       ></div>
+      <!--Logo-->
       <h1
         ref="amberTitle"
         :class="['text-white', 'animate__animated', titleAnimation]"
@@ -68,6 +70,7 @@ onBeforeMount(async () => {
           name="noto-v1:large-orange-diamond"
         />
       </h1>
+      <!--Authentication Form-->
       <AuthFormAuth />
     </div>
   </div>
