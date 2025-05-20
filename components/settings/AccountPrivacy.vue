@@ -1,26 +1,6 @@
 <script setup>
 import "animate.css";
-const user = useUserStore();
-const toast = useToast();
-let { isPrivate } = storeToRefs(user);
-async function togglePrivacy() {
-  try {
-    await user.updateProfile({ isPrivate: !user.isPrivate });
-    toast.success({
-      message: "Account privacy updated successfully",
-      timeout: 2000,
-      position: "topCenter",
-    });
-    isPrivate.value = user.isPrivate;
-  } catch (error) {
-    console.error("Error updating privacy:", error);
-    toast.error({
-      message: "Failed to update account privacy",
-      timeout: 2000,
-      position: "topCenter",
-    });
-  }
-}
+const {isPrivate, togglePrivacy} = useSettings();
 </script>
 
 <template>
@@ -46,7 +26,7 @@ async function togglePrivacy() {
       <p class="mt-3">
         Current Status:
         <strong class="underline">{{
-          user.isPrivate ? "Private" : "Public"
+          isPrivate ? "Private" : "Public"
         }}</strong>
       </p>
     </div>

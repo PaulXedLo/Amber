@@ -1,7 +1,6 @@
 <script setup>
 // STORES
 const route = useRoute();
-const user = useUserStore();
 // COMPOSABLES
 const usernameRef = computed(() => route.params.username);
 const { openModal, activePost, closeModal } = useModal();
@@ -10,7 +9,8 @@ const { profile, posts, loadingProfile, isOwnProfile, fallbackImage } =
 </script>
 
 <template>
-  <PostModal :post="activePost" @close="closeModal" />
+  <!-- Post Modal -->
+  <ModalPostModal :post="activePost" @close="closeModal" />
 
   <div
     v-if="loadingProfile"
