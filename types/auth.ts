@@ -26,6 +26,9 @@ export interface UserProfile {
   isNewUser: boolean;
   profilePic: string | null;
   isPrivate: boolean;
+  followNotifications: boolean;
+  likesNotifications: boolean;
+  commentsNotifications: boolean;
   username: string | null;
   followersCount: number;
   followingCount: number;

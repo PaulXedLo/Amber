@@ -62,7 +62,8 @@ const selectedTab = ref(tabs.profile);
         </a>
       </li>
       <li>
-        <a
+        <NuxtLink
+        to="/profile/settings/notifications"
           @click="selectedTab = tabs.notifications"
           :class="[
             'px-5 py-2 rounded-full font-semibold transition cursor-pointer',
@@ -72,7 +73,7 @@ const selectedTab = ref(tabs.profile);
           ]"
         >
           Notifications
-        </a>
+        </NuxtLink>
       </li>
     </ul>
 

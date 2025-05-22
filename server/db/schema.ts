@@ -80,6 +80,7 @@ export const followRequests = pgTable(
     };
   }
 );
+/* Notifications TABLE */
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   receiverId: uuid("receiverId").references(() => profiles.id),
@@ -89,6 +90,17 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   isRead: boolean("isRead").default(false),
 });
+
+/* Notification preferences TABLE */
+export const notificationPreferences = pgTable("notification_preferences", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  likes: boolean("likes").default(true),
+  comments: boolean("comments").default(true),
+  follows: boolean("follows").default(true),
+});
+/* REPORTS TABLE */
 export const reports = pgTable("reports", {
   userId: uuid("user_id").references(() => profiles.id),
   postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),

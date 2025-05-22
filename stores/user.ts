@@ -15,6 +15,9 @@ export const useUserStore = defineStore("user", {
     isNewUser: false,
     profilePic: null,
     isPrivate: false,
+    followNotifications: true,
+    likesNotifications: true,
+    commentsNotifications: true,
     username: null,
     followersCount: 0,
     followingCount: 0,
@@ -142,6 +145,14 @@ export const useUserStore = defineStore("user", {
           alert(profileError.message);
           return { success: false, error: profileError };
         }
+        const { error: preferencesError } = await supabase
+          .from("notification_preferences")
+          .insert({
+            user_id: user.id,
+            likes: true,
+            comments: true,
+            follows: true,
+          });
 
         this.isSignedIn = true;
         this.isNewUser = true;
