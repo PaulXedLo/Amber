@@ -1,4 +1,10 @@
-import { comments, notifications, posts, profiles } from "~/server/db/schema";
+import {
+  comments,
+  notificationPreferences,
+  notifications,
+  posts,
+  profiles,
+} from "~/server/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { getDb } from "~/server/db";
 
@@ -16,7 +22,27 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
       });
     }
-
+    // Get notification preferences
+    const userNotificationPreferences = await db
+      .select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, targetUserId))
+      .execute();
+    // Store preferences
+    const preferences = userNotificationPreferences[0];
+    // Send based on type
+    let sendNotification = false;
+    if (!preferences) {
+      sendNotification = false;
+    } else {
+      if (type === "like") sendNotification = preferences?.likes ?? false;
+      if (type === "comment") sendNotification = preferences?.comments ?? false;
+      if (type === "follow" || type === "request")
+        sendNotification = preferences.follows ?? false;
+    }
+    if (!sendNotification) {
+      return { status: "not_sent" };
+    }
     let valuesToInsert: any = {
       senderId: userId,
       receiverId: targetUserId,

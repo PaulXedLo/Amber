@@ -7,6 +7,9 @@ export const usePublicStore = defineStore("public", {
     postsCount: null,
     followingCount: null,
     followersCount: null,
+    followNotifications: true,
+    likesNotifications: true,
+    commentsNotifications: true,
     profilePic: null,
     isPrivate: null,
     username: null,
@@ -31,6 +34,7 @@ export const usePublicStore = defineStore("public", {
           profiles,
           posts,
           followersCount,
+          notificationPreferences,
           isFollowing,
           followingCount,
           postsCount,
@@ -41,6 +45,9 @@ export const usePublicStore = defineStore("public", {
         this.username = profiles.username;
         this.bio = profiles.bio;
         this.isPrivate = profiles.isPrivate ?? false;
+        this.likesNotifications = notificationPreferences.likes ?? true;
+        this.commentsNotifications = notificationPreferences.comments ?? true;
+        this.followNotifications = notificationPreferences.follows ?? true;
         this.followersCount = followersCount;
         this.followingCount = followingCount;
         this.isFollowing = isFollowing;

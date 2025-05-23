@@ -1,5 +1,10 @@
 import { getDb } from "~/server/db";
-import { posts, profiles, followers } from "~/server/db/schema";
+import {
+  posts,
+  profiles,
+  followers,
+  notificationPreferences,
+} from "~/server/db/schema";
 import { eq, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -62,13 +67,19 @@ export default defineEventHandler(async (event) => {
       .from(posts)
       .where(eq(posts.userId, userId as string));
     const postsCount = postsCountResult[0]?.count ?? 0;
-
+    const userNotificationPreferences = await db
+      .select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId as string))
+      .execute();
+    const preferences = userNotificationPreferences[0];
     return {
       profiles: profileInfo,
       posts: postsList,
       followersCount,
       followingCount,
       postsCount,
+      notificationPreferences: preferences,
     };
   } catch (error: any) {
     console.error(

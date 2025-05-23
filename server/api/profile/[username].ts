@@ -1,5 +1,10 @@
 import { getDb } from "~/server/db";
-import { posts, profiles, followers } from "~/server/db/schema";
+import {
+  posts,
+  profiles,
+  followers,
+  notificationPreferences,
+} from "~/server/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -53,7 +58,13 @@ export default defineEventHandler(async (event) => {
             .from(posts)
             .where(eq(posts.userId, profileId)),
         ]);
-
+      // GET NOTIFICATION PREFERENCES
+      const userNotificationPreferences = await db
+        .select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, profileId))
+        .execute();
+      const preferences = userNotificationPreferences[0];
       // STORING COUNT VALUES
 
       const followersCount = followersCountResult[0].count || 0;
@@ -62,6 +73,7 @@ export default defineEventHandler(async (event) => {
       return {
         profiles: profileInfo,
         posts: postsList,
+        notificationPreferences: preferences,
         followersCount,
         followingCount,
         isFollowing,

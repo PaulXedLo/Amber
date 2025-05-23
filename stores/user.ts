@@ -52,8 +52,13 @@ export const useUserStore = defineStore("user", {
         });
 
         if (profileData || profileData?.profiles) {
-          const { profiles, followersCount, followingCount, postsCount } =
-            profileData;
+          const {
+            profiles,
+            followersCount,
+            notificationPreferences: userNotificationPreferences,
+            followingCount,
+            postsCount,
+          } = profileData;
           this.userId = profiles.id;
           this.fullName = profiles.fullName;
           this.profilePic = profiles.profilePicture || fallbackImage;
@@ -63,6 +68,12 @@ export const useUserStore = defineStore("user", {
           this.followingCount = followingCount;
           this.followersCount = followersCount;
           this.postsCount = postsCount;
+          this.followNotifications =
+            userNotificationPreferences?.follows ?? true;
+          this.likesNotifications = userNotificationPreferences?.likes ?? true;
+          this.commentsNotifications =
+            userNotificationPreferences?.comments ?? true;
+          console.log(userNotificationPreferences);
         } else {
           console.error(
             "Received invalid profile data structure:",
