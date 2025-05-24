@@ -26,6 +26,8 @@ export interface UserProfile {
   isNewUser: boolean;
   profilePic: string | null;
   isPrivate: boolean;
+  showAge: boolean;
+  age: number | null;
   followNotifications: boolean;
   likesNotifications: boolean;
   commentsNotifications: boolean;

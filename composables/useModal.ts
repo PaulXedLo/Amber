@@ -1,10 +1,6 @@
 import type { ModalComposable } from "@/types/modal";
-// STORES
-const user = useUserStore();
-const posts = usePostsStore();
-const toast = useToast();
+import { ref, computed } from "vue";
 
-// REFS
 const isOpen = ref(false);
 const postId = ref<string | null>(null);
 const commentInput = ref<string>("");
@@ -13,22 +9,26 @@ const activePostOptionsId = ref<string | null>(null);
 const fallbackImage = ref<string>(
   "https://i.pinimg.com/736x/2c/47/d5/2c47d5dd5b532f83bb55c4cd6f5bd1ef.jpg"
 );
-// COMPOSABLES
-const { comments, loading, fetchComments, deleteComment, addComment } =
-  useComments();
-const { toggleLikePost } = useLikes();
-const { sendReport } = useReport();
 
-// COMPUTED
-const activePost = computed(() => {
-  return (
-    posts.userPosts.find((p) => p.posts.id === postId.value) ||
-    posts.allPosts.find((p) => p.posts.id === postId.value) ||
-    null
-  );
-});
-
+// ---- COMPOSABLE FUNCTION ----
 export function useModal(): ModalComposable {
+  const user = useUserStore();
+  const posts = usePostsStore();
+  const toast = useToast();
+
+  const { comments, loading, fetchComments, deleteComment, addComment } =
+    useComments();
+  const { toggleLikePost } = useLikes();
+  const { sendReport } = useReport();
+
+  const activePost = computed(() => {
+    return (
+      posts.userPosts.find((p) => p.posts.id === postId.value) ||
+      posts.allPosts.find((p) => p.posts.id === postId.value) ||
+      null
+    );
+  });
+
   async function handleAddComment(): Promise<void> {
     const content = commentInput.value.trim();
     if (!content || !activePost.value?.posts.id || !user.userId) return;
@@ -100,6 +100,7 @@ export function useModal(): ModalComposable {
         position: "topCenter",
       });
       activeCommentId.value = null;
+      activePostOptionsId.value = null;
     } catch {
       toast.error({
         message: "Failed to report.",
@@ -138,6 +139,7 @@ export function useModal(): ModalComposable {
   }
 
   return {
+    // State
     isOpen,
     activePost,
     commentInput,
@@ -145,6 +147,8 @@ export function useModal(): ModalComposable {
     loading,
     activeCommentId,
     activePostOptionsId,
+    fallbackImage,
+    // Methods
     openModal,
     closeModal,
     handleAddComment,
@@ -152,7 +156,6 @@ export function useModal(): ModalComposable {
     handleLikePost,
     handleDeletePost,
     handleReport,
-    fallbackImage,
     toggleCommentOptions,
     togglePostOptions,
   };

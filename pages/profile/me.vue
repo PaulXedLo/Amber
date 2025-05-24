@@ -17,8 +17,6 @@ const {
   username,
   fullName,
   bio,
-  followersCount,
-  followingCount,
   postsCount,
 } = storeToRefs(user);
 
@@ -44,6 +42,7 @@ onMounted(async () => {
 
 <template>
   <ModalPostModal @close="closeModal" @postRemoved="updatePostsCount" />
+  <MyprofileShareModal />
   <div
     v-if="!loadingProfile"
     class="max-w-4xl mx-auto px-4 mt-10 animate__animated animate__fadeInUp animate__faster"
@@ -58,50 +57,14 @@ onMounted(async () => {
           :sizeClasses="'w-32 h-32'"
         />
       </div>
-
-      <div class="flex flex-col justify-center items-center">
-        <h1 class="text-2xl font-bold">{{ fullName }}</h1>
-        <h1 class="text-1xl">@{{ username }}</h1>
-      </div>
-
-      <h3 class="text-1xl">{{ bio }}</h3>
+      <!--Name, age, username-->
+      <MyprofileInformation />
+      <!-- Bio -->
+      <MyprofileBio />
       <!-- Profile options -->
-      <div class="flex gap-6 mt-2">
-        <motion.button
-          :whileHover="{ scale: 1.05 }"
-          :whilePress="{ scale: 0.95 }"
-        >
-          <NuxtLink
-            to="/profile/settings/profilesettings"
-            class="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 transition text-white font-semibold shadow hover:shadow-lg"
-          >
-            Edit Profile
-          </NuxtLink>
-        </motion.button>
-        <motion.button
-          :whileHover="{ scale: 1.05 }"
-          :whilePress="{ scale: 0.95 }"
-          class="cursor-pointer px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 transition text-white font-semibold shadow hover:shadow-lg"
-        >
-          Share Profile
-        </motion.button>
-      </div>
-
+      <MyprofileButtons />
       <!-- Stats -->
-      <div class="flex justify-center gap-10 mt-6">
-        <div class="text-center">
-          <h2 class="text-lg font-bold">Followers</h2>
-          <p class="text-slate-400">{{ followersCount }}</p>
-        </div>
-        <div class="text-center">
-          <h2 class="text-lg font-bold">Following</h2>
-          <p class="text-slate-400">{{ followingCount }}</p>
-        </div>
-        <div class="text-center">
-          <h2 class="text-lg font-bold">Posts</h2>
-          <p class="text-slate-400">{{ postsCount }}</p>
-        </div>
-      </div>
+      <MyprofileStats />
     </div>
 
     <!-- Posts Grid -->

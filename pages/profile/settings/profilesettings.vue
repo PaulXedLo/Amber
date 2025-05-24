@@ -10,8 +10,9 @@ definePageMeta({
   >
     <!-- Profile Picture and Name section -->
     <div class="flex flex-col items-center gap-4">
-    <SettingsProfilePicture />
-    <SettingsNameEdit />
+      <SettingsProfilePicture />
+      <SettingsNameEdit />
+      <SettingsShowAge />
     </div>
 
     <!-- Bio Section -->

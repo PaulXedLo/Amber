@@ -6,6 +6,7 @@ const {
   handleDeleteComment,
   handleReport,
   fallbackImage,
+  closeModal,
   toggleCommentOptions,
 } = useModal();
 </script>
@@ -24,21 +25,27 @@ const {
         :key="comment.commentId"
         class="flex gap-3 p-2 relative hover:bg-slate-700/50 rounded-md"
       >
-        <NuxtImg
-          :src="comment.profilePicture || fallbackImage"
-          class="w-8 h-8 rounded-full mt-1"
-        />
+        <NuxtLink :to="`/profile/${comment.username}`">
+          <NuxtImg
+            @click="closeModal"
+            :src="comment.profilePicture || fallbackImage"
+            class="w-8 h-7 rounded-full mt-2.5"
+          />
+        </NuxtLink>
         <div class="flex flex-col w-full">
           <div class="flex justify-between items-center w-full">
             <p class="text-xs text-slate-400">
-              <span class="font-semibold text-white">{{
-                comment.username
-              }}</span>
+              <NuxtLink
+                @click="closeModal"
+                :to="`/profile/${comment.username}`"
+                class="font-semibold text-white"
+                >{{ comment.username }}</NuxtLink
+              >
               <span class="ml-2 text-slate-500">
                 <NuxtTime :datetime="comment.commentCreatedAt" relative />
               </span>
             </p>
-            <div class="relative top-5 mt-1.25 w-8">
+            <div class="relative text-center top-2 mt-1.25 w-8">
               <Icon
                 name="weui:more-filled"
                 size="20"

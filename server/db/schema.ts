@@ -18,6 +18,7 @@ export const profiles = pgTable("profiles", {
   email: text("email"),
   bio: text("bio"),
   age: numeric("age"),
+  showAge: boolean("showAge").default(false),
   isPrivate: boolean("isPrivate").default(false),
   profilePicture: text("profile_picture"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

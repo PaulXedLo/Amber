@@ -58,7 +58,7 @@ const emit = defineEmits<{
     <button
       v-if="profileId === userId"
       @click="$emit('deletePost')"
-      class="px-4 py-2 hover:bg-red-500 transition-colors"
+      class="px-4 w-30 cursor-pointer py-2 hover:bg-red-500 transition-colors"
     >
       Delete Post
     </button>

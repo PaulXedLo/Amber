@@ -96,6 +96,8 @@ export function usePosts() {
         position: "topRight",
       });
       showReport.value = false;
+      activePostId.value = null;
+      activeCommentId.value = null;
       showCommentOptions.value = false;
     } catch (error) {
       toast.error({

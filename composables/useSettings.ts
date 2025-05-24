@@ -10,11 +10,16 @@ export function useSettings() {
     likesNotifications,
     commentsNotifications,
     followNotifications,
+    showAge,
   } = toRefs(user);
 
   // Change settings (Notifications, Privacy, etc.)
   async function changeSettings(type: string) {
     if (!type) return;
+    if (type === "showAge") {
+      await toggleShowAge();
+      return;
+    }
     try {
       await $fetch(`/api/notifications/preferences/${type}`, {
         method: "PATCH",
@@ -160,6 +165,29 @@ export function useSettings() {
       });
     }
   }
+  // Toggle show age
+  async function toggleShowAge() {
+    try {
+      await $fetch(`/api/profile/update?userId=${user.userId}`, {
+        method: "PATCH",
+        body: {
+          showAge: !showAge.value,
+        },
+      });
+      toast.success({
+        message: "Show age settings updated successfully!",
+        timeout: 3000,
+        position: "topRight",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error({
+        message: "Error updating show age settings",
+        timeout: 3000,
+        position: "topRight",
+      });
+    }
+  }
   return {
     // Notifications Methods and reactive properties
     likesNotifications,
@@ -190,5 +218,8 @@ export function useSettings() {
     // Privacy Methods and reactive properties
     isPrivate,
     togglePrivacy,
+    // Show age Methods and reactive properties
+    showAge,
+    toggleShowAge,
   };
 }

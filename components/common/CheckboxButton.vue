@@ -3,8 +3,12 @@ const { changeSettings } = useSettings();
 const props = defineProps<{
   type: string;
 }>();
-const { likesNotifications, commentsNotifications, followNotifications } =
-  useSettings();
+const {
+  likesNotifications,
+  commentsNotifications,
+  followNotifications,
+  showAge,
+} = useSettings();
 const buttonType = computed(() => {
   if (props.type === "likes") {
     return likesNotifications.value;
@@ -12,6 +16,8 @@ const buttonType = computed(() => {
     return commentsNotifications.value;
   } else if (props.type === "follows") {
     return followNotifications.value;
+  } else if (props.type === "showAge") {
+    return showAge.value;
   }
 });
 </script>

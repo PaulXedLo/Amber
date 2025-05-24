@@ -44,16 +44,20 @@ const fallbackImage =
           :key="comment.commentId"
           class="flex items-start p-3 gap-3 hover:bg-slate-700/40 rounded-md"
         >
-          <NuxtImg
-            :src="comment.profilePicture || fallbackImage"
-            class="w-8 h-8 rounded-full mt-1 object-cover"
-          />
+          <NuxtLink :to="`/profile/${comment.username}`">
+            <NuxtImg
+              :src="comment.profilePicture || fallbackImage"
+              class="w-8 h-7 rounded-full mt-1 object-cover"
+            />
+          </NuxtLink>
           <div class="flex justify-between w-full items-start gap-2">
             <div class="flex flex-col">
               <p class="text-xs text-slate-400 mb-0.5">
-                <span class="font-semibold text-white">{{
-                  comment.username
-                }}</span>
+                <NuxtLink
+                  :to="`/profile/${comment.username}`"
+                  class="font-semibold text-white"
+                  >{{ comment.username }}</NuxtLink
+                >
                 <span class="ml-2 text-slate-500">
                   <NuxtTime :datetime="comment.commentCreatedAt" relative />
                 </span>

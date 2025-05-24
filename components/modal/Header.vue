@@ -45,7 +45,7 @@ const fallbackImage =
     </div>
 
     <!-- Right: Options -->
-    <div class="relative bottom-2 flex gap-2 items-center">
+    <div class="relative bottom-2 flex gap-3 items-center">
       <Icon
         name="weui:more-filled"
         class="text-white cursor-pointer"

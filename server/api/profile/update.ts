@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
           ...(body.username && { username: body.username }),
           ...(body.fullName && { fullName: body.fullName }),
           ...(body.profilePicture && { profilePicture: body.profilePicture }),
+          ...(body.hasOwnProperty("showAge") ? { showAge: body.showAge } : {}),
           ...(body.hasOwnProperty("isPrivate")
             ? { isPrivate: body.isPrivate }
             : {}),

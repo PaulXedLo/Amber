@@ -18,6 +18,8 @@ export const useUserStore = defineStore("user", {
     followNotifications: true,
     likesNotifications: true,
     commentsNotifications: true,
+    showAge: false,
+    age: null,
     username: null,
     followersCount: 0,
     followingCount: 0,
@@ -61,11 +63,13 @@ export const useUserStore = defineStore("user", {
           } = profileData;
           this.userId = profiles.id;
           this.fullName = profiles.fullName;
+          this.showAge = profiles.showAge ?? false;
           this.profilePic = profiles.profilePicture || fallbackImage;
           this.username = profiles.username;
           this.bio = profiles.bio || null;
           this.isPrivate = profiles.isPrivate ?? false;
           this.followingCount = followingCount;
+          this.age = Number(profiles.age);
           this.followersCount = followersCount;
           this.postsCount = postsCount;
           this.followNotifications =
