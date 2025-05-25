@@ -4,12 +4,14 @@ export const usePublicStore = defineStore("public", {
     userId: null,
     fullName: null,
     isNewUser: false,
-    postsCount: null,
-    followingCount: null,
-    followersCount: null,
+    postsCount: 0,
+    followingCount: 0,
+    followersCount: 0,
     followNotifications: true,
     likesNotifications: true,
     commentsNotifications: true,
+    age: null,
+    showAge: false,
     profilePic: null,
     isPrivate: null,
     username: null,
@@ -44,6 +46,8 @@ export const usePublicStore = defineStore("public", {
         this.profilePic = profiles.profilePicture || fallbackImage;
         this.username = profiles.username;
         this.bio = profiles.bio;
+        this.showAge = profiles.showAge ?? false;
+        this.age = Number(profiles.age);
         this.isPrivate = profiles.isPrivate ?? false;
         this.likesNotifications = notificationPreferences.likes ?? true;
         this.commentsNotifications = notificationPreferences.comments ?? true;

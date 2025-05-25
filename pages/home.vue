@@ -21,7 +21,7 @@ onMounted(async () => {
     <!-- HOME PAGE TITLE -->
     <HomeHeaderTitle />
     <!-- CREATE NEW POST COMPONENT-->
-    <CreatePost />
+    <PostsCreatePost />
 
     <!--LOADING SPINNER FOR POSTS-->
     <LoadingSpinner v-if="pending" />

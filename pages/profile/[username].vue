@@ -56,5 +56,5 @@ const { profile, posts, loadingProfile, isOwnProfile, fallbackImage } =
     <p v-if="posts.length < 1">No posts yet.</p>
   </div>
   <!-- USER DOES NOT EXIST PAGE-->
-  <MyprofileNotFound v-else-if="!loadingProfile && !profile" />
+  <PageNotFound type="profile" v-else-if="!loadingProfile && !profile" />
 </template>

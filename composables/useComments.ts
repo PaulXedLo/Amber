@@ -1,12 +1,16 @@
 import type { Comment } from "~/types/post";
+import { ref } from "vue";
+
+const comments = ref<Comment[]>([]);
+const loading = ref(false);
+const activeCommentId: any = ref(null);
+const showCommentOptions: any = ref(null);
+
 export function useComments() {
-  const comments = ref<Comment[]>([]);
-  const loading = ref(false);
-  const activeCommentId: any = ref(null);
-  const showCommentOptions: any = ref(null);
   const user = useUserStore();
   const posts = usePostsStore();
   const toast = useToast();
+
   // FETCH COMMENTS
   async function fetchComments(postId: string | number): Promise<Comment[]> {
     if (!postId) {
@@ -29,7 +33,6 @@ export function useComments() {
       );
 
       comments.value = fetchedComments;
-
       return fetchedComments;
     } catch (error) {
       console.error("Could not fetch comments", error);
@@ -39,6 +42,7 @@ export function useComments() {
       loading.value = false;
     }
   }
+
   // ADD COMMENT
   async function addComment(
     userId: string,
@@ -82,10 +86,10 @@ export function useComments() {
       comments.value = comments.value.filter(
         (c) => c.commentId !== optimisticComment.commentId
       );
-
       throw new Error("Could not add comment to this post.");
     }
   }
+
   // DELETE COMMENT
   async function deleteComment(commentId: string, postId: string) {
     if (!commentId || !postId) {
@@ -103,6 +107,7 @@ export function useComments() {
       throw new Error("Could not delete comment.");
     }
   }
+
   // SET ACTIVE COMMENT ID
   function toggleCommentOptions(commentId: string) {
     if (activeCommentId.value === commentId) {
@@ -113,6 +118,7 @@ export function useComments() {
       showCommentOptions.value = true;
     }
   }
+
   // GET RANDOM COMMENT HOME PAGE
   async function getRandomComment() {
     posts.allPosts.map(async (post: any) => {
@@ -133,6 +139,7 @@ export function useComments() {
       }
     });
   }
+
   return {
     comments,
     loading,

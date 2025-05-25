@@ -80,7 +80,7 @@ function handleCancelPost() {
       Uploading...
     </div>
     <div class="flex items-start gap-4">
-      <ProfilePicture
+      <MyprofilePicture
         :src="user.profilePic"
         :navigateToPath="'/profile/me'"
         :altText="'User profile picture'"

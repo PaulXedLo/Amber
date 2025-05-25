@@ -19,6 +19,8 @@ export interface Profile {
   followingCount: number | 0;
   followersCount: number | 0;
   postsCount: number | 0;
+  age: number | null;
+  showAge?: boolean;
   profilePicture: string | null;
   bio?: string | null;
   isPrivate?: boolean;
