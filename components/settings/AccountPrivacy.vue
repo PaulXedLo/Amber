@@ -1,6 +1,6 @@
 <script setup>
 import "animate.css";
-const {isPrivate, togglePrivacy} = useSettings();
+const { isPrivate, togglePrivacy } = useSettings();
 </script>
 
 <template>
@@ -25,9 +25,11 @@ const {isPrivate, togglePrivacy} = useSettings();
       </div>
       <p class="mt-3">
         Current Status:
-        <strong class="underline">{{
-          isPrivate ? "Private" : "Public"
-        }}</strong>
+        <strong
+          class="underline"
+          :class="{ 'text-green-400': !isPrivate, 'text-red-400': isPrivate }"
+          >{{ isPrivate ? "Private" : "Public" }}</strong
+        >
       </p>
     </div>
   </div>

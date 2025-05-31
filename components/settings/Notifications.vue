@@ -36,6 +36,7 @@
           <p class="text-slate-400 text-center text-sm mb-6 h-12">
             Stay updated on new followers and follow requests.
           </p>
+
           <CommonCheckboxButton type="follows" />
         </div>
 
