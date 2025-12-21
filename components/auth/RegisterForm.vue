@@ -46,7 +46,7 @@ async function registerUser(values) {
     if (result.success) {
       toast.success({
         //
-        message: "Registration successful! Please check your email to verify.",
+        message: "Registration successful!",
         timeout: 5000,
         position: "topCenter",
       });

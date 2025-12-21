@@ -11,16 +11,23 @@ const schema = {
 async function loginUser(values) {
   const result = await user.logInUser(values);
 
-  if (result) {
-    toast.success({
-      message: "Logged in successfully",
-      timeout: 2000,
+  if (result.error) {
+    toast.error({
+      message: result.error.message || "Invalid email or password",
+      timeout: 3000,
       position: "topCenter",
     });
-    setTimeout(() => {
-      navigateTo("/home");
-    }, 2000);
+    return;
   }
+  toast.success({
+    message: "Logged in successfully",
+    timeout: 2000,
+    position: "topCenter",
+  });
+
+  setTimeout(() => {
+    navigateTo("/home");
+  }, 2000);
 }
 
 function showRegister() {
