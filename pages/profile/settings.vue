@@ -49,21 +49,8 @@ const selectedTab = ref(tabs.profile);
         </NuxtLink>
       </li>
       <li>
-        <a
-          @click="selectedTab = tabs.personalDetails"
-          :class="[
-            'px-5 py-2 rounded-full font-semibold transition cursor-pointer',
-            selectedTab === tabs.personalDetails
-              ? 'bg-amber-500 text-white shadow-md'
-              : 'bg-slate-800/70 text-slate-300 hover:bg-amber-400/20',
-          ]"
-        >
-          Personal Details
-        </a>
-      </li>
-      <li>
         <NuxtLink
-        to="/profile/settings/notifications"
+          to="/profile/settings/notifications"
           @click="selectedTab = tabs.notifications"
           :class="[
             'px-5 py-2 rounded-full font-semibold transition cursor-pointer',

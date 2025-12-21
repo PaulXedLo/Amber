@@ -220,15 +220,6 @@ onMounted(async()=> {
           Upload Post
         </SidebarButton>
 
-        <!--EXPLORE BUTTON-->
-
-        <SidebarButton
-          :iconName="'mdi:compass-outline'"
-          :navigateLocation="'/explore'"
-        >
-          Explore
-        </SidebarButton>
-
         <!--SETTINGS BUTTON-->
 
         <SidebarButton
