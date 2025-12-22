@@ -34,13 +34,13 @@ const emit = defineEmits<{
     <button
       v-if="comment?.userId === userId"
       @click="$emit('deleteComment')"
-      class="px-4 py-2 hover:bg-red-500 transition-colors"
+      class="cursor-pointer px-4 py-2 hover:bg-red-500 transition-colors"
     >
       Delete
     </button>
     <button
       @click="$emit('reportComment')"
-      class="px-4 py-2 hover:bg-red-500 transition-colors"
+      class="cursor-pointer px-4 py-2 hover:bg-red-500 transition-colors"
     >
       Report
     </button>

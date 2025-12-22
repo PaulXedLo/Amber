@@ -17,7 +17,7 @@ function toggleShareModal(profileId: string) {
     shareTitle.value = `Check out ${user.fullName}'s profile!`;
     shareText.value = `Visit ${user.username}'s profile to see their latest posts and updates.`;
     shareImage.value = `${user.profilePic}`;
-    shareDescription.value = `${user.bio}`;
+    shareDescription.value = `${user.bio || "No bio available."}`;
   }
   showShareModal.value = !showShareModal.value;
 }

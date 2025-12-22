@@ -1,5 +1,10 @@
 # AmberProjectX
 
+# Login Credentials
+
+Email: demoaccount@amber.com
+Pass: 12345A
+
 AmberProjectX is a full-featured Instagram-style social media application. Users can share photos, follow others, like posts, comment, and manage their profiles. The project demonstrates modern web development practices using Vue.js (Nuxt 3), Supabase, Drizzle ORM, and TailwindCSS.
 
 ## Features
@@ -45,30 +50,6 @@ This project follows the standard Nuxt 3 directory structure, with some conventi
 - **tsconfig.json**: TypeScript configuration
 - **drizzle.config.ts**: Drizzle Kit config for migrations
 - **tailwind.config.js**: Tailwind CSS configuration
-
-## Setup
-
-Follow these steps to get the project running locally:
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Set up environment variables
-cp .env.example .env
-# Edit the .env file and add your Supabase URL, Anon Key, and Database connection string
-
-# 3. Generate database schema changes (if you modify server/db/schema.ts)
-npx drizzle-kit generate
-
-# 4. Apply database migrations (syncs your database schema with schema.ts)
-npx drizzle-kit migrate
-
-# 5. Run the development server
-npm run dev
-
-# Open http://localhost:3000 with your browser to see the result.
-```
 
 ## Contributing
 

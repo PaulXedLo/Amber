@@ -1,6 +1,6 @@
 <script setup>
-const user = useUserStore();
 import { motion } from "motion-v";
+const user = useUserStore();
 const showSearchBar = ref(false);
 const searchQuery = ref("");
 const sidebarRef = ref(null);
@@ -8,6 +8,9 @@ let showNotifications = ref(false);
 const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
 const { unreadNotifications, fetchNotifications } = useNotifications();
+
+const notificationBtnRef = ref(null);
+const notificationPanelRef = ref(null);
 
 async function handleShowNotifications() {
   showNotifications.value = !showNotifications.value;
@@ -17,11 +20,15 @@ async function handleShowNotifications() {
     await fetchNotifications();
     document.body.style.overflow = "";
   }
-  toggleMobileMenu();
+  if (showMobileMenu.value) {
+    toggleMobileMenu();
+  }
 }
+
 async function signOut() {
   await user.signOut();
 }
+
 function openSearch() {
   showSearchBar.value = true;
   nextTick(() => {
@@ -38,6 +45,7 @@ function clearSearch() {
   searchQuery.value = "";
   searchInputRef.value?.focus();
 }
+
 function toggleMobileMenu() {
   showMobileMenu.value = !showMobileMenu.value;
   if (showMobileMenu.value) {
@@ -46,6 +54,7 @@ function toggleMobileMenu() {
     document.body.style.overflow = "";
   }
 }
+
 function handleClickOutside(event) {
   if (
     sidebarRef.value &&
@@ -60,15 +69,32 @@ function handleClickOutside(event) {
   }
 }
 
+function handleClickOutsideNotifications(event) {
+  if (!showNotifications.value) return;
+
+  const isClickOnButton =
+    notificationBtnRef.value && notificationBtnRef.value.contains(event.target);
+  const panelEl = notificationPanelRef.value?.$el || notificationPanelRef.value;
+  const isClickOnPanel = panelEl && panelEl.contains(event.target);
+
+  if (!isClickOnButton && !isClickOnPanel) {
+    handleShowNotifications();
+  }
+}
+
 watch(showMobileMenu, (newValue) => {
   if (newValue) document.addEventListener("mousedown", handleClickOutside);
   else document.removeEventListener("mousedown", handleClickOutside);
 });
 
-// HOOKS
-onMounted(async()=> {
-  await fetchNotifications()
-})
+onMounted(async () => {
+  await fetchNotifications();
+  document.addEventListener("click", handleClickOutsideNotifications);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutsideNotifications);
+});
 </script>
 <template>
   <!-- Overlay for lower opacity of outer content when the mobile menu is open -->
@@ -118,14 +144,7 @@ onMounted(async()=> {
               size="20"
               class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
             />
-            <button
-              v-if="searchQuery"
-              @click="clearSearch"
-              class="absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-white rounded-full"
-              aria-label="Clear search"
-            >
-              <Icon name="mdi:close-circle" size="18" />
-            </button>
+
             <button
               @click="closeSearch"
               class="absolute right-1.5 top-6 -translate-y-1/2 p-0.5 text-slate-400 hover:text-white rounded-full"
@@ -201,7 +220,11 @@ onMounted(async()=> {
 
         <!--NOTIFICATIONS BUTTON-->
 
-        <div @click="handleShowNotifications" class="flex items-center gap-2">
+        <div
+          ref="notificationBtnRef"
+          @click="handleShowNotifications"
+          class="flex items-center gap-2 cursor-pointer"
+        >
           <SidebarButton :iconName="'mdi:notifications'">
             Notifications
           </SidebarButton>
@@ -209,9 +232,9 @@ onMounted(async()=> {
             v-if="unreadNotifications >= 1"
             class="rounded-full w-3 h-3 bg-amber-500"
           ></span>
-        </div
+        </div>
 
-       <!--UPLOAD POST BUTTON-->
+        <!--UPLOAD POST BUTTON-->
 
         <SidebarButton
           :iconName="'mdi:upload-outline'"
@@ -246,6 +269,7 @@ onMounted(async()=> {
   <!--NOTIFICATIONS BAR-->
   <SidebarNotifications
     v-if="showNotifications"
+    ref="notificationPanelRef"
     @close="handleShowNotifications"
   />
 </template>

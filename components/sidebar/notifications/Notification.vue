@@ -18,6 +18,10 @@ const buttonVariants = {
 onBeforeMount(async () => {
   await fetchNotifications();
 });
+// function for removing notification locally after handling request
+function removeNotificationLocal(id: string) {
+  notifications.value = notifications.value.filter((n) => n.id !== id);
+}
 </script>
 <template>
   <div>
@@ -37,8 +41,8 @@ onBeforeMount(async () => {
         class="bg-slate-800/50 p-3 rounded-lg shadow-sm border border-slate-700/50 hover:bg-slate-800 transition-colors duration-150 overflow-hidden"
       >
         <div class="flex items-start justify-between mb-2">
-          <!--NOTIFICATION SENT BY PROFILE INFORMATION-->
           <div class="flex items-center gap-2 flex-shrink-0 mr-2">
+            <!-- Notification sender profile picture and name -->
             <MyprofilePicture
               :src="notification.senderProfilePicture"
               :sizeClasses="'w-8 h-8 rounded-full'"
@@ -52,8 +56,8 @@ onBeforeMount(async () => {
               {{ notification.senderFullName }}
             </h3>
           </div>
+          <!-- Notification status and time -->
           <div class="flex flex-col items-end text-right flex-shrink-0 ml-2">
-            <!-- NOTIFICATION IS READ BOOL-->
             <span
               v-if="!notification.isRead"
               class="flex items-center gap-1 text-amber-400 mb-0.5"
@@ -61,22 +65,22 @@ onBeforeMount(async () => {
               <span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>
               <h3 class="text-xs font-medium">Unread</h3>
             </span>
-            <!-- NOTIFICATION SENT AT TIME-->
             <span class="text-xs text-slate-400">
               <NuxtTime :datetime="notification.createdAt" relative />
             </span>
           </div>
         </div>
-        <!-- NOTIFICATION TEXT -->
+        <!-- Notification text content -->
         <SidebarNotificationsText
           :post="notification.postContentImage"
           :type="notification.type"
           :comment="notification.commentContent"
           :notificationData="notification"
           class="break-words"
+          @requestHandled="removeNotificationLocal(notification.id)"
         />
-        <!--DELETE AND VIEW   BUTTON-->
         <div class="flex gap-4 w-full justify-end mt-2">
+          <!--Notification buttons-->
           <motion.button
             v-if="notification.type === 'comment'"
             @click="navigateTo(`/posts/${notification.postId}`)"

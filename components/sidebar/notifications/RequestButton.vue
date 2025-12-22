@@ -19,10 +19,10 @@ import { motion } from "motion-v";
     initial="initial"
     whileHover="whileHover"
     :class="[
-      name === 'Accept' ? 'bg-green-500' : '',
-      name === 'Reject' ? 'bg-red-500' : '',
+      name === 'Accept' ? 'bg-amber-500' : '',
+      name === 'Reject' ? 'bg-gray-500' : '',
     ]"
-    class="text-[12px] shadow-md cursor-pointer text-white p-1 rounded-md"
+    class="text-[12px] shadow-md cursor-pointer text-white px-2 py-1 rounded-md"
   >
     {{ name }}
   </motion.button>

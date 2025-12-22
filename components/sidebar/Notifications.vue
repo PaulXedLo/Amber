@@ -19,7 +19,7 @@ const emit = defineEmits(["close"]);
         <!-- NOTIFICATIONS HEADER-->
         <!--MOBILE GO BACK ARROW-->
         <div
-          class="flex md:hidden cursor-pointer"
+          class="flex md:hidden cursor-pointer text-white"
           @click.prevent="emit('close')"
         >
           <Icon name="fluent-mdl2:chrome-back" size="20" />
@@ -27,7 +27,7 @@ const emit = defineEmits(["close"]);
         <!--DESKTOP CLOSE NOTIFICATIONS BUTTON-->
         <div
           @click.prevent="emit('close')"
-          class="hidden md:block cursor-pointer hover:text-amber-500 absolute right-5"
+          class="hidden md:block text-white cursor-pointer hover:text-amber-500 absolute right-5"
         >
           <Icon name="fluent-mdl2:clear" size="15" />
         </div>
@@ -38,16 +38,21 @@ const emit = defineEmits(["close"]);
         </h1>
         <div class="flex justify-center gap-3">
           <!-- CLEAR ALL NOTIFICATIONS BUTTON-->
-          <div @click="async () => await clearNotifications()">
+          <div
+            className="text-white"
+            @click="async () => await clearNotifications()"
+          >
             <SidebarButton size="sm"> Clear all </SidebarButton>
           </div>
           <!-- NOTIFICATION SETTINGS BUTTON-->
-          <SidebarButton
-            size="sm"
-            :navigateLocation="'/profile/settings/notifications'"
-          >
-            Settings
-          </SidebarButton>
+          <div className="text-white">
+            <SidebarButton
+              size="sm"
+              :navigateLocation="'/profile/settings/notifications'"
+            >
+              Settings
+            </SidebarButton>
+          </div>
         </div>
       </div>
 

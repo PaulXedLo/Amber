@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Comment } from "~/types/post";
+
 // PROPS
 defineProps<{
   comments: Comment[];
@@ -8,6 +9,7 @@ defineProps<{
   commentText: string;
   userProfilePic: string;
 }>();
+
 // EMITS
 const emit = defineEmits<{
   (e: "toggleCommentOptions", commentId: string): void;
@@ -23,90 +25,114 @@ const fallbackImage =
 
 <template>
   <div class="flex flex-col gap-6 w-full mt-6">
-    <!-- Comments List -->
     <div
-      class="flex-grow w-full overflow-y-auto max-h-[calc(110vh-450px)] p-1 rounded-lg bg-slate-800/50 custom-scrollbar"
+      class="flex-grow w-full overflow-y-auto max-h-[calc(110vh-450px)] rounded-xl bg-slate-800/30 border border-slate-700/50 custom-scrollbar"
     >
       <LoadingSpinner v-if="loading" />
+
       <div
         v-else-if="!comments || comments.length === 0"
-        class="text-center p-4 text-slate-500 flex flex-col items-center gap-4 mt-3 font-bold"
+        class="text-center py-10 px-4 text-slate-500 flex flex-col items-center gap-2"
       >
-        No comments yet.
-        <span class="w-full"
+        <Icon
+          name="ph:chat-teardrop-text-light"
+          size="40"
+          class="opacity-50 mb-1"
+        />
+        <p class="font-bold text-slate-300">No comments yet.</p>
+        <span class="text-sm"
           >Add a new comment if you want to be the first!</span
         >
       </div>
 
-      <div v-else>
+      <div v-else class="divide-y divide-slate-700/50">
         <div
           v-for="comment in comments"
           :key="comment.commentId"
-          class="flex items-start p-3 gap-3 hover:bg-slate-700/40 rounded-md"
+          class="flex items-start p-4 gap-4 hover:bg-slate-700/20 transition-colors duration-200"
         >
-          <NuxtLink :to="`/profile/${comment.username}`">
+          <NuxtLink :to="`/profile/${comment.username}`" class="flex-shrink-0">
             <NuxtImg
               :src="comment.profilePicture || fallbackImage"
-              class="w-8 h-7 rounded-full mt-1 object-cover"
+              class="w-9 h-9 rounded-full object-cover ring-2 ring-slate-700/50"
             />
           </NuxtLink>
-          <div class="flex justify-between w-full items-start gap-2">
-            <div class="flex flex-col">
-              <p class="text-xs text-slate-400 mb-0.5">
+
+          <div class="flex flex-col flex-grow min-w-0">
+            <div class="flex justify-between items-start gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <NuxtLink
                   :to="`/profile/${comment.username}`"
-                  class="font-semibold text-white"
-                  >{{ comment.username }}</NuxtLink
+                  class="font-bold text-sm text-slate-100 hover:underline"
                 >
-                <span class="ml-2 text-slate-500">
+                  {{ comment.username }}
+                </NuxtLink>
+                <span class="sm:text-xs text-[10px] text-slate-500">
                   <NuxtTime :datetime="comment.commentCreatedAt" relative />
                 </span>
-              </p>
-              <p class="text-sm text-slate-200 break-words">
-                {{ comment.commentText }}
-              </p>
+              </div>
+
+              <div class="relative flex-shrink-0">
+                <button
+                  class="text-slate-400 hover:text-white p-1 rounded-full cursor-pointer transition-colors"
+                  @click="emit('toggleCommentOptions', comment.commentId)"
+                >
+                  <Icon name="weui:more-filled" size="18" />
+                </button>
+
+                <Options
+                  :comment="comment"
+                  :showCommentOptions="activeCommentId === comment.commentId"
+                  @deleteComment="
+                    () => emit('deleteComment', comment.commentId)
+                  "
+                  @reportComment="
+                    () => emit('reportComment', comment.commentId)
+                  "
+                />
+              </div>
             </div>
-            <div class="relative mt-1.25 w-8 flex-shrink-0">
-              <Icon
-                name="weui:more-filled"
-                class="cursor-pointer"
-                size="20"
-                @click="emit('toggleCommentOptions', comment.commentId)"
-              />
-              <Options
-                :comment="comment"
-                :showCommentOptions="activeCommentId === comment.commentId"
-                @deleteComment="() => emit('deleteComment', comment.commentId)"
-                @reportComment="() => emit('reportComment', comment.commentId)"
-              />
-            </div>
+
+            <p
+              class="text-[14px] leading-relaxed text-slate-300 break-words mt-1 pr-2"
+            >
+              {{ comment.commentText }}
+            </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Comment Input -->
-    <div class="flex items-start gap-4 w-full">
+    <div
+      class="flex items-start gap-3 w-full bg-slate-800/40 p-3 rounded-xl border border-slate-700/50"
+    >
       <NuxtImg
-        :src="userProfilePic"
-        class="rounded-full w-10 h-10 object-cover border border-gray-700 shadow-md"
+        :src="userProfilePic || fallbackImage"
+        class="rounded-full w-9 h-9 object-cover ring-1 ring-slate-600 flex-shrink-0"
       />
-      <div class="flex flex-grow gap-2">
-        <input
-          type="text"
+      <div class="flex flex-col flex-grow gap-2 relative">
+        <textarea
+          rows="1"
           :value="commentText"
-          @input="(e) => emit('update:commentText', (e.target as HTMLInputElement).value)"
-          class="w-full h-11 border border-gray-700 bg-gray-800/50 text-white placeholder-gray-500 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all duration-300"
-          placeholder="Add a comment..."
-        />
-        <button
-          type="button"
-          @click="emit('addComment')"
-          class="h-11 px-6 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-amber-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="!commentText.trim()"
-        >
-          Send
-        </button>
+          @input="
+            (e) =>
+              emit('update:commentText', (e.target as HTMLInputElement).value)
+          "
+          class="w-full bg-transparent text-slate-200 placeholder-slate-500 text-sm focus:outline-none py-2 resize-none custom-scrollbar min-h-[40px]"
+          placeholder="Write a comment..."
+          style="field-sizing: content"
+        ></textarea>
+
+        <div class="flex justify-end">
+          <button
+            type="button"
+            @click="emit('addComment')"
+            class="cursor-pointer px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="!commentText.trim()"
+          >
+            Post
+          </button>
+        </div>
       </div>
     </div>
   </div>

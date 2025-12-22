@@ -140,15 +140,28 @@ export function useFollow() {
     profile: Profile
   ): Promise<void> {
     if (!userId || !profile) {
-      console.log("Could not get userId or profile");
       return;
     }
+
+    const isStartingToFollow =
+      !user.followStatus[profile.id] ||
+      user.followStatus[profile.id] === "unfollowed";
+
     await toggleFollowUser(userId, isPrivate);
+
+    let notificationType = "";
+
+    if (isStartingToFollow) {
+      notificationType = isPrivate ? "request" : "follow";
+    } else {
+      notificationType = "unfollow";
+    }
+
     await toggleNotification({
       targetUserId: profile.id,
-      type:
-        user.followStatus[profile.id] === "followed" ? "follow" : "unfollow",
+      type: notificationType,
     });
+
     getFollowFeedback(userId, profile);
   }
   return {

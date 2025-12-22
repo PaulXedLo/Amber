@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   if (event.method === "POST") {
     const body = await readBody(event);
     const { userId, targetUserId, postId, type } = body;
+
     if (!userId || !targetUserId || !type) {
       console.error("Could not get information for notification");
       throw createError({
@@ -22,14 +23,21 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
       });
     }
+
+    if (userId === targetUserId) {
+      return { status: "ignored_self_action" };
+    }
+
     // Get notification preferences
     const userNotificationPreferences = await db
       .select()
       .from(notificationPreferences)
       .where(eq(notificationPreferences.userId, targetUserId))
       .execute();
+
     // Store preferences
     const preferences = userNotificationPreferences[0];
+
     // Send based on type
     let sendNotification = false;
     if (!preferences) {
@@ -40,9 +48,11 @@ export default defineEventHandler(async (event) => {
       if (type === "follow" || type === "request")
         sendNotification = preferences.follows ?? false;
     }
+
     if (!sendNotification) {
       return { status: "not_sent" };
     }
+
     let valuesToInsert: any = {
       senderId: userId,
       receiverId: targetUserId,
@@ -127,6 +137,7 @@ export default defineEventHandler(async (event) => {
         .orderBy(sql`notifications.created_at DESC`)
         .limit(10)
         .execute();
+
       const unreadCountResult = await db
         .select({
           count: sql<number>`count(${notifications.id})`.mapWith(Number),

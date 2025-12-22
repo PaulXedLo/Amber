@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
           .insert(followRequests)
           .values({
             requesterId: userId,
-            targetId: followingUserId,
+            targetId: targetUserId,
           })
           .onConflictDoNothing()
           .execute();

@@ -12,7 +12,7 @@ const {
 <template>
   <div class="text-center mt-4">
     <div class="flex-col flex sm:flex-row gap-5 items-center">
-      <h1 class="text-2xl font-extrabold" v-if="!editingUsername">
+      <h1 class="text-2xl text-white font-extrabold" v-if="!editingUsername">
         {{ fullName }}
       </h1>
       <input
