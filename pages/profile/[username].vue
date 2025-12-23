@@ -1,11 +1,19 @@
 <script setup>
 // STORES
 const route = useRoute();
+const userStore = useUserStore();
 // COMPOSABLES
 const usernameRef = computed(() => route.params.username);
 const { openModal, activePost, closeModal } = useModal();
 const { profile, posts, loadingProfile, isOwnProfile, fallbackImage } =
   useUserProfileData(usernameRef);
+// Check to see if the current user can access the profile content
+const contentAccess = computed(() => {
+  if (isOwnProfile.value) return true;
+  if (!profile.value?.isPrivate) return true;
+  const status = userStore.followStatus[profile.value?.id];
+  return status === "followed";
+});
 </script>
 
 <template>
@@ -45,15 +53,20 @@ const { profile, posts, loadingProfile, isOwnProfile, fallbackImage } =
     </div>
 
     <!-- Public profile posts-->
-    <PublicprofilePosts :posts="posts" />
-    <!-- Public user account is private message-->
-    <PublicprofilePrivate
-      v-if="profile.isPrivate"
-      :profile="profile"
-      :loadingProfile="loadingProfile"
-    />
-    <!-- No posts-->
-    <p v-if="posts.length < 1">No posts yet.</p>
+    <div v-if="contentAccess" class="w-full">
+      <PublicprofilePosts :posts="posts" />
+
+      <p v-if="posts.length < 1" class="text-white text-center mt-20">
+        No posts yet.
+      </p>
+    </div>
+
+    <div v-else class="w-full">
+      <PublicprofilePrivate
+        :profile="profile"
+        :loadingProfile="loadingProfile"
+      />
+    </div>
   </div>
   <!-- USER DOES NOT EXIST PAGE-->
   <PageNotFound type="profile" v-else-if="!loadingProfile && !profile" />
