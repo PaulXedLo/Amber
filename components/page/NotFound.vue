@@ -27,13 +27,19 @@ const props = defineProps<{
     animate="animate"
     class="flex flex-col justify-center gap-9 items-center min-h-200 overflow-y-hidden"
   >
-    <h2 v-if="props.type === 'profile'" class="text-2xl font-semibold">
+    <h2
+      v-if="props.type === 'profile'"
+      class="text-2xl text-white font-semibold"
+    >
       Profile not found
     </h2>
-    <h2 v-else-if="props.type === 'post'" class="text-2xl font-semibold">
+    <h2
+      v-else-if="props.type === 'post'"
+      class="text-2xl text-white font-semibold"
+    >
       Post not found
     </h2>
-    <p v-if="props.type === 'profile'" class="text-slate-400">
+    <p v-if="props.type === 'profile'" class="text-slate-400 text-center">
       The user @{{ route.params.username }} does not exist or there was an issue
       loading their profile.
     </p>

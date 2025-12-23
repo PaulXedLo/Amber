@@ -1,14 +1,19 @@
 <script setup>
 import { motion } from "motion-v";
+import SearchInput from "~/components/home/SearchInput.vue";
 const user = useUserStore();
-const showSearchBar = ref(false);
-const searchQuery = ref("");
 const sidebarRef = ref(null);
 let showNotifications = ref(false);
-const searchInputRef = ref(null);
 const showMobileMenu = ref(false);
 const { unreadNotifications, fetchNotifications } = useNotifications();
-
+const {
+  showSearchBar,
+  searchUsers,
+  searchQuery,
+  openSearch,
+  closeSearch,
+  searchInputRef,
+} = useSearch();
 const notificationBtnRef = ref(null);
 const notificationPanelRef = ref(null);
 
@@ -27,23 +32,6 @@ async function handleShowNotifications() {
 
 async function signOut() {
   await user.signOut();
-}
-
-function openSearch() {
-  showSearchBar.value = true;
-  nextTick(() => {
-    searchInputRef.value?.focus();
-  });
-}
-
-function closeSearch() {
-  showSearchBar.value = false;
-  searchQuery.value = "";
-}
-
-function clearSearch() {
-  searchQuery.value = "";
-  searchInputRef.value?.focus();
 }
 
 function toggleMobileMenu() {
@@ -130,24 +118,15 @@ onUnmounted(() => {
           leave-from-class="opacity-100 max-w-full"
           leave-to-class="opacity-0 max-w-0"
         >
-          <div v-if="showSearchBar" class="w-full relative">
-            <input
-              type="text"
-              placeholder="Search Amber..."
-              ref="searchInputRef"
-              v-model="searchQuery"
-              @keydown.esc="closeSearch"
-              class="w-full h-10 pl-10 pr-12 py-2 rounded-full bg-slate-700/70 text-slate-100 border border-slate-600 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 outline-none placeholder-slate-400 text-sm"
-            />
-            <Icon
-              name="mdi:magnify"
-              size="20"
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
+          <div
+            v-if="showSearchBar"
+            class="w-full relative flex items-center gap-2"
+          >
+            <SearchInput />
 
             <button
               @click="closeSearch"
-              class="absolute right-1.5 top-6 -translate-y-1/2 p-0.5 text-slate-400 hover:text-white rounded-full"
+              class="p-1 text-slate-400 hover:text-white rounded-full"
               aria-label="Close search"
             >
               <Icon name="mdi:close" size="22" />
