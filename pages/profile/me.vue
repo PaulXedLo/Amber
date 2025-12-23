@@ -25,6 +25,11 @@ const {
 function updatePostsCount() {
   postsCount.value = posts.userPosts.length;
 }
+// Normal posts
+const normalizedPosts = computed(() => {
+  if (!posts.userPosts) return [];
+  return posts.userPosts.map((p) => p.posts);
+});
 
 // HOOKS
 
@@ -80,21 +85,7 @@ onMounted(async () => {
         Add new post
       </motion.button>
     </div>
-    <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-10" v-if="!loadingPosts">
-      <div
-        v-for="post in posts.userPosts"
-        :key="post.contentImage"
-        class="w-full aspect-square overflow-hidden rounded-lg bg-slate-800 shadow-md hover:shadow-amber-500/20 transition"
-      >
-        <NuxtImg
-          :src="post.posts.contentImage"
-          @click="openModal(post.posts.id)"
-          alt="Post image"
-          class="w-full h-full object-cover transform hover:scale-105 transition duration-300 hover:opacity-80"
-          densities="x1"
-        />
-      </div>
-    </div>
+    <PublicprofilePosts v-else-if="!loadingPosts" :posts="normalizedPosts" />
   </div>
   <div v-else class="flex flex-row min-h-screen justify-center items-center">
     <span class="loading loading-spinner loading-xl"></span>

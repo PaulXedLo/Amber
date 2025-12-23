@@ -30,37 +30,60 @@ const handleKeyPress = (e: KeyboardEvent) => {
       :initial="{ opacity: 0 }"
       :animate="{ opacity: 1 }"
       :exit="{ opacity: 0, transition: { duration: 0.15 } }"
-      class="fixed inset-0 z-50 p-4 sm:p-6 md:p-10 flex items-center justify-center bg-black/70"
+      class="fixed inset-0 z-50 overflow-y-auto bg-black/80"
     >
-      <motion.div
-        v-if="activePost"
-        :initial="{ scale: 0.2 }"
-        :animate="{
-          scale: 1.0,
-          opacity: 1,
-          transition: { duration: 0.25, ease: 'easeOut' },
-        }"
-        class="flex flex-col md:flex-row w-full h-full md:max-w-5xl md:h-[90vh] rounded-2xl overflow-hidden bg-slate-900"
+      <div
+        class="flex min-h-full items-start md:items-center justify-center p-0 md:p-6"
       >
-        <!-- MODAL IMAGE -->
-        <ModalImage :post="activePost" :fallbackImage="fallbackImage" />
-        <!-- Info Section -->
-        <div
-          class="w-full md:w-[400px] lg:w-[450px] flex flex-col p-4 md:p-6 gap-4 text-white bg-slate-900"
+        <motion.div
+          v-if="activePost"
+          @click.stop
+          :initial="{ scale: 0.95, opacity: 0 }"
+          :animate="{ scale: 1, opacity: 1 }"
+          class="flex flex-col md:flex-row w-full bg-slate-900 overflow-hidden relative md:max-w-6xl md:h-[90vh] md:rounded-2xl shadow-2xl min-h-full md:min-h-0"
         >
-          <!-- Header -->
-          <ModalHeader :post="activePost" />
+          <div
+            class="md:hidden p-3 border-b border-gray-800 flex items-center bg-slate-900 sticky top-0 z-20"
+          >
+            <ModalHeader :post="activePost" />
+          </div>
 
-          <!-- Description -->
-          <ModalDescription />
+          <div
+            class="w-full bg-black flex items-center justify-center md:w-auto md:flex-1 md:h-full"
+          >
+            <ModalImage
+              :post="activePost"
+              :fallbackImage="fallbackImage"
+              class="max-h-[60vh] md:max-h-full object-contain"
+            />
+          </div>
 
-          <!-- Like & Comment Input -->
-          <ModalLikeAndComment :handleKeyPress="handleKeyPress" />
+          <div
+            class="flex flex-col w-full bg-slate-900 md:w-[450px] md:h-full md:border-l md:border-gray-800"
+          >
+            <div class="hidden md:block p-4 border-b border-gray-800">
+              <!--Modal header-->
+              <ModalHeader :post="activePost" />
+            </div>
 
-          <!-- Comments Section -->
-          <ModalCommentSection />
-        </div>
-      </motion.div>
+            <div
+              class="p-4 flex flex-col h-auto md:flex-1 md:overflow-y-auto custom-scrollbar"
+            >
+              <!-- Post description modal-->
+              <ModalDescription />
+
+              <div class="mt-4 mb-2 border-t border-gray-800 pt-4">
+                <!--Modal like and comment section-->
+                <ModalLikeAndComment :handleKeyPress="handleKeyPress" />
+              </div>
+              <!--Modal post comment seciton-->
+              <ModalCommentSection />
+            </div>
+
+            <div class="h-20 md:hidden"></div>
+          </div>
+        </motion.div>
+      </div>
     </motion.div>
   </AnimatePresence>
 </template>

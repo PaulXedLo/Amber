@@ -25,7 +25,7 @@ const emit = defineEmits<{
   <!-- COMMENT OPTIONS -->
   <motion.div
     v-if="showCommentOptions"
-    class="absolute z-50 right-0 top-6 flex overflow-hidden items-center bg-gray-800 border border-gray-700 rounded-xl shadow-md text-sm"
+    class="absolute z-50 right-0 text-white top-6 flex overflow-hidden items-center bg-gray-800 border border-gray-700 rounded-xl shadow-md text-sm"
     :initial="{ opacity: 0, scale: 0.9, y: -10 }"
     :animate="{ opacity: 1, scale: 1, y: 0 }"
     :exit="{ opacity: 0, scale: 0.9, y: -10 }"
@@ -34,13 +34,13 @@ const emit = defineEmits<{
     <button
       v-if="comment?.userId === userId"
       @click="$emit('deleteComment')"
-      class="cursor-pointer px-4 py-2 hover:bg-red-500 transition-colors"
+      class="cursor-pointer text-white px-4 py-2 hover:bg-red-500 transition-colors"
     >
       Delete
     </button>
     <button
       @click="$emit('reportComment')"
-      class="cursor-pointer px-4 py-2 hover:bg-red-500 transition-colors"
+      class="cursor-pointer text-white px-4 py-2 hover:bg-red-500 transition-colors"
     >
       Report
     </button>

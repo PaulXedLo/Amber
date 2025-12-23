@@ -27,7 +27,7 @@ defineProps<{
       @keydown="handleKeyPress"
       type="text"
       placeholder="Add a comment..."
-      class="flex-grow px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+      class="flex-grow placeholder:text-slate-500 px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
     />
     <button
       @click="handleAddComment"

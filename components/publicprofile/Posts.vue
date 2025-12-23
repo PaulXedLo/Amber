@@ -6,10 +6,11 @@ defineProps<{
   posts: Post[];
 }>();
 </script>
+
 <template>
   <div
     v-if="posts && posts.length > 0"
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mt-10"
+    class="grid grid-cols-3 gap-2 sm:gap-4 mt-10"
   >
     <div
       v-for="postItem in posts"

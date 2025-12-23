@@ -12,7 +12,7 @@ const {
 </script>
 <template>
   <div
-    class="flex-grow overflow-y-auto mt-4 bg-slate-900/40 rounded-xl custom-scrollbar border border-slate-700/30"
+    class="mt-4 bg-slate-900/40 rounded-xl border border-slate-700/30 custom-scrollbar w-full md:flex-grow md:overflow-y-auto"
   >
     <LoadingSpinner v-if="loading" />
 
