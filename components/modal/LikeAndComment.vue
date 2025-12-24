@@ -19,7 +19,7 @@ defineProps<{
           activePost?.posts.likedByMe
             ? 'noto:yellow-heart'
             : 'mdi:heart-outline'
-        "
+        " 
         size="28"
       />
       <span class="text-sm">{{ activePost?.posts.likesCount }}</span>
