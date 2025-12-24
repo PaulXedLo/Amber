@@ -1,5 +1,4 @@
 import { is } from "drizzle-orm";
-import { primaryKey } from "drizzle-orm/gel-core";
 import {
   pgTable,
   uuid,
@@ -8,6 +7,7 @@ import {
   timestamp,
   integer,
   boolean,
+  primaryKey
 } from "drizzle-orm/pg-core";
 
 /* PROFILES TABLE */
@@ -105,4 +105,44 @@ export const notificationPreferences = pgTable("notification_preferences", {
 export const reports = pgTable("reports", {
   userId: uuid("user_id").references(() => profiles.id),
   postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
+});
+
+
+/* Conversations TABLE */
+export const conversations = pgTable("conversations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+/* Conversation participants table */
+export const conversationParticipants = pgTable(
+  "conversation_participants",
+  {
+    conversationId: uuid("conversation_id")
+      .references(() => conversations.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: uuid("user_id")
+      .references(() => profiles.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.conversationId, table.userId] }),
+    };
+  }
+);
+
+/* MESSAGES TABLE */
+export const messages = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: uuid("conversation_id")
+    .references(() => conversations.id, { onDelete: "cascade" })
+    .notNull(),
+  senderId: uuid("sender_id")
+    .references(() => profiles.id, { onDelete: "cascade" })
+    .notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
