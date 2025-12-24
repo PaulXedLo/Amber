@@ -4,7 +4,6 @@ import { eq, and } from "drizzle-orm";
 import type { IsFollowingResponse } from "~/types/follow";
 export default defineEventHandler(async (event) => {
   const db = getDb();
-  const query = getQuery(event);
   const { userId, targetUserId } = getQuery(event) as {
     userId?: string;
     targetUserId?: string;

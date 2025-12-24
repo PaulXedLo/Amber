@@ -7,8 +7,6 @@ const allowedTypes = ["likes", "comments", "follows"] as const;
 export default defineEventHandler(async (event) => {
   const db = getDb();
   // Update notification preferences
-  if (event.method === "PATCH") {
-    // Get the userId and type from the query parameters
     const queryParams = getQuery(event);
     const type = event.context.params?.type as string;
     const { userId } = queryParams;
@@ -51,5 +49,4 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
       });
     }
-  }
 });

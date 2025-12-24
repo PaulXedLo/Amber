@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const db = getDb();
-  if (event.method === "PATCH") {
     const body = await readBody(event);
     const query = getQuery(event);
     const { userId } = query;
@@ -32,5 +31,4 @@ export default defineEventHandler(async (event) => {
         message: "Could not update profile",
       });
     }
-  }
 });

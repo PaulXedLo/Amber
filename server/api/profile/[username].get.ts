@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
   const { username } = event.context.params;
   const query = getQuery(event);
   const { userId } = query;
-  if (event.method === "GET") {
     let userData = [];
     try {
       // GET PUBLIC USER PROFILE
@@ -86,5 +85,4 @@ export default defineEventHandler(async (event) => {
         message: "Could not get user profile",
       });
     }
-  }
 });

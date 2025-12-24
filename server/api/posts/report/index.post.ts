@@ -4,7 +4,6 @@ import { eq, and, sql } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const db = getDb();
-  if (event.method === "POST") {
     const query = getQuery(event);
     const { userId, postId } = query;
     if (!userId || !postId) {
@@ -25,5 +24,4 @@ export default defineEventHandler(async (event) => {
       console.log(error);
       throw createError({ statusCode: 500, message: "Could not post report" });
     }
-  }
 });

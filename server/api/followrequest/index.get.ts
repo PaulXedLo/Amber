@@ -4,9 +4,8 @@ import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   const db = getDb();
-  if (event.method === "POST") {
-    const body = await readBody(event);
-    const { userId, targetUserId } = body;
+  const body = await readBody(event);
+  const { userId, targetUserId } = body;
     if (!userId || !targetUserId) {
       console.error("Failed to get userId or targetUserId");
       throw createError({
@@ -42,5 +41,4 @@ export default defineEventHandler(async (event) => {
         statusCode: 500,
       });
     }
-  }
 });
